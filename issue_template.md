@@ -16,9 +16,9 @@
 
 **Branch(es):** 5.4.8 / 4.3.4 / 3.3.5 (Also add Labels to identify Information)
 
-**JadeCore rev. hash/commit:**  
+**DeathCore rev. hash/commit:**  
 
-**JCDB version:**  
+**DCDB version:**  
 
 **Operating system:**  
 
