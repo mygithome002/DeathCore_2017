@@ -14,7 +14,7 @@
 2. 
 3. 
 
-**Branch(es):** 5.4.8 / 4.3.4 / 3.3.5 (Also add Labels to identify Information)
+**Branch(es):** 5.4.8 / 4.3.4 / 3.3.5
 
 **DeathCore rev. hash/commit:**  
 
