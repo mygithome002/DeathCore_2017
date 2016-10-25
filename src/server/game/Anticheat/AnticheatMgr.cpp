@@ -543,7 +543,7 @@ void AnticheatMgr::BuildReport(Player* player,uint8 reportType)
             {
                 str = "Possible cheater found: " + std::string(player->GetName());
                 sWorld->BanCharacter(player->GetName(), "1h", str, "Anticheat");
-                sWorld->SendWorldText(LANG_BAN_CHEATER, player->GetName());
+                sWorld->PSendSysMessage(LANG_BAN_CHEATER, player->GetName());
             }
         }
         else
