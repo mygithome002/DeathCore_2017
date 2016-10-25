@@ -128,25 +128,25 @@ int Master::Run()
 
     TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon)", _FULLVERSION);
     TC_LOG_INFO("server.worldserver", "<Ctrl-C> to stop.\n");
-	TC_LOG_INFO("server.worldserver",, " ");
-	TC_LOG_INFO("server.worldserver",, "██████╗ ███████╗ █████╗ ████████╗██╗  ██╗");
-	TC_LOG_INFO("server.worldserver",, "██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██║  ██║");
-	TC_LOG_INFO("server.worldserver",, "██║  ██║█████╗  ███████║   ██║   ███████║");
-	TC_LOG_INFO("server.worldserver",, "██║  ██║██╔══╝  ██╔══██║   ██║   ██╔══██║");
-	TC_LOG_INFO("server.worldserver",, "██████╔╝███████╗██║  ██║   ██║   ██║  ██║");
-	TC_LOG_INFO("server.worldserver",, "╚═════╝ ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝");
-	TC_LOG_INFO("server.worldserver",, "		  ██████╗ ██████╗ ██████╗ ███████╗");
-	TC_LOG_INFO("server.worldserver",, "		 ██╔════╝██╔═══██╗██╔══██╗██╔════╝");
-	TC_LOG_INFO("server.worldserver",, "		 ██║     ██║   ██║██████╔╝█████╗");  
-	TC_LOG_INFO("server.worldserver",, "		 ██║     ██║   ██║██╔══██╗██╔══╝");  
-	TC_LOG_INFO("server.worldserver",, "		   ╚██████╗╚██████╔╝██║  ██║███████╗");
-	TC_LOG_INFO("server.worldserver",, "  	            ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝");
-	TC_LOG_INFO("server.worldserver",, "   ");                                                        
-	TC_LOG_INFO("server.worldserver",, "   ");                                                        
-	TC_LOG_INFO("server.worldserver",, "  	Noffearr Death ProjecT 2016(c) Open-Sourced Game Emulation"); 
-    TC_LOG_INFO("server.worldserver",, "		       http://www.noffearrdeathproject.org ");
-	TC_LOG_INFO("server.worldserver",, "   ");                                                        
-	TC_LOG_INFO("server.worldserver",, "   "); 
+	TC_LOG_INFO("server.worldserver", " ");
+	TC_LOG_INFO("server.worldserver", "██████╗ ███████╗ █████╗ ████████╗██╗  ██╗");
+	TC_LOG_INFO("server.worldserver", "██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██║  ██║");
+	TC_LOG_INFO("server.worldserver", "██║  ██║█████╗  ███████║   ██║   ███████║");
+	TC_LOG_INFO("server.worldserver", "██║  ██║██╔══╝  ██╔══██║   ██║   ██╔══██║");
+	TC_LOG_INFO("server.worldserver", "██████╔╝███████╗██║  ██║   ██║   ██║  ██║");
+	TC_LOG_INFO("server.worldserver", "╚═════╝ ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝");
+	TC_LOG_INFO("server.worldserver", "		  ██████╗ ██████╗ ██████╗ ███████╗");
+	TC_LOG_INFO("server.worldserver", "		 ██╔════╝██╔═══██╗██╔══██╗██╔════╝");
+	TC_LOG_INFO("server.worldserver", "		 ██║     ██║   ██║██████╔╝█████╗");  
+	TC_LOG_INFO("server.worldserver", "		 ██║     ██║   ██║██╔══██╗██╔══╝");  
+	TC_LOG_INFO("server.worldserver", "		   ╚██████╗╚██████╔╝██║  ██║███████╗");
+	TC_LOG_INFO("server.worldserver", "  	            ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝");
+	TC_LOG_INFO("server.worldserver", "   ");                                                        
+	TC_LOG_INFO("server.worldserver", "   ");                                                        
+	TC_LOG_INFO("server.worldserver", "  	Noffearr Death ProjecT 2016(c) Open-Sourced Game Emulation"); 
+    TC_LOG_INFO("server.worldserver", "		       http://www.noffearrdeathproject.org ");
+	TC_LOG_INFO("server.worldserver", "   ");                                                        
+	TC_LOG_INFO("server.worldserver", "   "); 
 
 
     /// worldserver PID file creation
