@@ -5845,8 +5845,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
         }
     }
 
-    uint32 absorb = 0;
-    uint32 resist = 0;
     CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
 
     // AOE spells are not affected by the new periodic system.
@@ -5941,13 +5939,16 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
         damage = caster->SpellCriticalDamageBonus(m_spellInfo, damage, target);
 
     int32 dmg = damage;
-
     if (!GetSpellInfo()->HasAttribute(SPELL_ATTR4_FIXED_DAMAGE))
-        caster->ApplyResilience(target, NULL, &dmg, crit, CR_CRIT_TAKEN_SPELL);
+        caster->ApplyResilience(target, nullptr, &dmg, crit, CR_CRIT_TAKEN_SPELL);
     damage = dmg;
 
-    caster->CalcAbsorbResist(target, GetSpellInfo()->GetSchoolMask(), DOT, damage, &absorb, &resist, GetSpellInfo());
+    DamageInfo damageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo()->GetSchoolMask(), DOT, BASE_ATTACK);
+    caster->CalcAbsorbResist(damageInfo);
+    damage = damageInfo.GetDamage();
 
+    uint32 absorb = damageInfo.GetAbsorb();
+    uint32 resist = damageInfo.GetResist();
     TC_LOG_DEBUG("spells.periodic", "PeriodicTick: %s attacked %s for %u dmg inflicted by %u absorb is %u",
         GetCasterGUID().ToString().c_str(), target->GetGUID().ToString().c_str(), damage, GetId(), absorb);
 
@@ -5956,8 +5957,10 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
     // Set trigger flag
     uint32 procAttacker = PROC_FLAG_DONE_PERIODIC;
     uint32 procVictim   = PROC_FLAG_TAKEN_PERIODIC;
-    uint32 hitMask = crit ? PROC_HIT_CRITICAL : PROC_HIT_NORMAL;
-    damage = (damage <= absorb+resist) ? 0 : (damage-absorb-resist);
+    uint32 hitMask = damageInfo.GetHitMask();
+    if (!hitMask)
+        hitMask = crit ? PROC_HIT_CRITICAL : PROC_HIT_NORMAL;
+
     if (damage)
         procVictim |= PROC_FLAG_TAKEN_DAMAGE;
 
@@ -5968,7 +5971,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
     SpellPeriodicAuraLogInfo pInfo(this, damage, overkill, absorb, resist, 0.0f, crit);
     target->SendPeriodicAuraLog(&pInfo);
 
-    DamageInfo damageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo()->GetSchoolMask(), DOT, BASE_ATTACK);
     caster->ProcSkillsAndAuras(target, procAttacker, procVictim, PROC_SPELL_TYPE_DAMAGE, PROC_SPELL_PHASE_NONE, hitMask, nullptr, &damageInfo, nullptr);
 
     caster->DealDamage(target, damage, &cleanDamage, DOT, GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), true);
@@ -5989,8 +5991,6 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster) c
         caster->SpellHitResult(target, GetSpellInfo(), false) != SPELL_MISS_NONE)
         return;
 
-    uint32 absorb = 0;
-    uint32 resist = 0;
     CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
 
     bool isAreaAura = m_spellInfo->Effects[m_effIndex].IsAreaAuraEffect() || m_spellInfo->Effects[m_effIndex].IsEffect(SPELL_EFFECT_PERSISTENT_AREA_AURA);
@@ -6033,29 +6033,33 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster) c
 
     int32 dmg = damage;
     if (!GetSpellInfo()->HasAttribute(SPELL_ATTR4_FIXED_DAMAGE))
-        caster->ApplyResilience(target, NULL, &dmg, crit, CR_CRIT_TAKEN_SPELL);
+        caster->ApplyResilience(target, nullptr, &dmg, crit, CR_CRIT_TAKEN_SPELL);
     damage = dmg;
 
-    caster->CalcAbsorbResist(target, GetSpellInfo()->GetSchoolMask(), DOT, damage, &absorb, &resist, m_spellInfo);
+    DamageInfo damageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo()->GetSchoolMask(), DOT, BASE_ATTACK);
+    caster->CalcAbsorbResist(damageInfo);
 
+    uint32 absorb = damageInfo.GetAbsorb();
+    uint32 resist = damageInfo.GetResist();
     TC_LOG_DEBUG("spells.periodic", "PeriodicTick: %s health leech of %s for %u dmg inflicted by %u abs is %u",
         GetCasterGUID().ToString().c_str(), target->GetGUID().ToString().c_str(), damage, GetId(), absorb);
 
+    // SendSpellNonMeleeDamageLog expects non-absorbed/non-resisted damage
     caster->SendSpellNonMeleeDamageLog(target, GetId(), damage, GetSpellInfo()->GetSchoolMask(), absorb, resist, false, 0, crit);
+    damage = damageInfo.GetDamage();
 
     // Set trigger flag
     uint32 procAttacker = PROC_FLAG_DONE_PERIODIC;
     uint32 procVictim   = PROC_FLAG_TAKEN_PERIODIC;
-    uint32 hitMask = crit ? PROC_HIT_CRITICAL : PROC_HIT_NORMAL;
-    damage = (damage <= absorb+resist) ? 0 : (damage-absorb-resist);
+    uint32 hitMask = damageInfo.GetHitMask();
+    if (!hitMask)
+        hitMask = crit ? PROC_HIT_CRITICAL : PROC_HIT_NORMAL;
+
     if (damage)
         procVictim |= PROC_FLAG_TAKEN_DAMAGE;
 
     if (caster->IsAlive())
-    {
-        DamageInfo damageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo()->GetSchoolMask(), DOT, BASE_ATTACK);
         caster->ProcSkillsAndAuras(target, procAttacker, procVictim, PROC_SPELL_TYPE_DAMAGE, PROC_SPELL_PHASE_NONE, hitMask, nullptr, &damageInfo, nullptr);
-    }
 
     int32 new_damage = caster->DealDamage(target, damage, &cleanDamage, DOT, GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), false);
     if (caster->IsAlive())
