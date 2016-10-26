@@ -1120,11 +1120,12 @@ void ExtractDB2Files(int l, bool basicLocale)
     {
         std::string outputPath = output_path;
         outputPath += "/db2/";
-        if (!basicLocale)
+        CreateDir(outputPath);
         {
-            outputPath += Locales[l];
-            outputPath += "/";
-        }
+         outputPath += Locales[l];
+         outputPath += "/";
+         CreateDir(outputPath);        
+		  }
 
         std::string filename;
 
