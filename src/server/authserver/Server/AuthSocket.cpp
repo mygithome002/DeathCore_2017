@@ -19,7 +19,7 @@
 #include <openssl/md5.h>
 
 #include "Common.h"
-#include "Database/DatabaseEnv.h"
+#include "database/databaseEnv.h"
 #include "ByteBuffer.h"
 #include "Configuration/Config.h"
 #include "Log.h"

@@ -31,7 +31,7 @@
 #include <openssl/crypto.h>
 
 #include "Common.h"
-#include "Database/DatabaseEnv.h"
+#include "database/databaseEnv.h"
 #include "Configuration/Config.h"
 #include "Log.h"
 #include "GitRevision.h"

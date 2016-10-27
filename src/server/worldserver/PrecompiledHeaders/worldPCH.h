@@ -20,6 +20,6 @@
 #include "Common.h"
 #include "World.h"
 #include "Log.h"
-#include "Database/DatabaseEnv.h"
+#include "database/databaseEnv.h"
 #include "Configuration/Config.h"
 #include "Util.h"

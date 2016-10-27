@@ -19,7 +19,7 @@
 #include "AchievementMgr.h"
 #include "CharacterDatabaseCleaner.h"
 #include "World.h"
-#include "Database/DatabaseEnv.h"
+#include "database/databaseEnv.h"
 #include "SpellMgr.h"
 #include "DBCStores.h"
 

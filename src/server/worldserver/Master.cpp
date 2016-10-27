@@ -29,8 +29,8 @@
 #include "WorldSocket.h"
 #include "WorldSocketMgr.h"
 #include "Configuration/Config.h"
-#include "Database/DatabaseEnv.h"
-#include "Database/DatabaseWorkerPool.h"
+#include "database/databaseEnv.h"
+#include "database/databaseWorkerPool.h"
 
 #include "CliRunnable.h"
 #include "Log.h"
