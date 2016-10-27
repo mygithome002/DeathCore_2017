@@ -22,15 +22,15 @@
 #include <ace/Sig_Handler.h>
 
 #include "Common.h"
-#include "GitRevision.h"
+#include "SystemConfig.h"
 #include "SignalHandler.h"
 #include "World.h"
 #include "WorldRunnable.h"
 #include "WorldSocket.h"
 #include "WorldSocketMgr.h"
 #include "Configuration/Config.h"
-#include "database/databaseEnv.h"
-#include "database/databaseWorkerPool.h"
+#include "Database/DatabaseEnv.h"
+#include "Database/DatabaseWorkerPool.h"
 
 #include "CliRunnable.h"
 #include "Log.h"
@@ -126,7 +126,7 @@ int Master::Run()
     BigNumber seed1;
     seed1.SetRand(16 * 8);
 
-    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon)", GitRevision::GetFullVersion());
+    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon)", _FULLVERSION);
     TC_LOG_INFO("server.worldserver", "<Ctrl-C> to stop.\n");
 	TC_LOG_INFO("server.worldserver", " ");
 	TC_LOG_INFO("server.worldserver", "██████╗ ███████╗ █████╗ ████████╗██╗  ██╗");
@@ -147,7 +147,7 @@ int Master::Run()
     TC_LOG_INFO("server.worldserver", "		  http://www.noffearrdeathproject.org ");
 	TC_LOG_INFO("server.worldserver", "   ");                                                        
 	TC_LOG_INFO("server.worldserver", "   ");                                                  
-
+	
     /// worldserver PID file creation
     std::string pidFile = sConfigMgr->GetStringDefault("PidFile", "");
     if (!pidFile.empty())
@@ -301,7 +301,7 @@ int Master::Run()
     // set server online (allow connecting now)
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag & ~%u, population = 0 WHERE id = '%u'", REALM_FLAG_INVALID, realmID);
 
-    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon) ready...", GitRevision::GetFullVersion());
+    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon) ready...", _FULLVERSION);
 
     // when the main thread closes the singletons get unloaded
     // since worldrunnable uses them, it will crash if unloaded after master
@@ -493,7 +493,7 @@ bool Master::_StartDB()
     ClearOnlineAccounts();
 
     ///- Insert version info into DB
-    WorldDatabase.PExecute("UPDATE version SET core_version = '%s', core_revision = '%s'", GitRevision::GetFullVersion(), GitRevision::GetHash());        // One-time query
+    WorldDatabase.PExecute("UPDATE version SET core_version = '%s', core_revision = '%s'", _FULLVERSION, _HASH);        // One-time query
 
     sWorld->LoadDBVersion();
 

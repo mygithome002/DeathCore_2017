@@ -23,7 +23,7 @@
 #include "ObjectAccessor.h"
 #include "World.h"
 #include "WorldSocketMgr.h"
-#include "database/databaseEnv.h"
+#include "Database/DatabaseEnv.h"
 #include "ScriptMgr.h"
 #include "BattlegroundMgr.h"
 #include "MapManager.h"

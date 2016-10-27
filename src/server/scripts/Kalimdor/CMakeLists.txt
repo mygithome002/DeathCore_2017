@@ -1,20 +1,18 @@
 # Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
 #
-# This program is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by the
-# Free Software Foundation; either version 2 of the License, or (at your
-# option) any later version.
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-# more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program. If not, see <http://www.gnu.org/licenses/>.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
+  Kalimdor/zone_stonetalon_mountains.cpp
+  Kalimdor/zone_silithus.cpp
+  Kalimdor/zone_moonglade.cpp
   Kalimdor/RazorfenDowns/razorfen_downs.cpp
   Kalimdor/RazorfenDowns/instance_razorfen_downs.cpp
   Kalimdor/RazorfenDowns/boss_amnennar_the_coldbringer.cpp
@@ -61,6 +59,10 @@ set(scripts_STAT_SRCS
   Kalimdor/BlackfathomDeeps/blackfathom_deeps.cpp
   Kalimdor/BlackfathomDeeps/boss_aku_mai.cpp
   Kalimdor/BlackfathomDeeps/blackfathom_deeps.h
+  Kalimdor/zone_azuremyst_isle.cpp
+  Kalimdor/zone_orgrimmar.cpp
+  Kalimdor/zone_desolace.cpp
+  Kalimdor/zone_feralas.cpp
   Kalimdor/Maraudon/boss_princess_theradras.cpp
   Kalimdor/Maraudon/boss_landslide.cpp
   Kalimdor/Maraudon/boss_celebras_the_cursed.cpp
@@ -78,6 +80,7 @@ set(scripts_STAT_SRCS
   Kalimdor/TempleOfAhnQiraj/boss_skeram.cpp
   Kalimdor/TempleOfAhnQiraj/boss_ouro.cpp
   Kalimdor/TempleOfAhnQiraj/boss_bug_trio.cpp
+  Kalimdor/zone_darkshore.cpp
   Kalimdor/RuinsOfAhnQiraj/boss_buru.cpp
   Kalimdor/RuinsOfAhnQiraj/instance_ruins_of_ahnqiraj.cpp
   Kalimdor/RuinsOfAhnQiraj/boss_rajaxx.cpp
@@ -86,12 +89,27 @@ set(scripts_STAT_SRCS
   Kalimdor/RuinsOfAhnQiraj/boss_moam.cpp
   Kalimdor/RuinsOfAhnQiraj/ruins_of_ahnqiraj.h
   Kalimdor/RuinsOfAhnQiraj/boss_kurinnaxx.cpp
+  Kalimdor/zone_mulgore.cpp
+  Kalimdor/zone_bloodmyst_isle.cpp
+  Kalimdor/zone_thunder_bluff.cpp
+  Kalimdor/zone_azshara.cpp
   Kalimdor/RazorfenKraul/razorfen_kraul.h
   Kalimdor/RazorfenKraul/instance_razorfen_kraul.cpp
   Kalimdor/RazorfenKraul/razorfen_kraul.cpp
+  Kalimdor/zone_the_barrens.cpp
+  Kalimdor/zone_ungoro_crater.cpp
   Kalimdor/WailingCaverns/wailing_caverns.h
   Kalimdor/WailingCaverns/instance_wailing_caverns.cpp
   Kalimdor/WailingCaverns/wailing_caverns.cpp
+  Kalimdor/zone_durotar.cpp
+  Kalimdor/zone_felwood.cpp
+  Kalimdor/boss_azuregos.cpp
+  Kalimdor/zone_tanaris.cpp
+  Kalimdor/zone_dustwallow_marsh.cpp
+  Kalimdor/zone_winterspring.cpp
+  Kalimdor/zone_thousand_needles.cpp
+  Kalimdor/zone_ashenvale.cpp
+  Kalimdor/zone_teldrassil.cpp
   Kalimdor/OnyxiasLair/boss_onyxia.cpp
   Kalimdor/OnyxiasLair/onyxias_lair.h
   Kalimdor/OnyxiasLair/instance_onyxias_lair.cpp
@@ -105,29 +123,6 @@ set(scripts_STAT_SRCS
   Kalimdor/Firelands/instance_firelands.cpp
   Kalimdor/Firelands/firelands.h
   Kalimdor/Firelands/boss_alysrazor.cpp
-  Kalimdor/WorldBosses/boss_azuregos.cpp
-  Kalimdor/Zones/zone_ashenvale.cpp
-  Kalimdor/Zones/zone_azshara.cpp
-  Kalimdor/Zones/zone_azuremyst_isle.cpp
-  Kalimdor/Zones/zone_bloodmyst_isle.cpp
-  Kalimdor/Zones/zone_darkshore.cpp
-  Kalimdor/Zones/zone_desolace.cpp
-  Kalimdor/Zones/zone_durotar.cpp
-  Kalimdor/Zones/zone_dustwallow_marsh.cpp
-  Kalimdor/Zones/zone_felwood.cpp
-  Kalimdor/Zones/zone_feralas.cpp
-  Kalimdor/Zones/zone_moonglade.cpp
-  Kalimdor/Zones/zone_mulgore.cpp
-  Kalimdor/Zones/zone_orgrimmar.cpp
-  Kalimdor/Zones/zone_silithus.cpp
-  Kalimdor/Zones/zone_stonetalon_mountains.cpp
-  Kalimdor/Zones/zone_tanaris.cpp
-  Kalimdor/Zones/zone_teldrassil.cpp
-  Kalimdor/Zones/zone_the_barrens.cpp
-  Kalimdor/Zones/zone_thousand_needles.cpp
-  Kalimdor/Zones/zone_thunder_bluff.cpp
-  Kalimdor/Zones/zone_ungoro_crater.cpp
-  Kalimdor/Zones/zone_winterspring.cpp
 )
 
 message("  -> Prepared: Kalimdor")

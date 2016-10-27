@@ -1,17 +1,12 @@
-# Copyright (C) 2013-2016 JadeCore <https://www.jadecore.tk/>
+# Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
 #
-# This program is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by the
-# Free Software Foundation; either version 2 of the License, or (at your
-# option) any later version.
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-# more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program. If not, see <http://www.gnu.org/licenses/>.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 # NOTE: Do not use glob here, it would include files we don't want
 set(ace_STAT_SRCS
@@ -324,6 +319,11 @@ set(ace_STAT_SRCS
   XTI_ATM_Mcast.cpp
 )
 
+if (USE_COREPCH)
+  set(ace_PCH_HDR PrecompiledHeaders/WinAcePCH.h)
+  set(ace_PCH_SRC PrecompiledHeaders/WinAcePCH.cpp)
+endif()
+
 include_directories(
   ${CMAKE_SOURCE_DIR}/dep/acelite
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
@@ -342,6 +342,11 @@ add_library(ace SHARED
 
 if (MINGW) # GCC ignores "#prama comment"
   target_link_libraries(ace ws2_32 iphlpapi netapi32 mswsock)
+endif()
+
+# Generate precompiled header
+if( USE_COREPCH )
+  add_cxx_pch(ace ${ace_PCH_HDR} ${ace_PCH_SRC})
 endif()
 
 install(TARGETS ace RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")

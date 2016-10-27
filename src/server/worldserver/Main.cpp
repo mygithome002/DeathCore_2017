@@ -24,7 +24,7 @@
 #include <ace/Version.h>
 
 #include "Common.h"
-#include "database/databaseEnv.h"
+#include "Database/DatabaseEnv.h"
 #include "Configuration/Config.h"
 
 #include "Log.h"

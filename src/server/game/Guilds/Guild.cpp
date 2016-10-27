@@ -2930,9 +2930,8 @@ void Guild::MassInviteToEvent(WorldSession* session, uint32 minLevel, uint32 max
 {
     uint32 count = 0;
 
-    ByteBuffer inviteeData;
-    WorldPacket data(SMSG_CALENDAR_EVENT_INITIAL_INVITE);
-    data.WriteBits(count, 23); // count placeholder
+    WorldPacket data(SMSG_CALENDAR_FILTER_GUILD);
+    data << uint32(count); // count placeholder
 
     for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
@@ -2949,33 +2948,13 @@ void Guild::MassInviteToEvent(WorldSession* session, uint32 minLevel, uint32 max
 
         if (member->GetGUID() != session->GetPlayer()->GetGUID() && level >= minLevel && level <= maxLevel && member->IsRankNotLower(minRank))
         {
-            ObjectGuid guid = member->GetGUID();
-            data.WriteBit(guid[1]);
-            data.WriteBit(guid[7]);
-            data.WriteBit(guid[5]);
-            data.WriteBit(guid[0]);
-            data.WriteBit(guid[4]);
-            data.WriteBit(guid[3]);
-            data.WriteBit(guid[6]);
-            data.WriteBit(guid[2]);
-
-            inviteeData << uint8(level);
-            inviteeData.WriteByteSeq(guid[3]);
-            inviteeData.WriteByteSeq(guid[5]);
-            inviteeData.WriteByteSeq(guid[4]);
-            inviteeData.WriteByteSeq(guid[6]);
-            inviteeData.WriteByteSeq(guid[7]);
-            inviteeData.WriteByteSeq(guid[0]);
-            inviteeData.WriteByteSeq(guid[2]);
-            inviteeData.WriteByteSeq(guid[1]);
-
+            data.appendPackGUID(member->GetGUID());
+            data << uint8(0); // unk
             ++count;
         }
     }
 
-    data.FlushBits();
-    data.PutBits(0, count, 23);
-    data.append(inviteeData);
+    data.put<uint32>(0, count);
 
     session->SendPacket(&data);
 }

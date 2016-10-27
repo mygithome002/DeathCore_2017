@@ -2311,7 +2311,6 @@ class Unit : public WorldObject
 
 		int32 GetEclipsePower() { return _eclipsePower; };
 		void SetEclipsePower(int32 power, bool send = true);
-		void SendEclipse();
 
 		uint32 GetHealingDoneInPastSecs(uint32 secs);
         uint32 GetHealingTakenInPastSecs(uint32 secs);

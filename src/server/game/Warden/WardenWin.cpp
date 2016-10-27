@@ -24,7 +24,7 @@
 #include "Opcodes.h"
 #include "ByteBuffer.h"
 #include <openssl/md5.h>
-#include "database/databaseEnv.h"
+#include "Database/DatabaseEnv.h"
 #include "World.h"
 #include "Player.h"
 #include "Util.h"

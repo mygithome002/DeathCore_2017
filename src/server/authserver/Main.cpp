@@ -31,10 +31,10 @@
 #include <openssl/crypto.h>
 
 #include "Common.h"
-#include "database/databaseEnv.h"
+#include "Database/DatabaseEnv.h"
 #include "Configuration/Config.h"
 #include "Log.h"
-#include "GitRevision.h"
+#include "SystemConfig.h"
 #include "Util.h"
 #include "SignalHandler.h"
 #include "RealmList.h"
@@ -110,9 +110,8 @@ extern int main(int argc, char** argv)
         return 1;
     }
 
-    TC_LOG_INFO("server.authserver", "%s (authserver)", GitRevision::GetFullVersion());
+    TC_LOG_INFO("server.authserver", "%s (authserver)", _FULLVERSION);
     TC_LOG_INFO("server.authserver", "<Ctrl-C> to stop.\n");
-    TC_LOG_INFO("server.authserver", "Using configuration file %s.", configFile);
 	TC_LOG_INFO("server.authserver", " ");
 	TC_LOG_INFO("server.authserver", "██████╗ ███████╗ █████╗ ████████╗██╗  ██╗");
 	TC_LOG_INFO("server.authserver", "██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██║  ██║");
@@ -132,6 +131,8 @@ extern int main(int argc, char** argv)
     TC_LOG_INFO("server.authserver", "		  http://www.noffearrdeathproject.org ");
 	TC_LOG_INFO("server.authserver", "   ");                                                        
 	TC_LOG_INFO("server.authserver", "   "); 
+    TC_LOG_INFO("server.authserver", "Using configuration file %s.", configFile);
+
     TC_LOG_WARN("server.authserver", "%s (Library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
 
 #if defined (ACE_HAS_EVENT_POLL) || defined (ACE_HAS_DEV_POLL)

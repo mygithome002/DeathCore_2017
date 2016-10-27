@@ -1,23 +1,18 @@
 # Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
 #
-# This program is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by the
-# Free Software Foundation; either version 2 of the License, or (at your
-# option) any later version.
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-# more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program. If not, see <http://www.gnu.org/licenses/>.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 # output generic information about the core and buildtype chosen
 message("")
-message("* JadeCore revision   : ${rev_hash} ${rev_date} (${rev_branch} branch)")
+message("* DeathCore revision   : ${rev_hash} ${rev_date} (${rev_branch} branch)")
 if( UNIX )
-  message("* JadeCore buildtype  : ${CMAKE_BUILD_TYPE}")
+  message("* DeathCore buildtype  : ${CMAKE_BUILD_TYPE}")
 endif()
 message("")
 
@@ -75,12 +70,6 @@ if( WITH_COREDEBUG )
   add_definitions(-DTRINITY_DEBUG)
 else()
   message("* Use coreside debug     : No  (default)")
-endif()
-
-if( NOT WITH_SOURCE_TREE STREQUAL "no" )
-  message("* Show source tree       : Yes (${WITH_SOURCE_TREE})")
-else()
-  message("* Show source tree       : No")
 endif()
 
 if( WIN32 )

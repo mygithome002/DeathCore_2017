@@ -3695,7 +3695,7 @@ void SpellMgr::LoadSpellInfoCustomAttributes()
                     break;
                 case 117895:// Eminence (statue)
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
-                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[0].TargetB = NULL;
                     break;
                 case 115294:// Mana Tea
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36); // 1s

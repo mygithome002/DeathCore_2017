@@ -1,20 +1,15 @@
 # Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
 #
-# This program is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by the
-# Free Software Foundation; either version 2 of the License, or (at your
-# option) any later version.
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-# more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program. If not, see <http://www.gnu.org/licenses/>.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 # Set projectname (must be done AFTER setting configurationtypes)
-project(JadeCore)
+project(DeathCore)
 
 # Fix compile
 SET(CMAKE_C_FLAGS "-std=gnu99" CACHE STRING "" FORCE)
@@ -58,8 +53,6 @@ endif()
 
 include(CheckPlatform)
 
-include(GroupSources)
-
 # basic packagesearching and setup (further support will be needed, this is a preliminary release!)
 set(OPENSSL_EXPECTED_VERSION 1.0.0)
 set(ACE_EXPECTED_VERSION 5.8.3)
@@ -69,17 +62,14 @@ find_package(ACE REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Threads REQUIRED)
 
-include(ConfigureBoost)
-find_package(MySQL REQUIRED)
+if( NOT USE_MYSQL_SOURCES )
+  find_package(MySQL REQUIRED)
+endif()
 
 if( UNIX )
   find_package(Readline)
   find_package(ZLIB)
   find_package(BZip2)
-endif()
-
-if(NOT WITHOUT_GIT)
-  find_package(Git)
 endif()
 
 include(CheckCXXCompilerFlag)

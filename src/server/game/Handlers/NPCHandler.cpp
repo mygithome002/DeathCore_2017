@@ -523,32 +523,17 @@ void WorldSession::SendBindPoint(Creature* npc)
     _player->PlayerTalkClass->SendCloseGossip();
 }
 
-void WorldSession::HandleRequestStabledPets(WorldPacket& recvData)
+void WorldSession::HandleListStabledPetsOpcode(WorldPacket& recvData)
 {
-    TC_LOG_DEBUG("network", "WORLD: Recv CMSG_REQUEST_STABLED_PETS");
+    TC_LOG_DEBUG("network", "WORLD: Recv MSG_LIST_STABLED_PETS");
+    ObjectGuid npcGUID;
 
-    ObjectGuid stableMasterGUID;
+    recvData.ReadGuidMask(npcGUID, 0, 5, 1, 3, 6, 7, 2, 4);
 
-    stableMasterGUID[0] = recvData.ReadBit();
-    stableMasterGUID[5] = recvData.ReadBit();
-    stableMasterGUID[1] = recvData.ReadBit();
-    stableMasterGUID[3] = recvData.ReadBit();
-    stableMasterGUID[6] = recvData.ReadBit();
-    stableMasterGUID[7] = recvData.ReadBit();
-    stableMasterGUID[2] = recvData.ReadBit();
-    stableMasterGUID[4] = recvData.ReadBit();
-
-    recvData.ReadByteSeq(stableMasterGUID[0]);
-    recvData.ReadByteSeq(stableMasterGUID[5]);
-    recvData.ReadByteSeq(stableMasterGUID[7]);
-    recvData.ReadByteSeq(stableMasterGUID[1]);
-    recvData.ReadByteSeq(stableMasterGUID[2]);
-    recvData.ReadByteSeq(stableMasterGUID[3]);
-    recvData.ReadByteSeq(stableMasterGUID[4]);
-    recvData.ReadByteSeq(stableMasterGUID[6]);
+    recvData.ReadGuidBytes(npcGUID, 0, 5, 7, 1, 2, 3, 4, 6);
 
 
-    if (!CheckStableMaster(stableMasterGUID))
+    if (!CheckStableMaster(npcGUID))
         return;
 
     // remove fake death
@@ -559,7 +544,7 @@ void WorldSession::HandleRequestStabledPets(WorldPacket& recvData)
     if (GetPlayer()->IsMounted())
         GetPlayer()->RemoveAurasByType(SPELL_AURA_MOUNTED);
 
-	SendPetStableListCallback(NULL, stableMasterGUID);
+    SendStablePetCallback(NULL, npcGUID);
 }
 
 void WorldSession::SendStablePet(uint64 guid)
@@ -574,56 +559,39 @@ void WorldSession::SendStablePet(uint64 guid)
     _sendStabledPetCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
 }
 
-void WorldSession::SendPetStableListCallback(PreparedQueryResult result, uint64 guid)
+void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid)
 {
     if (!GetPlayer())
         return;
 
-    TC_LOG_DEBUG("network", "WORLD: Send SMSG_PET_STABLE_LIST");
+    TC_LOG_DEBUG("network", "WORLD: Recv MSG_LIST_STABLED_PETS Send.");
 
-    ObjectGuid stableMasterGUID = guid;
-    uint32 petCount = 0;
+    _player->SendPetsInSlots(_player, guid, false);
 
-    WorldPacket data(SMSG_PET_STABLE_LIST, 200);           // guess size
+    /* Needs to be removed later to clean it out. XEQT
+    WorldPacket data(MSG_LIST_STABLED_PETS, 200);           // guess size
 
-    data.WriteBit(stableMasterGUID[3]);
-    data.WriteBit(stableMasterGUID[0]);
-    data.WriteBit(stableMasterGUID[4]);
-    data.WriteBit(stableMasterGUID[7]);
-    data.WriteBit(stableMasterGUID[2]);
-    data.WriteBit(stableMasterGUID[1]);
-    data.WriteBit(stableMasterGUID[6]);
-    data.WriteBit(stableMasterGUID[5]);
-
-    size_t petCountPos = data.bitwpos();
-    data.WriteBits(petCount, 19);                           // placeholder
-
-    if (result)
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-
-            data.WriteBits(fields[4].GetString().length(), 8);
-
-        } while (result->NextRow());
-    }
-
-    data.FlushBits();
+    data << uint64 (guid);
 
     Pet* pet = _player->GetPet();
+
+    size_t wpos = data.wpos();
+    data << uint8(0);                                       // place holder for slot show number
+
+    data << uint8(GetPlayer()->m_stableSlots);
+
+    uint8 num = 0;                                          // counter for place holder
 
     // not let move dead pet in slot
     if (pet && pet->IsAlive() && pet->getPetType() == HUNTER_PET)
     {
-        data << uint32(pet->getLevel());
-        data << uint32(0);                                  // 5.x
-        data << uint8(1);                                   // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
         data << uint32(0);                                  // 4.x unknown, some kind of order?
-        data << pet->GetName();                             // petname
         data << uint32(pet->GetCharmInfo()->GetPetNumber());
         data << uint32(pet->GetEntry());
-        ++petCount;
+        data << uint32(pet->getLevel());
+        data << pet->GetName();                             // petname
+        data << uint8(1);                                   // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
+        ++num;
     }
 
     if (result)
@@ -632,30 +600,20 @@ void WorldSession::SendPetStableListCallback(PreparedQueryResult result, uint64 
         {
             Field* fields = result->Fetch();
 
-            data << uint32(fields[3].GetUInt16());          // level
-            data << uint32(0);                              // 5.x
-            data << uint8(2);                               // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
-            data << uint32(0);                              // 4.x unknown, some kind of order?
-            data << fields[4].GetString();                  // name
             data << uint32(fields[1].GetUInt32());          // petnumber
             data << uint32(fields[2].GetUInt32());          // creature entry
+            data << uint32(fields[3].GetUInt16());          // level
+            data << fields[4].GetString();                  // name
+            data << uint8(2);                               // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
 
-            ++petCount;
-        } while (result->NextRow());
+            ++num;
+        }
+        while (result->NextRow());
     }
 
-    data.PutBits(petCountPos, petCount, 19);                // set real data to placeholder
-
-    data.WriteByteSeq(stableMasterGUID[3]);
-    data.WriteByteSeq(stableMasterGUID[5]);
-    data.WriteByteSeq(stableMasterGUID[7]);
-    data.WriteByteSeq(stableMasterGUID[2]);
-    data.WriteByteSeq(stableMasterGUID[0]);
-    data.WriteByteSeq(stableMasterGUID[4]);
-    data.WriteByteSeq(stableMasterGUID[1]);
-    data.WriteByteSeq(stableMasterGUID[6]);
-
+    data.put<uint8>(wpos, num);                             // set real data to placeholder
     SendPacket(&data);
+    */
 }
 
 void WorldSession::SendStableResult(uint8 res)

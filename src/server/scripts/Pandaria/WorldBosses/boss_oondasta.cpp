@@ -1,32 +1,20 @@
 /*
-    © Emiliyan Kurtseliyanski (JunkyBulgaria)
-    Email: emiliyan9604bg@gmail.com
-    Site: www.kurtseliyanski.info
-
-	TACTIC:
-
-1. Tank 1 attacks and gains  Alpha Male. 
-
-2. Tank 1 positions boss to face AWAY from the raid. While Oondasta is NOT TAUNTABLE, whichever tank has the  
-Alpha Male buff has control of where the boss is facing, 
-including NPC tanking pets. Oondasta should be placed with ample room around his hind side to allow all melee and ranged space to spread out.
-
-3. Non-tanks, melee, and ranged must be behind the boss spread out 10 yards apart to avoid  Spiritfire Beam. This chain-lightning 
-on crack will destroy you swiftly.
-
-4. All members must stop casting when they see the boss casting  Piercing Roar, otherwise they will be silenced.
-
-5. Anything within the boss' frontal 180 degree cone can and will be hit with  Frill Blast. This includes anyone and anything directly 
-to the boss' sides. Stay behind the boss at all times.
-
-6. Tank 1 gets  Crush debuff, rendering Tank 1 ineffective. Tank 1 stops all attacks to shed threat. 
-
-7. Tank 2 continues attacking and ramps up all threat possible to gain  Alpha Male. Tank 2 now has control of where Oondasta faces.
-
-8. Tank 2 will eventually get the  Crush debuff and must enact step 6, swapping the boss back to Tank 1.
-
-Rinse and repeat.
-*/
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
 #include "SpellScript.h"
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"

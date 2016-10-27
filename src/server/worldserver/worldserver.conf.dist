@@ -1986,8 +1986,8 @@ Death.CorpseReclaimDelay.PvE = 0
 #                     1 - (Enabled, Death.Bones.BattlegroundOrArena)
 #                     0 - (Disabled)
 
-Death.Bones.World               = 0
-Death.Bones.BattlegroundOrArena = 0
+Death.Bones.World               = 1
+Death.Bones.BattlegroundOrArena = 1
 
 #
 #    Die.Command.Mode

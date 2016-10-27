@@ -16,7 +16,7 @@
  */
   
 #include "Configuration/Config.h"
-#include "database/databaseEnv.h"
+#include "Database/DatabaseEnv.h"
 #include "Log.h"
 #include "RealmList.h"
 #include "RealmSocket.h"
