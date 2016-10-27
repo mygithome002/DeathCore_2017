@@ -687,7 +687,7 @@ void AddSC_boss_Galakras();
 void AddSC_boss_GarroshHellscream();
 void AddSC_boss_GeneralNazgrim();
 void AddSC_boss_IronJuggernaut();
-void AddSC_boss_Immerseus();
+//void AddSC_boss_Immerseus();
 void AddSC_boss_KorKron();
 void AddSC_boss_Malkorok();
 void AddSC_boss_Norushen();
@@ -1525,7 +1525,7 @@ void AddPandariaScripts()
 	AddSC_boss_GarroshHellscream();
 	AddSC_boss_GeneralNazgrim();
 	AddSC_boss_IronJuggernaut();
-	AddSC_boss_Immerseus();
+	//AddSC_boss_Immerseus();
 	AddSC_boss_KorKron();
 	AddSC_boss_Malkorok();
 	AddSC_boss_Norushen();

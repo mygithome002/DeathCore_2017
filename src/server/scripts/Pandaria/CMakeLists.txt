@@ -102,7 +102,7 @@ set(scripts_STAT_SRCS
   Pandaria/Raids/ThroneOfThunder/boss_LeiShen.cpp
   Pandaria/Raids/ThroneOfThunder/instance_ThroneOfThunder.cpp
   Pandaria/Raids/ThroneOfThunder/ThroneOfThunder.h
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_Immerseus.cpp
+  #Pandaria/Raids/SiegeOfOrgrimmar/boss_Immerseus.cpp
   Pandaria/Raids/SiegeOfOrgrimmar/boss_Galakras.cpp
   Pandaria/Raids/SiegeOfOrgrimmar/boss_GeneralNazgrim.cpp
   Pandaria/Raids/SiegeOfOrgrimmar/boss_KorKron.cpp
