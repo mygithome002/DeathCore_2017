@@ -89,7 +89,8 @@ void PetAI::UpdateAI(uint32 diff)
     if (me->GetVictim())
     {
         // is only necessary to stop casting, the pet must not exit combat
-        if (me->GetVictim()->HasBreakableByDamageCrowdControlAura(me))
+        if (!me->GetCurrentSpell(CURRENT_CHANNELED_SPELL) &&
+            me->GetVictim()->HasBreakableByDamageCrowdControlAura(me))
         {
             me->InterruptNonMeleeSpells(false);
             return;
@@ -133,6 +134,7 @@ void PetAI::UpdateAI(uint32 diff)
             HandleReturnMovement();
     }
     else if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW)) // no charm info and no victim
+		if(me->GetEntry() != 54569)
         me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle());
 
     if (!me->GetCharmInfo())
@@ -244,8 +246,6 @@ void PetAI::UpdateAI(uint32 diff)
                 if (owner && owner->GetTypeId() == TYPEID_PLAYER)
                     me->SendUpdateToPlayer(owner->ToPlayer());
             }
-
-            me->AddCreatureSpellCooldown(spell->m_spellInfo->Id);
 
             spell->prepare(&targets);
         }
@@ -425,6 +425,9 @@ void PetAI::HandleReturnMovement()
 {
     // Handles moving the pet back to stay or owner
 
+    if (me->GetEntry() == 45322)
+        return;
+
     // Prevent activating movement when under control of spells
     // such as "Eyes of the Beast"
     if (me->IsCharmed())
@@ -438,10 +441,13 @@ void PetAI::HandleReturnMovement()
             float x, y, z;
 
             me->GetCharmInfo()->GetStayPosition(x, y, z);
-            ClearCharmInfoFlags();
-            me->GetCharmInfo()->SetIsReturning(true);
-            me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MovePoint(me->GetGUIDLow(), x, y, z);
+            if (me->GetCharmInfo()->HasStayPosition())
+            {
+                ClearCharmInfoFlags();
+                me->GetCharmInfo()->SetIsReturning(true);
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(me->GetGUIDLow(), x, y, z);
+            }
         }
     }
     else // COMMAND_FOLLOW
@@ -463,8 +469,11 @@ void PetAI::DoAttack(Unit* target, bool chase)
 
     if (me->Attack(target, true))
     {
-        if (Unit* owner = me->GetOwner())
-            owner->SetInCombatWith(target);
+		if (Unit* owner = me->GetOwner())
+		{
+			if (me->IsInCombat())
+				owner->SetInCombatWith(target);
+		}
 
         // Play sound to let the player know the pet is attacking something it picked on its own
         if (me->HasReactState(REACT_AGGRESSIVE) && !me->GetCharmInfo()->IsCommandAttack())

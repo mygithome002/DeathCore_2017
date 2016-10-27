@@ -16,6 +16,328 @@ Date: 2016-10-25 10:02:00
 SET FOREIGN_KEY_CHECKS=0;
 
 -- ----------------------------
+-- Table structure for `account_battle_pet`
+-- ----------------------------
+DROP TABLE IF EXISTS `account_battle_pet`;
+CREATE TABLE `account_battle_pet` (
+`id`  bigint(20) UNSIGNED NOT NULL DEFAULT 0 ,
+`accountId`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`species`  smallint(5) UNSIGNED NOT NULL DEFAULT 0 ,
+`nickname`  varchar(16) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '' ,
+`timestamp`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`level`  tinyint(3) UNSIGNED NOT NULL DEFAULT 1 ,
+`xp`  smallint(5) UNSIGNED NOT NULL DEFAULT 0 ,
+`health`  smallint(5) UNSIGNED NOT NULL DEFAULT 0 ,
+`maxHealth`  smallint(5) UNSIGNED NOT NULL DEFAULT 0 ,
+`power`  smallint(5) UNSIGNED NOT NULL DEFAULT 0 ,
+`speed`  smallint(5) UNSIGNED NOT NULL DEFAULT 0 ,
+`quality`  tinyint(3) UNSIGNED NOT NULL DEFAULT 0 ,
+`breed`  tinyint(3) UNSIGNED NOT NULL DEFAULT 0 ,
+`flags`  smallint(5) UNSIGNED NOT NULL DEFAULT 0 ,
+PRIMARY KEY (`id`)
+)
+ENGINE=MyISAM
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_bin
+
+;
+
+-- ----------------------------
+-- Records of account_battle_pet
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for `account_battle_pet_slots`
+-- ----------------------------
+DROP TABLE IF EXISTS `account_battle_pet_slots`;
+CREATE TABLE `account_battle_pet_slots` (
+`accountId`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`slot1`  bigint(20) UNSIGNED NOT NULL DEFAULT 0 ,
+`slot2`  bigint(20) UNSIGNED NOT NULL DEFAULT 0 ,
+`slot3`  bigint(20) UNSIGNED NOT NULL DEFAULT 0 ,
+`flags`  tinyint(3) UNSIGNED NOT NULL DEFAULT 0 ,
+PRIMARY KEY (`accountId`)
+)
+ENGINE=MyISAM
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_bin
+
+;
+
+-- ----------------------------
+-- Records of account_battle_pet_slots
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for `account_data`
+-- ----------------------------
+DROP TABLE IF EXISTS `account_data`;
+CREATE TABLE `account_data` (
+`accountId`  int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Account Identifier' ,
+`type`  tinyint(3) UNSIGNED NOT NULL DEFAULT 0 ,
+`time`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`data`  blob NOT NULL ,
+PRIMARY KEY (`accountId`, `type`)
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+
+;
+
+-- ----------------------------
+-- Records of account_data
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for `account_instance_times`
+-- ----------------------------
+DROP TABLE IF EXISTS `account_instance_times`;
+CREATE TABLE `account_instance_times` (
+`accountId`  int(10) UNSIGNED NOT NULL ,
+`instanceId`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`releaseTime`  bigint(20) UNSIGNED NOT NULL DEFAULT 0 ,
+PRIMARY KEY (`accountId`, `instanceId`)
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+
+;
+
+-- ----------------------------
+-- Records of account_instance_times
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for `account_tutorial`
+-- ----------------------------
+DROP TABLE IF EXISTS `account_tutorial`;
+CREATE TABLE `account_tutorial` (
+`accountId`  int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Account Identifier' ,
+`tut0`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`tut1`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`tut2`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`tut3`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`tut4`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`tut5`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`tut6`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`tut7`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+PRIMARY KEY (`accountId`)
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+
+;
+
+-- ----------------------------
+-- Records of account_tutorial
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for `addons`
+-- ----------------------------
+DROP TABLE IF EXISTS `addons`;
+CREATE TABLE `addons` (
+`name`  varchar(120) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' ,
+`crc`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+PRIMARY KEY (`name`)
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+COMMENT='Addons'
+
+;
+
+-- ----------------------------
+-- Records of addons
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for `auctionhouse`
+-- ----------------------------
+DROP TABLE IF EXISTS `auctionhouse`;
+CREATE TABLE `auctionhouse` (
+`id`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`auctioneerguid`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`itemguid`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`itemowner`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`buyoutprice`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`time`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`buyguid`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`lastbid`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`startbid`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`deposit`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+PRIMARY KEY (`id`)
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+
+;
+
+-- ----------------------------
+-- Records of auctionhouse
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for `banned_addons`
+-- ----------------------------
+DROP TABLE IF EXISTS `banned_addons`;
+CREATE TABLE `banned_addons` (
+`Id`  int(10) UNSIGNED NOT NULL AUTO_INCREMENT ,
+`Name`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
+`Version`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' ,
+`Timestamp`  timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP ,
+PRIMARY KEY (`Id`)
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+AUTO_INCREMENT=1
+
+;
+
+-- ----------------------------
+-- Records of banned_addons
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for `blackmarket`
+-- ----------------------------
+DROP TABLE IF EXISTS `blackmarket`;
+CREATE TABLE `blackmarket` (
+`id`  int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Global Identifier' ,
+`templateId`  int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Reference to world.blackmarket_template' ,
+`startTime`  int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Start time of the bid' ,
+`bid`  bigint(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Amount of the actual bid' ,
+`bidder`  int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Player guid (highest bid)' ,
+PRIMARY KEY (`id`)
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+
+;
+
+-- ----------------------------
+-- Records of blackmarket
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for `bugreport`
+-- ----------------------------
+DROP TABLE IF EXISTS `bugreport`;
+CREATE TABLE `bugreport` (
+`id`  int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Identifier' ,
+`type`  longtext CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
+`content`  longtext CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
+PRIMARY KEY (`id`)
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+COMMENT='Debug System'
+AUTO_INCREMENT=1
+
+;
+
+-- ----------------------------
+-- Records of bugreport
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for `calendar_events`
+-- ----------------------------
+DROP TABLE IF EXISTS `calendar_events`;
+CREATE TABLE `calendar_events` (
+`id`  bigint(20) UNSIGNED NOT NULL DEFAULT 0 ,
+`creator`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`title`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' ,
+`description`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' ,
+`type`  tinyint(1) UNSIGNED NOT NULL DEFAULT 4 ,
+`dungeon`  int(10) NOT NULL DEFAULT '-1' ,
+`eventtime`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`flags`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`time2`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+PRIMARY KEY (`id`)
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+
+;
+
+-- ----------------------------
+-- Records of calendar_events
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for `calendar_invites`
+-- ----------------------------
+DROP TABLE IF EXISTS `calendar_invites`;
+CREATE TABLE `calendar_invites` (
+`id`  bigint(20) UNSIGNED NOT NULL DEFAULT 0 ,
+`event`  bigint(20) UNSIGNED NOT NULL DEFAULT 0 ,
+`invitee`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`sender`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`status`  tinyint(1) UNSIGNED NOT NULL DEFAULT 0 ,
+`statustime`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
+`rank`  tinyint(1) UNSIGNED NOT NULL DEFAULT 0 ,
+`text`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' ,
+PRIMARY KEY (`id`)
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+
+;
+
+-- ----------------------------
+-- Records of calendar_invites
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for `channels`
+-- ----------------------------
+DROP TABLE IF EXISTS `channels`;
+CREATE TABLE `channels` (
+`name`  varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
+`team`  int(10) UNSIGNED NOT NULL ,
+`announce`  tinyint(3) UNSIGNED NOT NULL DEFAULT 1 ,
+`ownership`  tinyint(3) UNSIGNED NOT NULL DEFAULT 1 ,
+`password`  varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`bannedList`  text CHARACTER SET utf8 COLLATE utf8_general_ci NULL ,
+`lastUsed`  int(10) UNSIGNED NOT NULL ,
+PRIMARY KEY (`name`, `team`)
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+COMMENT='Channel System'
+
+;
+
+-- ----------------------------
+-- Records of channels
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
 -- Table structure for `character_account_data`
 -- ----------------------------
 DROP TABLE IF EXISTS `character_account_data`;
@@ -1837,6 +2159,8 @@ DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
 -- Records of instance_reset
 -- ----------------------------
 BEGIN;
+INSERT INTO `instance_reset` VALUES ('33', '2', '1476158400'), ('36', '2', '1476158400'), ('249', '3', '1476676800'), ('249', '4', '1476676800'), ('269', '2', '1476158400'), ('409', '9', '1476676800'), ('469', '9', '1476676800'), ('509', '3', '1476331200'), ('531', '9', '1476676800'), ('532', '3', '1476676800'), ('533', '3', '1476676800'), ('533', '4', '1476676800'), ('534', '4', '1476676800'), ('540', '2', '1476158400'), ('542', '2', '1476158400'), ('543', '2', '1476158400'), ('544', '4', '1476676800'), ('545', '2', '1476158400'), ('546', '2', '1476158400'), ('547', '2', '1476158400'), ('548', '4', '1476676800'), ('550', '4', '1476676800'), ('552', '2', '1476158400'), ('553', '2', '1476158400'), ('554', '2', '1476158400'), ('555', '2', '1476158400'), ('556', '2', '1476158400'), ('557', '2', '1476158400'), ('558', '2', '1476158400'), ('560', '2', '1476158400'), ('564', '4', '1476676800'), ('565', '4', '1476676800'), ('568', '2', '1476158400'), ('574', '2', '1476158400'), ('575', '2', '1476158400'), ('576', '2', '1476158400'), ('578', '2', '1476158400'), ('580', '4', '1476676800'), ('585', '2', '1476158400'), ('595', '2', '1476158400'), ('598', '2', '1476158400'), ('599', '2', '1476158400'), ('600', '2', '1476158400'), ('601', '2', '1476158400'), ('602', '2', '1476158400'), ('603', '3', '1476676800'), ('603', '4', '1476676800'), ('604', '2', '1476158400'), ('608', '2', '1476158400'), ('615', '3', '1476676800'), ('615', '4', '1476676800'), ('616', '3', '1476676800'), ('616', '4', '1476676800'), ('619', '2', '1476158400'), ('624', '3', '1476676800'), ('624', '4', '1476676800'), ('631', '3', '1476676800'), ('631', '4', '1476676800'), ('631', '5', '1476676800'), ('631', '6', '1476676800'), ('632', '2', '1476158400'), ('643', '2', '1476158400'), ('644', '2', '1476158400'), ('645', '2', '1476158400'), ('649', '3', '1476676800'), ('649', '4', '1476676800'), ('649', '5', '1476676800'), ('649', '6', '1476676800'), ('650', '2', '1476158400'), ('657', '2', '1476158400'), ('658', '2', '1476158400'), ('668', '2', '1476158400'), ('669', '3', '1476676800'), ('669', '4', '1476676800'), ('669', '5', '1476676800'), ('669', '6', '1476676800'), ('670', '2', '1476158400'), ('671', '3', '1476676800'), ('671', '4', '1476676800'), ('671', '5', '1476676800'), ('671', '6', '1476676800'), ('720', '3', '1476676800'), ('720', '4', '1476676800'), ('720', '5', '1476676800'), ('720', '6', '1476676800'), ('724', '3', '1476676800'), ('724', '4', '1476676800'), ('724', '5', '1476676800'), ('724', '6', '1476676800'), ('725', '2', '1476158400'), ('754', '3', '1476676800'), ('754', '4', '1476676800'), ('754', '5', '1476676800'), ('754', '6', '1476676800'), ('755', '2', '1476158400'), ('757', '3', '1476676800'), ('757', '4', '1476676800'), ('757', '5', '1476676800'), ('757', '6', '1476676800'), ('859', '2', '1476158400');
+INSERT INTO `instance_reset` VALUES ('938', '2', '1476158400'), ('939', '2', '1476158400'), ('940', '2', '1476158400'), ('959', '2', '1476158400'), ('960', '2', '1476158400'), ('961', '2', '1476158400'), ('962', '2', '1476158400'), ('967', '3', '1476676800'), ('967', '4', '1476676800'), ('967', '5', '1476676800'), ('967', '6', '1476676800'), ('994', '2', '1476158400'), ('996', '3', '1476676800'), ('996', '4', '1476676800'), ('996', '5', '1476676800'), ('996', '6', '1476676800'), ('1001', '2', '1476158400'), ('1004', '2', '1476158400'), ('1007', '2', '1476158400'), ('1008', '3', '1476676800'), ('1008', '4', '1476676800'), ('1008', '5', '1476676800'), ('1008', '6', '1476676800'), ('1009', '3', '1476676800'), ('1009', '4', '1476676800'), ('1009', '5', '1476676800'), ('1009', '6', '1476676800'), ('1011', '2', '1476158400'), ('1098', '3', '1476676800'), ('1098', '4', '1476676800'), ('1098', '5', '1476676800'), ('1098', '6', '1476676800'), ('1136', '3', '1476676800'), ('1136', '4', '1476676800'), ('1136', '5', '1476676800'), ('1136', '6', '1476676800');
 COMMIT;
 
 -- ----------------------------
@@ -2212,6 +2536,7 @@ DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
 -- Records of pool_quest_save
 -- ----------------------------
 BEGIN;
+INSERT INTO `pool_quest_save` VALUES ('348', '24636'), ('349', '14101'), ('350', '13905'), ('351', '13916'), ('352', '11379'), ('353', '11667'), ('354', '13424'), ('356', '11363'), ('357', '11389'), ('358', '25162'), ('359', '25156'), ('360', '29365'), ('361', '26235'), ('362', '29334'), ('363', '26192'), ('364', '29353'), ('365', '29314'), ('366', '26543'), ('367', '29345'), ('368', '29320'), ('369', '26488'), ('370', '29350'), ('371', '29325'), ('372', '28059'), ('372', '28130'), ('373', '27949'), ('373', '27992'), ('374', '27987'), ('374', '27991'), ('375', '27944'), ('375', '27948'), ('376', '28682'), ('376', '28685'), ('377', '28678'), ('377', '28681'), ('378', '28694'), ('378', '28697'), ('379', '28689'), ('379', '28692'), ('380', '12737'), ('381', '12761'), ('382', '12758'), ('383', '12759'), ('5662', '13674'), ('5663', '13764'), ('5664', '13770'), ('5665', '13773'), ('5666', '13780'), ('5667', '13784'), ('5668', '13670'), ('5669', '13616'), ('5670', '13741'), ('5671', '13746'), ('5672', '13758'), ('5673', '13753'), ('5674', '13101'), ('5675', '13114'), ('5676', '13830'), ('5677', '12961'), ('5678', '24579');
 COMMIT;
 
 -- ----------------------------
@@ -2274,7 +2599,28 @@ COMMENT='Variable Saves'
 -- Records of worldstates
 -- ----------------------------
 BEGIN;
+INSERT INTO `worldstates` VALUES ('3781', '9000000', null), ('3801', '0', null), ('3802', '1', null), ('20001', '1476612000', null), ('20002', '1476675959', null), ('20003', '1476093600', null), ('20006', '1476093600', null), ('20007', '1477972800', null), ('20050', '1', null);
 COMMIT;
+
+-- ----------------------------
+-- Indexes structure for table auctionhouse
+-- ----------------------------
+CREATE UNIQUE INDEX `item_guid` ON `auctionhouse`(`itemguid`) USING BTREE ;
+
+-- ----------------------------
+-- Indexes structure for table banned_addons
+-- ----------------------------
+CREATE UNIQUE INDEX `idx_name_ver` ON `banned_addons`(`Name`, `Version`) USING BTREE ;
+
+-- ----------------------------
+-- Auto increment value for `banned_addons`
+-- ----------------------------
+ALTER TABLE `banned_addons` AUTO_INCREMENT=1;
+
+-- ----------------------------
+-- Auto increment value for `bugreport`
+-- ----------------------------
+ALTER TABLE `bugreport` AUTO_INCREMENT=1;
 
 -- ----------------------------
 -- Indexes structure for table character_cuf_profiles

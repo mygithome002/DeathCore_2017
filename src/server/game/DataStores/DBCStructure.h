@@ -1785,6 +1785,24 @@ struct LFGDungeonEntry
     uint32 Entry() const { return ID + (type << 24); }
 };
 
+struct LightEntry
+{
+    uint32 Id;
+    uint32 MapId;
+    float X;
+    float Y;
+    float Z;
+    //float FalloffStart;
+    //float FalloffEnd;
+    //uint32 SkyAndFog;
+    //uint32 WaterSettings;
+    //uint32 SunsetParams;
+    //uint32 OtherParams;
+    //uint32 DeathParams;
+    //uint32 Unknown;
+    //uint32 Unknown;
+    //uint32 Unknown;
+};
 
 struct LiquidTypeEntry
 {
@@ -2071,50 +2089,54 @@ struct ScalingStatValuesEntry
 //    uint32    displayOrder;                               // 19     m_sortIndex
 //};
 
-//struct SkillRaceClassInfoEntry{
-//    uint32    id;                                         // 0      m_ID
-//    uint32    skillId;                                    // 1      m_skillID
-//    uint32    raceMask;                                   // 2      m_raceMask
-//    uint32    classMask;                                  // 3      m_classMask
-//    uint32    flags;                                      // 4      m_flags
-//    uint32    reqLevel;                                   // 5      m_minLevel
-//    uint32    skillTierId;                                // 6      m_skillTierID
-//    uint32    skillCostID;                                // 7      m_skillCostIndex
-//};
+struct SkillRaceClassInfoEntry
+{
+    //uint32    ID;                                         // 0
+    uint32      SkillID;                                    // 1
+    int32       RaceMask;                                   // 2
+    int32       ClassMask;                                  // 3
+    uint32      Flags;                                      // 4
+    uint32      Availability;                               // 5
+    uint32      MinLevel;                                   // 6
+    uint32      SkillTierID;                                // 7
+};
 
-//struct SkillTiersEntry{
-//    uint32    id;                                         // 0      m_ID
-//    uint32    skillValue[16];                             // 1-17   m_cost
-//    uint32    maxSkillValue[16];                          // 18-32  m_valueMax
-//};
+#define MAX_SKILL_STEP 16
+
+struct SkillTiersEntry
+{
+    uint32      ID;                                         // 0
+    uint32      Value[MAX_SKILL_STEP];                      // 1-16
+};
 
 struct SkillLineEntry
 {
-    uint32    id;                                           // 0        m_ID
-    int32     categoryId;                                   // 1        m_categoryID
-    //uint32    skillCostID;                                // 2        m_skillCostsID
-    char* name;                                             // 3        m_displayName_lang
-    //char*     description;                                // 4        m_description_lang
-    uint32    spellIcon;                                    // 5        m_spellIconID
-    //char*     alternateVerb;                              // 6        m_alternateVerb_lang
-    uint32    canLink;                                      // 7        m_canLink (prof. with recipes)
-    //uint32 parentSkillLineID                              // 8 - Pandaria
-    //uint32 flags                                          // 9 - Pandaria
+    uint32    ID;                                           // 0
+    int32     CategoryID;                                   // 1
+    char*     DisplayName_lang;                             // 2
+    //char*   Description_lang;                             // 3
+    uint32    SpellIconID;                                  // 4
+    //char*   AlternateVerb_lang;                           // 5
+    uint32    CanLink;                                      // 6
+    //uint32  ParentSkillLineID                             // 7
+    //uint32  Flags                                         // 8
 };
 
 struct SkillLineAbilityEntry
 {
-    uint32    id;                                           // 0        m_ID
-    uint32    skillId;                                      // 1        m_skillLine
-    uint32    spellId;                                      // 2        m_spell
-    uint32    racemask;                                     // 3        m_raceMask
-    uint32    classmask;                                    // 4        m_classMask
-    uint32    req_skill_value;                              // 5        m_minSkillLineRank
-    uint32    forward_spellid;                              // 6        m_supercededBySpell
-    uint32    learnOnGetSkill;                              // 7        m_acquireMethod
-    uint32    max_value;                                    // 8        m_trivialSkillLineRankHigh
-    uint32    min_value;                                    // 9        m_trivialSkillLineRankLow
-    uint32    character_points;                             // 10       m_characterPoints - Pandaria - No longer an array
+    uint32      ID;                                         // 0
+    uint32      SkillLine;                                  // 1
+    uint32      SpellID;                                    // 2
+    uint32      RaceMask;                                   // 3
+    uint32      ClassMask;                                  // 4
+    uint32      MinSkillLineRank;                           // 5
+    uint32      SupercedesSpell;                            // 6
+    uint32      AquireMethod;                               // 7
+    uint32      TrivialSkillLineRankHigh;                   // 8
+    uint32      TrivialSkillLineRankLow;                    // 9
+    uint32      NumSkillUps;                                // 10
+    //uint32    UniqueBit;                                  // 11
+    //uint32    TradeSkillCategoryID;                       // 12
 };
 
 struct SoundEntriesEntry
@@ -2179,7 +2201,6 @@ struct SpellEffectEntry
 
 #define MAX_SPELL_EFFECTS 32
 #define MAX_EFFECT_MASK 0xFFFFFFFF // Full uint32
-#define MAX_SPELL_POWERS_COST 3
 
 // SpellAuraOptions.dbc
 struct SpellAuraOptionsEntry
@@ -2360,11 +2381,11 @@ struct SpellFocusObjectEntry
 
 struct SpellRadiusEntry
 {
-    uint32    ID;
-    float     RadiusMin;
-    float     RadiusPerLevel;
-    //float radiusMin;
-    float     RadiusMax;
+    uint32      ID;                                         // 0
+    //float     Radius;                                     // 1
+    float       RadiusPerLevel;                             // 2
+    float       RadiusMin;                                  // 3
+    float       RadiusMax;                                  // 4
 };
 
 struct SpellRangeEntry
@@ -2437,8 +2458,8 @@ struct SpellLevelsEntry
 // SpellPower.dbc
 struct SpellPowerEntry
 {
-    // uint32    Id;                                        // 0        m_ID
-    uint32    spellId;                                      // 1  - Pandaria
+    //uint32    Id;                                         // 0        m_ID
+    //uint32  spellId;                                      // 1  - Pandaria
     //uint32  unk0;                                         // 2  - Pandaria always after spellId
     uint32    powerType;                                    // 3       m_powerType
     uint32    manaCost;                                     // 4       m_manaCost
@@ -2448,7 +2469,7 @@ struct SpellPowerEntry
     //uint32  PowerDisplayId;                               // 8       m_powerDisplayID - id from PowerDisplay.dbc, new in 3.1
     float     ManaCostPercentageFloat;                      // 9       4.3.0
     // float  unk1                                          // 10 - Pandaria
-    uint32    activeAura;                                   // 11 - Pandaria
+    // float  unk2                                          // 11 - Pandaria
     // float  unk3                                          // 12 - Pandaria
 };
 

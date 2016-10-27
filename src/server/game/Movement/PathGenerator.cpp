@@ -406,6 +406,32 @@ void PathGenerator::BuildPointPath(const float *startPoint, const float *endPoin
     dtStatus dtResult = DT_FAILURE;
     if (_useStraightPath)
     {
+        dtResult = DT_SUCCESS;
+        pointCount = 1; 
+        memcpy(&pathPoints[VERTEX_SIZE * 0], startPoint, sizeof(float)* 3); // first point 
+ 
+        // path has to be split into polygons with dist SMOOTH_PATH_STEP_SIZE between them 
+        G3D::Vector3 startVec = G3D::Vector3(startPoint[0], startPoint[1], startPoint[2]); 
+        G3D::Vector3 endVec = G3D::Vector3(endPoint[0], endPoint[1], endPoint[2]); 
+        G3D::Vector3 diffVec = (endVec - startVec); 
+        G3D::Vector3 prevVec = startVec; 
+        float len = diffVec.length(); 
+        diffVec *= SMOOTH_PATH_STEP_SIZE / len; 
+        while (len > SMOOTH_PATH_STEP_SIZE) 
+        { 
+            len -= SMOOTH_PATH_STEP_SIZE; 
+            prevVec += diffVec; 
+            pathPoints[VERTEX_SIZE * pointCount + 0] = prevVec.x; 
+            pathPoints[VERTEX_SIZE * pointCount + 1] = prevVec.y; 
+            pathPoints[VERTEX_SIZE * pointCount + 2] = prevVec.z; 
+            ++pointCount; 
+        } 
+ 
+        memcpy(&pathPoints[VERTEX_SIZE * pointCount], endPoint, sizeof(float)* 3); // last point 
+        ++pointCount; 
+    }
+    else if (_useStraightPath)
+    {
         dtResult = _navMeshQuery->findStraightPath(
                 startPoint,         // start position
                 endPoint,           // end position
@@ -443,8 +469,11 @@ void PathGenerator::BuildPointPath(const float *startPoint, const float *endPoin
     {
         TC_LOG_DEBUG("maps", "++ PathGenerator::BuildPointPath FAILED! path sized %d returned, lower than limit set to %d\n", pointCount, _pointPathLimit);
         BuildShortcut();
-        _type = PATHFIND_SHORT;
-        return;
+        if (_sourceUnit->GetMapId() != 562)
+        {
+            _type = PATHFIND_SHORT;
+            return;
+        }
     }
 
     _pathPoints.resize(pointCount);
@@ -473,6 +502,108 @@ void PathGenerator::BuildPointPath(const float *startPoint, const float *endPoin
         }
 
         _type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);
+    }
+    uint32 mapId = _sourceUnit->GetMapId();
+    if (mapId == 562 || mapId == 617)
+    {
+        bool fourth = false;
+        float x_s = startPoint[2];
+        float y_s = startPoint[0];
+        float z_s = startPoint[1];
+        float x_e = endPoint[2];
+        float y_e = endPoint[0];
+        float z_e = endPoint[1];
+
+        Map* map = _sourceUnit->GetMap();
+        float startFloor = map->GetHeight(_sourceUnit->GetPhaseMask(), x_s, y_s, z_s);
+
+        if (mapId == 562)
+        {
+            if (_useStraightPath && (startFloor <= 5.0f && z_e >= 10.5f))
+            {
+                if(_sourceUnit->GetDistance2d(6216.5f, 316.5f) > 16.5f
+                && _sourceUnit->GetDistance2d(6179.0f, 272.0f) > 16.5f
+                && _sourceUnit->GetDistance2d(6258.5f, 206.5f) > 16.5f
+                && _sourceUnit->GetDistance2d(6293.0f, 248.0f) > 16.5f
+                )
+                _type = PathType(_type | PATHFIND_NOPATH);
+                return;
+            }
+            if (x_e <= 6230.803223f && x_s >= 6230.803223f && z_e >= 10.000000 && z_s >= 10.000000f && y_e >= 247.547917f && y_e <= 252.298940f)
+            {
+                _pathPoints.resize(4);
+                _pathPoints[0] = GetStartPosition();
+                _pathPoints[1] = G3D::Vector3(6234.506836f, 256.696106f, 11.400018f);
+                _pathPoints[2] = G3D::Vector3(6231.472656f, 252.849335f, 11.400018f);
+                _pathPoints[3] = GetEndPosition();
+            }
+            else if (x_e >= 6246.201660f && x_s <= 6246.201660f && z_e >= 10.000000f && z_s >= 10.000000f && y_e >= 217.677917f && y_e <= 276.888794f)
+            {
+                _pathPoints.resize(4);
+                _pathPoints[0] = GetStartPosition();
+                _pathPoints[1] = G3D::Vector3(6242.146484f, 267.531030f, 11.400000f);
+                _pathPoints[2] = G3D::Vector3(6246.985352f, 271.076599f, 11.400000f);
+                _pathPoints[3] = GetEndPosition();
+            }
+            if (x_s <= 6230.803223f && x_e >= 6230.803223f && z_e >= 10.000000 && z_s >= 10.000000f && y_s >= 247.547917f && y_s <= 252.298940f)
+            {
+                _pathPoints.resize(4);
+                _pathPoints[0] = GetStartPosition();
+                _pathPoints[1] = G3D::Vector3(6231.472656f, 252.849335f, 11.400018f);
+                _pathPoints[2] = G3D::Vector3(6234.506836f, 256.696106f, 11.400018f);
+                _pathPoints[3] = GetEndPosition();
+            }
+            else if (x_s >= 6246.201660f && x_e <= 6246.201660f && z_e >= 10.000000f && z_s >= 10.000000f && y_s >= 217.677917f && y_s <= 276.888794f)
+            {
+                _pathPoints.resize(4);
+                _pathPoints[0] = GetStartPosition();
+                _pathPoints[1] = G3D::Vector3(6246.985352f, 271.076599f, 11.400000f);
+                _pathPoints[2] = G3D::Vector3(6242.146484f, 267.531030f, 11.400000f);
+                _pathPoints[3] = GetEndPosition();
+            }
+        }
+        else if (mapId == 617)
+        {
+            if (x_s >= 1330.033223f && z_s >= 9.000000f)
+            {
+                _pathPoints.resize(5);
+                _pathPoints[0] = GetStartPosition();
+                _pathPoints[1] = G3D::Vector3(1332.749268f, 816.274780f, 8.355900f);
+                _pathPoints[2] = G3D::Vector3(1325.749268f, 816.602539f, 5.4000000f);
+                _pathPoints[3] = G3D::Vector3(1328.749268f, 816.602539f, 3.4000000f);
+                _pathPoints[4] = GetEndPosition();
+                fourth = true;
+            }
+            else if (x_s <= 1253.904785f && z_s >= 9.000000f)
+            {
+                _pathPoints.resize(5);
+                _pathPoints[0] = GetStartPosition();
+                _pathPoints[1] = G3D::Vector3(1252.425395f, 764.971680f, 8.000000f);
+                _pathPoints[3] = G3D::Vector3(1255.425395f, 764.971680f, 5.3559000f);
+                _pathPoints[3] = G3D::Vector3(1257.425395f, 764.971680f, 3.3559000f);
+                _pathPoints[4] = GetEndPosition();
+                fourth = true;
+            }
+        }
+         else if (_sourceUnit->GetMapId() == 649)
+         {
+            if (startPoint[0] >= 188.799f && startPoint[1] >= 300.000000f)
+            {
+	             Clear();
+                _pathPoints.resize(3);
+                _pathPoints[0] = GetStartPosition();
+                _pathPoints[1] = G3D::Vector3(564.6054468f, 185.660539f, 395.000000f);
+                _pathPoints[2] = GetEndPosition();
+            }
+		}
+    }
+    if (_useStraightPath && dtResult == DT_SUCCESS)
+    {
+        _type = PathType(_type &~PATHFIND_SHORT);
+        // if the path is a straight line then start and end position are enough
+        pointCount = 2;
+        _pathPoints.resize(2);
+        _pathPoints[1] = GetEndPosition();
     }
 
     TC_LOG_DEBUG("maps", "++ PathGenerator::BuildPointPath path type %d size %d poly-size %d\n", _type, pointCount, _polyLength);
@@ -802,4 +933,41 @@ bool PathGenerator::InRange(G3D::Vector3 const& p1, G3D::Vector3 const& p2, floa
 float PathGenerator::Dist3DSqr(G3D::Vector3 const& p1, G3D::Vector3 const& p2) const
 {
     return (p1 - p2).squaredLength();
+}
+
+void PathGenerator::ReducePathLenghtByDist(float dist)
+{
+    if (GetPathType() == PATHFIND_BLANK)
+    {
+        TC_LOG_DEBUG("maps", "PathGenerator::ReducePathLenghtByDist called before path was built");
+        return;
+    }
+
+    if (_pathPoints.size() < 2)
+        return;
+
+    uint32 i = _pathPoints.size();
+    G3D::Vector3 nextVec = _pathPoints[--i];
+    while (i > 0)
+    {
+        G3D::Vector3 currVec = _pathPoints[--i];
+        G3D::Vector3 diffVec = (nextVec - currVec);
+        float len = diffVec.length();
+        if (len > dist)
+        {
+            float step = dist / len;
+            _pathPoints[i + 1] -= diffVec * step;
+            _pathPoints.resize(i + 2);
+            break;
+        }
+        else if (i == 0)
+        {
+            _pathPoints[1] = _pathPoints[0];
+            _pathPoints.resize(2);
+            break;
+        }
+
+        dist -= len;
+        nextVec = currVec;
+    }
 }

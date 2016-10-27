@@ -34,10 +34,10 @@ enum ShamanSpells
     HUNTER_SPELL_INSANITY                   = 95809,
     MAGE_SPELL_TEMPORAL_DISPLACEMENT        = 80354,
     SPELL_SHA_LIGHTNING_SHIELD_AURA         = 324,
-    SPELL_SHA_ASCENDANCE_ELEMENTAL	        = 114050,
-    SPELL_SHA_ASCENDANCE_RESTORATION        = 114052,
-    SPELL_SHA_ASCENDANCE_ENHANCED	        = 114051,
-    SPELL_SHA_ASCENDANCE			        = 114049,
+    SPELL_SHAMAN_ASCENDANCE_ELEMENTAL       = 114050,
+    SPELL_SHAMAN_ASCENDANCE_ENHANCEMENT     = 114051,
+    SPELL_SHAMAN_ASCENDANCE_RESTORATION     = 114052,
+    SPELL_SHA_ASCENDANCE                    = 114049,
     SPELL_SHA_HEALING_RAIN                  = 73920,
     SPELL_SHA_HEALING_RAIN_TICK             = 73921,
     SPELL_SHA_EARTHQUAKE                    = 61882,
@@ -572,7 +572,7 @@ class spell_sha_echo_of_the_elements : public SpellScriptLoader
                 int32 chance = 6;
 
                 // devs told that proc chance is 6% for Elemental and Restoration specs and 30% for Enhancement
-				if (_player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_SHAMAN_ENHANCEMENT && procSpell->Id != SPELL_SHA_ELEMENTAL_BLAST)
+                if (_player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_SHAMAN_ENHANCEMENT && procSpell->Id != SPELL_SHA_ELEMENTAL_BLAST)
                     chance = 30;
 
                 if (!(eventInfo.GetDamageInfo()->GetDamage()) && !(eventInfo.GetHealInfo()->GetHeal()))
@@ -698,10 +698,10 @@ class spell_sha_mail_specialization : public SpellScriptLoader
 
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-					if (_player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_SHAMAN_ELEMENTAL
-						|| _player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_SHAMAN_RESTORATION)
+                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_SHAMAN_ELEMENTAL
+                            || _player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_SHAMAN_RESTORATION)
                         _player->CastSpell(_player, SPELL_SHA_MAIL_SPECIALISATION_INT, true);
-					else if (_player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_SHAMAN_ENHANCEMENT)
+                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_SHAMAN_ENHANCEMENT)
                         _player->CastSpell(_player, SPELL_SHA_MAIL_SPECIALIZATION_AGI, true);
                 }
             }
@@ -743,7 +743,7 @@ class spell_sha_frozen_power : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_frozen_power_SpellScript);
 
-			bool Validate(SpellInfo const* /*spellInfo*/) override
+            bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(8056))
                     return false;
@@ -787,22 +787,39 @@ class spell_sha_spirit_link : public SpellScriptLoader
                 {
                     if (caster->GetEntry() == 53006)
                     {
-                        if (caster->GetOwner())
+                        if (caster->GetOwner() && caster->GetOwner()->GetTypeId() == TYPEID_PLAYER)
                         {
                             if (Player* _player = caster->GetOwner()->ToPlayer())
                             {
                                 std::list<Unit*> memberList;
-                                _player->GetPartyMembers(memberList);
+                                Trinity::AnyGroupedPlayerInObjectRangeCheck u_check(caster, caster, 10.0f); // DBC Radius: 10.0f
+                                Trinity::UnitListSearcher<Trinity::AnyGroupedPlayerInObjectRangeCheck> searcher(caster, memberList, u_check);
+                                caster->VisitNearbyObject(10.0f, searcher);
 
                                 float totalRaidHealthPct = 0;
 
-                                for (auto itr : memberList)
-                                    totalRaidHealthPct += itr->GetHealthPct();
+                                if (!memberList.empty())
+                                {
+                                    for (auto itr : memberList)
+                                    {
+                                        Player* player = itr->ToPlayer();
+                                        if (!player)
+                                            continue;
 
-                                totalRaidHealthPct /= memberList.size() * 100.0f;
+                                        totalRaidHealthPct += itr->GetHealthPct();
+                                    }
 
-                                for (auto itr : memberList)
-                                    itr->SetHealth(uint32(totalRaidHealthPct * itr->GetMaxHealth()));
+                                    totalRaidHealthPct /= memberList.size() * 100.0f;
+
+                                    for (auto itr : memberList)
+                                    {
+                                        Player* player = itr->ToPlayer();
+                                        if (!player)
+                                            continue;
+
+                                        itr->SetHealth(uint32(totalRaidHealthPct * itr->GetMaxHealth()));
+                                    }
+                                }
                             }
                         }
                     }
@@ -842,13 +859,13 @@ class spell_sha_mana_tide : public SpellScriptLoader
             {
                 if (Unit* target = GetHitUnit())
                 {
-                    if (GetCaster()->GetOwner() && GetCaster()->GetOwner()->ToPlayer())
+                    if (Player* _player = GetCaster()->GetOwner()->ToPlayer())
                     {
                         AuraApplication* aura = target->GetAuraApplication(SPELL_SHA_MANA_TIDE, GetCaster()->GetGUID());
 
                         aura->GetBase()->GetEffect(0)->ChangeAmount(0);
 
-                        int32 spirit = GetCaster()->GetOwner()->ToPlayer()->GetStat(STAT_SPIRIT) * 2;
+                        int32 spirit = _player->GetStat(STAT_SPIRIT) * 2;
 
                         aura->GetBase()->GetEffect(0)->ChangeAmount(spirit);
                     }
@@ -878,7 +895,7 @@ class spell_sha_tidal_waves : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_tidal_waves_SpellScript)
 
-			bool Validate(SpellInfo const* /*spellInfo*/) override
+			bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(1064) || !sSpellMgr->GetSpellInfo(61295))
                     return false;
@@ -934,6 +951,7 @@ class spell_sha_fire_nova : public SpellScriptLoader
                     }
                 }
             }
+
             SpellCastResult HandleCheckCast()
             {
                 UnitList targets;
@@ -1200,10 +1218,12 @@ class spell_sha_fulmination : public SpellScriptLoader
                         uint8 usedCharges = lsCharges - 1;
 
                         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE);
+
                         if (!spellInfo)
                             return;
+
                         int32 basePoints = _player->CalculateSpellDamage(target, spellInfo, 0);
-                        uint32 damage = usedCharges * _player->SpellDamageBonusDone(target, spellInfo, basePoints, SPELL_DIRECT_DAMAGE, 0);
+						uint32 damage = usedCharges * _player->SpellDamageBonusDone(target, spellInfo, basePoints, SPELL_DIRECT_DAMAGE, NULL);
 
                         _player->CastCustomSpell(SPELL_SHA_FULMINATION_TRIGGERED, SPELLVALUE_BASE_POINT0, damage, target, true, NULL, fulminationAura);
                         lightningShield->SetCharges(lsCharges - usedCharges);
@@ -1541,6 +1561,7 @@ class spell_sha_healing_rain : public SpellScriptLoader
         }
 };
 
+// 114049 - Ascendance
 // Ascendance - 114049
 class spell_sha_ascendance : public SpellScriptLoader
 {
@@ -1562,7 +1583,7 @@ class spell_sha_ascendance : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-					if (_player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_NONE)
+                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_NONE)
                     {
                         SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_MUST_SELECT_TALENT_SPECIAL);
                         return SPELL_FAILED_CUSTOM_ERROR;
@@ -1580,17 +1601,17 @@ class spell_sha_ascendance : public SpellScriptLoader
                 {
                     switch(_player->GetSpecializationId(_player->GetActiveSpec()))
                     {
-						case CHAR_SPECIALIZATION_SHAMAN_ELEMENTAL:
-                            _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_ELEMENTAL, true);
+					case CHAR_SPECIALIZATION_SHAMAN_ELEMENTAL:
+							_player->CastSpell(_player, SPELL_SHAMAN_ASCENDANCE_ELEMENTAL, true);
                             break;
 						case CHAR_SPECIALIZATION_SHAMAN_ENHANCEMENT:
-                            _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_ENHANCED, true);
+							_player->CastSpell(_player, SPELL_SHAMAN_ASCENDANCE_ENHANCEMENT, true);
 
                             if (_player->HasSpellCooldown(SPELL_SHA_STORMSTRIKE))
                                 _player->RemoveSpellCooldown(SPELL_SHA_STORMSTRIKE, true);
                             break;
                         case CHAR_SPECIALIZATION_SHAMAN_RESTORATION:
-                            _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_RESTORATION, true);
+                            _player->CastSpell(_player, SPELL_SHAMAN_ASCENDANCE_RESTORATION, true);
                             break;
                         default:
                             break;
@@ -1911,6 +1932,61 @@ class spell_sha_chain_heal : public SpellScriptLoader
         }
 };
 
+/*
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (108287, 'totem_projection');
+*/
+
+class totem_projection : public SpellScriptLoader
+{
+public:
+	totem_projection() : SpellScriptLoader("totem_projection") { }
+
+	class totem_projectionSpellScript : public SpellScript
+	{
+		PrepareSpellScript(totem_projectionSpellScript);
+
+		std::list<Creature*> Totem_List;
+
+		void HandleAfterCast()
+		{
+			if (!GetCaster())
+				return;
+			Player* player = GetCaster()->ToPlayer();
+			if (!player)
+				return;
+			const WorldLocation* summonPos = GetExplTargetDest();
+
+			Trinity::AnyUnitInObjectRangeCheck check(player, 20.0f);
+			Trinity::CreatureListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(player, Totem_List, check);
+
+			player->VisitNearbyObject(20.0f, searcher);
+
+			for (std::list<Creature*>::const_iterator it = Totem_List.begin(); it != Totem_List.end(); ++it)
+			{
+				if((*it)->GetEntry() != 15352 || (*it)->GetEntry() != 61029 ||  (*it)->GetEntry() != 61056)
+				{
+					if((*it)->GetUInt64Value(UNIT_FIELD_SUMMONED_BY) == player->GetGUID())
+					{
+					(*it)->SetSpeed(MOVE_RUN, 20.0f, true);
+					(*it)->GetMotionMaster()->MovePoint(1, summonPos->GetPositionX(), summonPos->GetPositionY(), summonPos->GetPositionZ());
+					(*it)->RemoveAura(1784, (*it)->GetGUID());
+					}
+				}
+			}
+		}
+		void Register()
+		{
+			AfterCast += SpellCastFn(totem_projectionSpellScript::HandleAfterCast);
+		}
+
+	};
+
+	SpellScript* GetSpellScript() const
+	{
+		return new totem_projectionSpellScript();
+	}
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_hex();
@@ -1947,4 +2023,5 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_ancestral_awakening_proc();
     new spell_sha_lava_lash();
     new spell_sha_chain_heal();
+    new totem_projection();
 }

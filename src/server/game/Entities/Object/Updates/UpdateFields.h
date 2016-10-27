@@ -84,7 +84,8 @@ enum EUnitFields
     UNIT_FIELD_LEVEL                                         = OBJECT_END + 0x2F, // Size: 1, Flags: UF_FLAG_PUBLIC
     UNIT_FIELD_EFFECTIVE_LEVEL                               = OBJECT_END + 0x30, // Size: 1, Flags: UF_FLAG_PUBLIC
     UNIT_FIELD_FACTION_TEMPLATE                              = OBJECT_END + 0x31, // Size: 1, Flags: UF_FLAG_PUBLIC
-    UNIT_FIELD_VIRTUAL_ITEM_ID                               = OBJECT_END + 0x32, // Size: 3, Flags: UF_FLAG_PUBLIC
+    UNIT_FIELD_VIRTUAL_ITEM_ID                               = OBJECT_END + 0x32, // Size: 3, Flags: 
+	UNIT_VIRTUAL_ITEM_SLOT_ID								 = OBJECT_END + 0x2C,
     UNIT_FIELD_FLAGS                                         = OBJECT_END + 0x35, // Size: 1, Flags: UF_FLAG_PUBLIC
     UNIT_FIELD_FLAGS2                                        = OBJECT_END + 0x36, // Size: 1, Flags: UF_FLAG_PUBLIC
     UNIT_FIELD_AURA_STATE                                    = OBJECT_END + 0x37, // Size: 1, Flags: UF_FLAG_PUBLIC

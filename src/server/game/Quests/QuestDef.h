@@ -38,6 +38,7 @@ class ObjectMgr;
 #define QUEST_REWARDS_COUNT 4
 #define QUEST_DEPLINK_COUNT 10
 #define QUEST_REPUTATIONS_COUNT 5
+#define QUEST_OBJECTIVES_COUNT 4
 #define QUEST_EMOTE_COUNT 4
 #define QUEST_REWARD_CURRENCY_COUNT 4
 #define QUEST_SOURCE_ITEM_COUNT 1
@@ -186,7 +187,7 @@ enum QuestSpecialFlags
 
     //QUEST_SPECIAL_FLAGS_DELIVER              = 0x080,   // Internal flag computed only
     //QUEST_SPECIAL_FLAGS_SPEAKTO              = 0x100,   // Internal flag computed only
-    //QUEST_SPECIAL_FLAGS_KILL                 = 0x200,   // Internal flag computed only
+	QUEST_SPECIAL_FLAGS_KILL_OR_CAST = 0x200,   // Internal flag computed only
     QUEST_SPECIAL_FLAGS_TIMED                = 0x400,   // Internal flag computed only
     //QUEST_SPECIAL_FLAGS_PLAYER_KILL          = 0x800    // Internal flag computed only
 };
@@ -212,6 +213,7 @@ enum QuestObjectiveType
 
 struct QuestLocale
 {
+	QuestLocale() { ObjectiveText.resize(QUEST_OBJECTIVES_COUNT); }
     StringVector Title;
     StringVector Details;
     StringVector Objectives;
@@ -219,6 +221,8 @@ struct QuestLocale
     StringVector RequestItemsText;
     StringVector EndText;
     StringVector CompletedText;
+	std::vector< StringVector > ObjectiveText;
+
     // new on 4.x
     StringVector QuestGiverTextWindow;
     StringVector QuestGiverTargetName;
@@ -250,13 +254,6 @@ struct QuestObjective
 };
 
 typedef std::set<QuestObjective*> QuestObjectiveSet;
-
-struct QuestChoiceRewards
-{
-    uint32 rewardItemId;
-    uint32 rewardItemCount;
-    int32  requiredClass;
-};
 
 // This Quest class provides a convenient way to access a few pretotaled (cached) quest details,
 // all base quest information, and any utility functions such as generating the amount of
@@ -343,7 +340,7 @@ class Quest
         uint32 GetRewardReputationMask() const { return RewardReputationMask; }
         uint32 GetQuestGiverPortrait() const { return QuestGiverPortrait; }
         uint32 GetQuestTurnInPortrait() const { return QuestTurnInPortrait; }
-        uint32 GetRewChoiceItemCount(uint32 itemId, uint8 pClass) const;
+        uint32 GetRewChoiceItemCount(uint32 itemId) const;
         bool   IsDaily() const { return Flags & QUEST_FLAGS_DAILY; }
         bool   IsWeekly() const { return Flags & QUEST_FLAGS_WEEKLY; }
         bool   IsMonthly() const { return SpecialFlags & QUEST_SPECIAL_FLAGS_MONTHLY; }
@@ -352,19 +349,23 @@ class Quest
         bool   IsRaidQuest(Difficulty difficulty) const;
         bool   IsAllowedInRaid(Difficulty difficulty) const;
         bool   IsDFQuest() const { return SpecialFlags & QUEST_SPECIAL_FLAGS_DF_QUEST; }
-        bool   IsRewChoiceItemValid(uint32 itemId, uint8 pClass) const;
+        bool   IsRewChoiceItemValid(uint32 itemId) const;
         uint32 CalculateHonorGain(uint8 level) const;
 
         // multiple values
+		std::string ObjectiveText[QUEST_OBJECTIVES_COUNT];
+
         uint32 RequiredSourceItemId[QUEST_SOURCE_ITEM_IDS_COUNT];
         uint32 RequiredSourceItemCount[QUEST_SOURCE_ITEM_IDS_COUNT];
-
-        QuestChoiceRewards RewardChoiceItems[QUEST_REWARD_CHOICES_COUNT];
-
+        uint32 RewardChoiceItemId[QUEST_REWARD_CHOICES_COUNT];
+        uint32 RewardChoiceItemCount[QUEST_REWARD_CHOICES_COUNT];
         uint32 RewardItemId[QUEST_REWARDS_COUNT];
         uint32 RewardItemIdCount[QUEST_REWARDS_COUNT];
         uint32 RewardFactionId[QUEST_REPUTATIONS_COUNT];
         int32  RewardFactionValueId[QUEST_REPUTATIONS_COUNT];
+		int32  RequiredNpcOrGo[QUEST_OBJECTIVES_COUNT];   // >0 Creature <0 Gameobject
+		uint32 RequiredNpcOrGoCount[QUEST_OBJECTIVES_COUNT];
+		uint32 RequiredSpellCast[QUEST_OBJECTIVES_COUNT];
         int32  RewardFactionValueIdOverride[QUEST_REPUTATIONS_COUNT];
         uint32 DetailsEmote[QUEST_EMOTE_COUNT];
         uint32 DetailsEmoteDelay[QUEST_EMOTE_COUNT];
@@ -476,9 +477,13 @@ class Quest
 
 struct QuestStatusData
 {
-    QuestStatusData() : Status(QUEST_STATUS_NONE), Timer(0), Explored(false) { }
+    QuestStatusData() : Status(QUEST_STATUS_NONE), Timer(0), Explored(false) { 
+		//memset(ItemCount, 0, QUEST_ITEM_OBJECTIVES_COUNT * sizeof(uint16));
+		memset(CreatureOrGOCount, 0, QUEST_OBJECTIVES_COUNT * sizeof(uint16));
+	}
 
     QuestStatus Status;
+	uint16 CreatureOrGOCount[QUEST_OBJECTIVES_COUNT];
     uint32 Timer;
     bool Explored;
 };

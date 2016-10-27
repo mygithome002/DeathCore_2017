@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 TimelessCore <http://timeless.sk/>
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,8 +20,7 @@
 
 void WorldSession::SetBoosting(bool boost, bool saveToDB)
 {
-    // m_hasBoost = boost;
-	m_hasBoost = true; // vremenno dokato e PTR
+    m_hasBoost = boost;
 
     if (!saveToDB)
         return;

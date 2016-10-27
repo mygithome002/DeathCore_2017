@@ -21,7 +21,6 @@
  * Scriptnames of files in this file should be prefixed with "spell_rog_".
  */
 
-#include "Player.h"
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
@@ -80,6 +79,16 @@ enum RogueSpells
     ROGUE_SPELL_WEAKENED_ARMOR                   = 113746,
     ROGUE_SPELL_DEADLY_BREW                      = 51626,
     ROGUE_SPELL_GLYPH_OF_HEMORRHAGE              = 56807,
+    ROGUE_SPELL_SUBTERFUGE_TALENT                = 108208,
+    ROGUE_SPELL_SUBTERFUGE_BUFF                  = 115192,
+    ROGUE_SPELL_STEALTH                          = 1784,
+    ROGUE_SPELL_DUMMY_STEALTH                    = 106307,
+    ROGUE_SPELL_SHADOW_DANCE                     = 51713,
+    ROGUE_SPELL_GLYPH_OF_DETECTION               = 125044,
+    ROGUE_SPELL_DETECTION                        = 56814,
+
+    DRUID_SPELL_FAERIE_FIRE                      = 770,
+    DRUID_SPELL_FAERIE_SWARM                     = 102355
 };
 
 // Called by Expose Armor - 8647
@@ -183,7 +192,7 @@ class spell_rog_blade_flurry : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rog_blade_flurry_AuraScript);
 
-            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+			void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
             {
                 PreventDefaultAction();
 
@@ -279,6 +288,9 @@ class spell_rog_cloak_of_shadows : public SpellScriptLoader
                     Unit::AuraApplicationMap& Auras = _player->GetAppliedAuras();
                     for (Unit::AuraApplicationMap::iterator iter = Auras.begin(); iter != Auras.end();)
                     {
+                        if (_player->HasAura(770))
+                            _player->RemoveAura(770);
+
                         // remove all harmful spells on you...
                         SpellInfo const* spell = iter->second->GetBase()->GetSpellInfo();
                         if ((spell->DmgClass == SPELL_DAMAGE_CLASS_MAGIC // only affect magic spells
@@ -547,7 +559,7 @@ class spell_rog_restless_blades : public SpellScriptLoader
 
             int32 comboPoints;
 
-			bool Validate(SpellInfo const* /*spellInfo*/) override
+			bool Validate(SpellInfo const* /*spell*/)
             {
                 comboPoints = 0;
 
@@ -1316,11 +1328,11 @@ class spell_rog_preparation : public SpellScriptLoader
                 {
                     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
 
-                    if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
+                    if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
                     {
-						if (spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG0_ROGUE_VAN_SPRINT ||   // Vanish, Evasion(todo??), Sprint
+                        if (spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT ||   // Vanish, Evasion, Sprint
                             spellInfo->Id == 31224 ||
-                            spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_DISMANTLE_SMOKE_BOMB)          // Dismantle, Smoke Bomb
+                            spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_DISMANTLE)          // Dismantle
                             caster->RemoveSpellCooldown((itr++)->first, true);
                         else
                             ++itr;
@@ -1403,7 +1415,6 @@ class spell_rog_deadly_poison : public SpellScriptLoader
                             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(enchant->spellid[s]);
                             if (!spellInfo)
                             {
-                                TC_LOG_ERROR("server.worldserver", "Player::CastItemCombatSpell Enchant %i, player (Name: %s, GUID: %u) cast unknown spell %i", enchant->ID, player->GetName().c_str(), player->GetGUIDLow(), enchant->spellid[s]);
                                 continue;
                             }
 
@@ -1471,47 +1482,88 @@ class spell_rog_shadowstep : public SpellScriptLoader
         }
 };
 
-// Assassin's Resolve - 84601
-class spell_rog_assassasins_resolve : public SpellScriptLoader
+// Subterfuge to activate stealth mod after override - 115191
+class spell_rog_subterfuge_stealth : public SpellScriptLoader
 {
     public:
-        spell_rog_assassasins_resolve() : SpellScriptLoader("spell_rog_assassasins_resolve") { }
+        spell_rog_subterfuge_stealth() : SpellScriptLoader("spell_rog_subterfuge_stealth") { }
 
-        class spell_rog_assassasins_resolve_SpellScript : public SpellScript
+        class spell_rog_subterfuge_stealth_AuraScript : public AuraScript
         {
-            PrepareSpellScript(spell_rog_assassasins_resolve_SpellScript);
+            PrepareAuraScript(spell_rog_subterfuge_stealth_AuraScript);
 
-            SpellCastResult CheckCast()
+            void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (GetCaster()->GetTypeId() == TYPEID_PLAYER)
-                    if (Player* player = GetCaster()->ToPlayer())
-                        if (player->getClass() == CLASS_ROGUE && player->GetSpecializationId(player->GetActiveSpec()) == CHAR_SPECIALIZATION_ROGUE_ASSASSINATION)
-                        {
-                            Item* mainItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                            Item* offItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+                Unit* caster = GetCaster();
+                if (caster && caster->HasAura(ROGUE_SPELL_SUBTERFUGE_BUFF))
+                    caster->RemoveAura(ROGUE_SPELL_SUBTERFUGE_BUFF);
+            }
 
-                            if (((mainItem && mainItem->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER) || (offItem && offItem->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)))
-                            {
-                                if (!player->HasAura(84601) && player->HasSpell(84601))
-                                    return SPELL_CAST_OK;
-                            }
-                            else
-                                player->RemoveAura(84601);
-                        }
-
-                return SPELL_FAILED_DONT_REPORT;
+            void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* caster = GetCaster();
+                if (caster && caster->HasAura(ROGUE_SPELL_SUBTERFUGE_TALENT))
+                    caster->AddAura(ROGUE_SPELL_SUBTERFUGE_BUFF, caster);
             }
 
             void Register()
             {
-                // add dummy effect spell handler to assassasins_resolve
-                OnCheckCast += SpellCheckCastFn(spell_rog_assassasins_resolve_SpellScript::CheckCast);
+                AfterEffectApply += AuraEffectApplyFn(spell_rog_subterfuge_stealth_AuraScript::HandleApply, EFFECT_1, SPELL_AURA_MOD_STEALTH, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_rog_subterfuge_stealth_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
-        SpellScript* GetSpellScript() const
+        AuraScript* GetAuraScript() const
         {
-            return new spell_rog_assassasins_resolve_SpellScript();
+            return new spell_rog_subterfuge_stealth_AuraScript();
+        }
+};
+
+// Subterfuge Buff script itself - 115192
+class spell_rog_subterfuge : public SpellScriptLoader
+{
+    public:
+        spell_rog_subterfuge() : SpellScriptLoader("spell_rog_subterfuge") { }
+
+        class spell_rog_subterfuge_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_subterfuge_AuraScript);
+
+            void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* caster = GetCaster();
+                if (!caster || !caster->HasAura(ROGUE_SPELL_SUBTERFUGE_TALENT))
+                    return;
+
+                caster->AddAura(ROGUE_SPELL_DUMMY_STEALTH, caster);
+                caster->SetShapeshiftForm(FORM_STEALTH);
+            }
+
+            void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                caster->RemoveAura(ROGUE_SPELL_DUMMY_STEALTH);
+
+                if (caster->HasAura(ROGUE_SPELL_STEALTH) ||
+                    caster->HasAura(ROGUE_SPELL_SHADOW_DANCE))
+                    return;
+
+                caster->SetShapeshiftForm(FORM_NONE);
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_rog_subterfuge_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_rog_subterfuge_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_subterfuge_AuraScript();
         }
 };
 
@@ -1543,5 +1595,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_preparation();
     new spell_rog_deadly_poison();
     new spell_rog_shadowstep();
-    new spell_rog_assassasins_resolve();
+    new spell_rog_subterfuge_stealth();
+    new spell_rog_subterfuge();
 }

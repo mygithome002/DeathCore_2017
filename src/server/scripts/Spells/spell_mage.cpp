@@ -21,11 +21,11 @@
  * Scriptnames of files in this file should be prefixed with "spell_mage_".
  */
 
-#include "Player.h"
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
-#include "Pet.h"
+#include "ScriptedCreature.h"
+
 #include "Cell.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
@@ -98,10 +98,9 @@ enum MageSpells
     SPELL_MAGE_CONE_OF_COLD                      = 120,
     SPELL_MAGE_FROST_NOVA                        = 122,
     SPELL_MAGE_FINGERS_OF_FROST_AURA             = 112965,
-    SPELL_MAGE_FROST_BOMB_AURA                   = 112948,
-    SPELL_MAGE_LIVING_BOMB_AURA                  = 44457,
-    SPELL_MAGE_NETHER_TEMPEST_AURA               = 114923,
-    SPELL_MAGE_GLYPH_OF_FIRE_BLAST               = 89926
+    SPELL_MAGE_HEATING_UP                        = 48107,
+    SPELL_MAGE_SCORCH                            = 2948,
+    SPELL_MAGE_DEEP_FREEZE                       = 44572
 };
 
 // Flamestrike - 2120
@@ -290,7 +289,7 @@ class spell_mage_pet_frost_nova : public SpellScriptLoader
                     {
                         if (Player* _player = caster->GetOwner()->ToPlayer())
                         {
-							if (_player->GetSpecializationId(_player->GetActiveSpec()) != CHAR_SPECIALIZATION_MAGE_FROST)
+                            if (_player->GetSpecializationId(_player->GetActiveSpec()) != CHAR_SPECIALIZATION_MAGE_FROST)
                                 return;
 
                             _player->CastSpell(_player, SPELL_MAGE_FINGER_OF_FROST_VISUAL, true);
@@ -686,7 +685,7 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
                             Trinity::Containers::RandomResizeList(targetList, chargeCount);
 
                             for (auto itr : targetList)
-                                target->CastCustomSpell(itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, NULL, _player->GetGUID());
+								target->CastCustomSpell(itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, NULL, _player->GetGUID());
                         }
                     }
                 }
@@ -718,7 +717,7 @@ class spell_mage_arcane_explosion : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
-					if (_player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_MAGE_ARCANE)
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_MAGE_ARCANE)
                             if (Aura* arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
                                 arcaneCharge->RefreshDuration();
             }
@@ -806,7 +805,7 @@ class spell_mage_invocation : public SpellScriptLoader
                         caster->CastSpell(caster, SPELL_MAGE_INVOKERS_ENERGY, true);
 
                         if (caster->HasAura(SPELL_MAGE_GLYPH_OF_EVOCATION))
-                            caster->HealBySpell(caster, sSpellMgr->GetSpellInfo(12051), caster->CountPctFromMaxHealth(40), false);
+                            caster->HealBySpell(caster, sSpellMgr->GetSpellInfo(12051), caster->CountPctFromMaxHealth(10), false);
                     }
                 }
             }
@@ -955,7 +954,7 @@ class spell_mage_blazing_speed : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                    _player->RemoveAura(113853);
+                    _player->RemoveMovementImpairingAuras();
             }
 
             void Register()
@@ -1046,7 +1045,7 @@ class spell_mage_combustion : public SpellScriptLoader
                             if (!(*i)->GetAmplitude())
                                 continue;
 
-                            combustionBp += _player->SpellDamageBonusDone(target, (*i)->GetSpellInfo(), (*i)->GetAmount(), DOT, 0) * 1000 / (*i)->GetAmplitude();
+                            combustionBp += _player->SpellDamageBonusDone(target, (*i)->GetSpellInfo(), (*i)->GetAmount(), DOT, NULL) * 1000 / (*i)->GetAmplitude();
                         }
 
                         if (combustionBp)
@@ -1135,7 +1134,7 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                             // 1 : Ignite
                             if (target->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
                             {
-                                float value = _player->GetFloatValue(1/*mastery*/) * 1.5f / 100.0f;
+                                float value = _player->GetFloatValue(PLAYER_FIELD_MASTERY) * 1.5f / 100.0f;
 
                                 int32 igniteBp = 0;
 
@@ -1150,14 +1149,14 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                             // 2 : Pyroblast
                             if (target->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
                                 _player->AddAura(SPELL_MAGE_PYROBLAST, itr);
-
+							
                             // 3 : Combustion
                             if (target->HasAura(SPELL_MAGE_COMBUSTION_DOT, _player->GetGUID()))
                             {
                                 if (itr->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
                                 {
                                     combustionBp += _player->CalculateSpellDamage(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), 1);
-                                    combustionBp = _player->SpellDamageBonusDone(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), combustionBp, DOT, 0);
+									combustionBp = _player->SpellDamageBonusDone(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), combustionBp, DOT, NULL);
                                 }
                                 if (itr->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
                                     combustionBp += itr->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
@@ -1552,6 +1551,19 @@ class spell_mage_living_bomb : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_living_bomb_AuraScript);
 
+            // Periodic damage ticks have a chance to apply Brain Freeze
+            void OnTick(AuraEffect const* aurEff)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->HasAura(SPELL_MAGE_BRAIN_FREEZE))
+                    {
+                        if (roll_chance_i(25)) // 25% chance to apply Brain Freeze
+                            caster->CastSpell(caster, SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
+                    }
+                }
+            }
+
             void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
@@ -1569,6 +1581,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
             void Register()
             {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_living_bomb_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
                 AfterEffectRemove += AuraEffectRemoveFn(spell_mage_living_bomb_AuraScript::AfterRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
@@ -1579,169 +1592,43 @@ class spell_mage_living_bomb : public SpellScriptLoader
         }
 };
 
-class spell_mage_glyph_of_fire_blast : public SpellScriptLoader
+class spell_mage_heating_up_hackfix : public SpellScriptLoader
 {
-    public:
-        spell_mage_glyph_of_fire_blast() : SpellScriptLoader("spell_mage_glyph_of_fire_blast") { }
+public:
+    spell_mage_heating_up_hackfix() : SpellScriptLoader("spell_mage_heating_up_hackfix") { }
 
-        class spell_mage_glyph_of_fire_blast_SpellScript : public SpellScript
+    class spell_mage_heating_up_hackfix_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_mage_heating_up_hackfix_SpellScript);
+
+        void HandleOnHit()
         {
-            PrepareSpellScript(spell_mage_glyph_of_fire_blast_SpellScript);
-
-            void HandleOnHit()
+            if (Player* caster = GetCaster()->ToPlayer())
             {
-                if (GetHitUnit())
+                if (Unit* target = GetHitUnit())
                 {
-                    if (!GetCaster()->HasAura(SPELL_MAGE_GLYPH_OF_FIRE_BLAST))
-                        return;
-
-                    if (Aura* frostbomb = GetHitUnit()->GetAura(SPELL_MAGE_FROST_BOMB_AURA))
-                        frostbomb->Remove(AURA_REMOVE_BY_EXPIRE); // this should trigger the frost bomb explosion
-                    if (Aura* livingbomb = GetHitUnit()->GetAura(SPELL_MAGE_LIVING_BOMB_AURA))
+                    if (caster->GetSpecializationId(caster->GetActiveSpec()) == CHAR_SPECIALIZATION_MAGE_FIRE && target->HasAuraType(SPELL_AURA_SCHOOL_ABSORB) && 
+                        target->HasAura(SPELL_MAGE_DEEP_FREEZE))
                     {
-                        std::list<Unit*> bombList;
-                        GetHitUnit()->GetAttackableForCasterUnitListInRange(bombList, 10.0f, GetCaster());
-                        Trinity::Containers::RandomResizeList(bombList, 3); // lets resize to 3.. not sure if retail like
-                        for (auto itr : bombList)
-                                GetCaster()->CastSpell(itr, SPELL_MAGE_LIVING_BOMB_AURA, true);
-                    }
-                    if (Aura* nethertempest = GetHitUnit()->GetAura(SPELL_MAGE_NETHER_TEMPEST_AURA))
-                    {
-                        std::list<Unit*> netherList;
-                        GetHitUnit()->GetAttackableForCasterUnitListInRange(netherList, 10.0f, GetCaster());
-                        netherList.remove_if(CheckNetherImpactPredicate(GetCaster(), GetHitUnit()));
-                        Trinity::Containers::RandomResizeList(netherList, 1);
-                        for (auto itr : netherList)
-                                GetCaster()->CastSpell(itr, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
+                        if (!caster->HasAura(SPELL_MAGE_HEATING_UP))
+                            caster->CastSpell(caster, SPELL_MAGE_HEATING_UP);
+                        else
+                            caster->CastSpell(caster, 44448);
                     }
                 }
             }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_mage_glyph_of_fire_blast_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_glyph_of_fire_blast_SpellScript();
         }
-};
 
-enum IceLance
-{
-    SPELL_MAGE_GLYPH_OF_ICE_LANCE_AURA = 56377,
-    SPELL_MAGE_ICE_LANCE               = 30455
-};
-
-enum IcyVeins
-{
-    SPELL_MAGE_FROSTBOLT            = 116,
-    SPELL_MAGE_FROSTFIRE_BOLT       = 44614,
-    SPELL_MAGE_ICE_LANCE_TR         = 131080,
-    SPELL_MAGE_FROSTBOLT_TR         = 131079,
-    SPELL_MAGE_FROSTFIRE_BOLT_TR    = 131081,
-    SPELL_MAGE_ICY_VEINS_WITH_GLYPH = 131078
-};
-
-class spell_mage_glyph_of_ice_lance : public SpellScriptLoader
-{
-    public:
-        spell_mage_glyph_of_ice_lance() : SpellScriptLoader("spell_mage_glyph_of_ice_lance") { }
-
-        class spell_mage_glyph_of_ice_lance_SpellScript : public SpellScript
+        void Register()
         {
-            PrepareSpellScript(spell_mage_glyph_of_ice_lance_SpellScript);
-
-            void HandleOnCast()
-            {
-                if (GetCaster()->HasAura(SPELL_MAGE_GLYPH_OF_ICE_LANCE_AURA))
-                    if (Unit* target = GetCaster()->SelectNearbyTarget(GetExplTargetUnit(), 30.0f))
-                        GetCaster()->CastSpell(target, SPELL_MAGE_ICE_LANCE_TR, true);
-
-            }
-
-            void Register()
-            {
-                OnCast += SpellCastFn(spell_mage_glyph_of_ice_lance_SpellScript::HandleOnCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_glyph_of_ice_lance_SpellScript();
+            OnHit += SpellHitFn(spell_mage_heating_up_hackfix_SpellScript::HandleOnHit);
         }
-};
+    };
 
-class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
-{
-    public:
-        spell_mage_glyph_of_icy_veins() : SpellScriptLoader("spell_mage_glyph_of_icy_veins") { }
-
-        class spell_mage_glyph_of_icy_veins_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_glyph_of_icy_veins_SpellScript);
-
-            void HandleOnCast()
-            {
-                if (GetCaster()->HasAura(SPELL_MAGE_ICY_VEINS_WITH_GLYPH))
-                {
-                    switch (GetSpellInfo()->Id)
-                    {
-                        case SPELL_MAGE_FROSTBOLT:
-                            GetCaster()->CastSpell(GetExplTargetUnit(), SPELL_MAGE_FROSTBOLT_TR, true);
-                            GetCaster()->CastSpell(GetExplTargetUnit(), SPELL_MAGE_FROSTBOLT_TR, true);
-                            break;
-                        case SPELL_MAGE_FROSTFIRE_BOLT:
-                            GetCaster()->CastSpell(GetExplTargetUnit(), SPELL_MAGE_FROSTFIRE_BOLT_TR, true);
-                            GetCaster()->CastSpell(GetExplTargetUnit(), SPELL_MAGE_FROSTFIRE_BOLT_TR, true);
-                            break;
-                        case SPELL_MAGE_ICE_LANCE:
-                            GetCaster()->CastSpell(GetExplTargetUnit(), SPELL_MAGE_ICE_LANCE_TR, true);
-                            GetCaster()->CastSpell(GetExplTargetUnit(), SPELL_MAGE_ICE_LANCE_TR, true);
-                            break;
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnCast += SpellCastFn(spell_mage_glyph_of_icy_veins_SpellScript::HandleOnCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_glyph_of_icy_veins_SpellScript();
-        }
-};
-
-class spell_mage_glyph_of_icy_veins_on_damage : public SpellScriptLoader
-{
-    public:
-        spell_mage_glyph_of_icy_veins_on_damage() : SpellScriptLoader("spell_mage_glyph_of_icy_veins_on_damage") { }
-
-        class spell_mage_glyph_of_icy_veins_on_damage_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_glyph_of_icy_veins_on_damage_SpellScript);
-
-            void OnDamage()
-            {
-                // decrease damage by 60% (also used in Glyph of Ice Lance)
-                SetHitDamage(int32(GetHitDamage() * 0.4));
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_mage_glyph_of_icy_veins_on_damage_SpellScript::OnDamage);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_glyph_of_icy_veins_on_damage_SpellScript();
-        }
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_mage_heating_up_hackfix_SpellScript();
+    }
 };
 
 void AddSC_mage_spell_scripts()
@@ -1779,8 +1666,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_incanters_absorbtion_absorb();
     new spell_mage_incanters_absorbtion_manashield();
     new spell_mage_living_bomb();
-    new spell_mage_glyph_of_fire_blast();
-    new spell_mage_glyph_of_ice_lance();
-    new spell_mage_glyph_of_icy_veins();
-    new spell_mage_glyph_of_icy_veins_on_damage();
+    new spell_mage_heating_up_hackfix();
 }

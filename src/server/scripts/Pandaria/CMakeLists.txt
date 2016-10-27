@@ -15,7 +15,7 @@
 
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
-  
+
   # Dungeons
   Pandaria/Dungeons/MoguShanPalace/instance_mogushan_palace.cpp
   Pandaria/Dungeons/MoguShanPalace/mogushan_palace.h
@@ -28,7 +28,6 @@ set(scripts_STAT_SRCS
   Pandaria/Dungeons/ShadoPanMonastery/boss_master_snowdrift.cpp
   Pandaria/Dungeons/ShadoPanMonastery/boss_sha_of_violence.cpp
   Pandaria/Dungeons/ShadoPanMonastery/boss_taran_zhu.cpp
-  Pandaria/Dungeons/TempleoftheJadeSerpent/temple_of_the_jade_serpent.h
   Pandaria/Dungeons/TempleoftheJadeSerpent/instance_temple_of_the_jade_serpent.cpp
   Pandaria/Dungeons/TempleoftheJadeSerpent/boss_liu_flameheart.cpp
   Pandaria/Dungeons/TempleoftheJadeSerpent/boss_lorewalker_stonestep.cpp
@@ -108,22 +107,23 @@ set(scripts_STAT_SRCS
   Pandaria/Raids/ThroneOfThunder/boss_LeiShen.cpp
   Pandaria/Raids/ThroneOfThunder/instance_ThroneOfThunder.cpp
   Pandaria/Raids/ThroneOfThunder/ThroneOfThunder.h
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_Immerseus.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_Galakras.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_GeneralNazgrim.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_KorKron.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_IronJuggernaut.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_Norushen.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_Malkorok.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_ParagonsOfTheKlaxxi.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_ShaOfPride.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_SiegecrafterBlackfuse.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_SpoilsOfPandaria.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_TheFallenProtectors.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_Thok.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/boss_GarroshHellscream.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/instance_SiegeOfOrgrimmar.cpp
-  Pandaria/Raids/SiegeOfOrgrimmar/SiegeOfOrgrimmar.h
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_immerseus.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_galakras.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_general_nazgrim.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_dark_shamans.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_iron_juggernaut.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_norushen.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_malkorok.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_paragons_of_the_klaxxi.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_sha_of_pride.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_siegecrafter_blackfuse.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_spoils_of_pandaria.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_the_fallen_protectors.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_thok.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/boss_garrosh_hellscream.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/npc_lorewalker_cho.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/instance_siege_of_orgrimmar.cpp
+  Pandaria/Raids/SiegeOfOrgrimmar/siege_of_orgrimmar.h
 
   # Timeless Island
   Pandaria/TimelessIsle/zone_timeless_isle.cpp
@@ -158,3 +158,5 @@ set(scripts_STAT_SRCS
 )
 
 message("  -> Prepared: Pandaria")
+
+GroupSources(${CMAKE_CURRENT_SOURCE_DIR})

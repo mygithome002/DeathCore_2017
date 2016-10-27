@@ -35,7 +35,7 @@ class instance_commandscript : public CommandScript
 public:
     instance_commandscript() : CommandScript("instance_commandscript") { }
 
-    ChatCommand* GetCommands() const override
+    ChatCommand* GetCommands() const
     {
         static ChatCommand instanceCommandTable[] =
         {

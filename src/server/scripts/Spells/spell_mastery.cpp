@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 DeathCore <http://www.noffearrdeathproject.net/>
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,106 +15,30 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * Scripts for spells with MASTERY.
+ * Ordered alphabetically using scriptname.
+ * Scriptnames of files in this file should be prefixed with "spell_mastery_".
+ */
 
-#include "Player.h"
 #include "ScriptMgr.h"
 #include "SpellScript.h"
+#include "SpellAuraEffects.h"
 
 enum MasterySpells
 {
-    MASTERY_WARRIOR_ARMS                = 76838,
-    MASTERY_WARRIOR_FURY                = 76856,
-    MASTERY_WARRIOR_PROTECTION          = 76857,
-
-    MASTERY_PALADIN_HOLY                = 76669,
-    MASTERY_PALADIN_PROTECTION          = 76671,
-    MASTERY_PALADIN_RETRIBUTION         = 76672,
-    
-    MASTERY_HUNTER_BEASTMASTER          = 76657,
-    MASTERY_HUNTER_MARKSMAN             = 76659,
-    MASTERY_HUNTER_SURVIVAL             = 76658,
-
-    MASTERY_ROGUE_ASSASSINATION         = 76803,
-    MASTERY_ROGUE_COMBAT                = 76806,
-    MASTERY_ROGUE_SUBTLETY              = 76808,
-
-    MASTERY_PRIEST_DISCIPLINE           = 77484,
-    MASTERY_PRIEST_HOLY                 = 77485,
-    MASTERY_PRIEST_SHADOW               = 77486,
-
-    MASTERY_DEATHKNIGHT_BLOOD           = 77513,
-    MASTERY_DEATHKNIGHT_FROST           = 77514,
-    MASTERY_DEATHKNIGHT_UNHOLY          = 77515,
-
-    MASTERY_SHAMAN_ELEMENTAL            = 77222,
-    MASTERY_SHAMAN_ENHANCEMENT          = 77223,
-    MASTERY_SHAMAN_RESTORATION          = 77226,
-
-    MASTERY_MAGE_ARCANE                 = 76547,
-    MASTERY_MAGE_FIRE                   = 12846,
-    MASTERY_MAGE_FROST                  = 76613,
-
-    MASTERY_WARLOCK_AFFLICTION          = 77215,
-    MASTERY_WARLOCK_DEMONOLOGY          = 77219,
-    MASTERY_WARLOCK_DESTRUCTION         = 77220,
-
-    MASTERY_MONK_BREWMASTER             = 117906,
-    MASTERY_MONK_MISTWEAVER             = 117907,
-    MASTERY_MONK_WINDWALKER             = 115636,
-
-	MASTERY_SPELL_COMBO_BREAKER_1       = 118864,
-    MASTERY_SPELL_COMBO_BREAKER_2       = 116768,
-
-	SPELL_DK_SCENT_OF_BLOOD             = 50421,
-
-	MASTERY_SPELL_LIGHTNING_BOLT        = 45284,
+    MASTERY_SPELL_LIGHTNING_BOLT        = 45284,
     MASTERY_SPELL_CHAIN_LIGHTNING       = 45297,
     MASTERY_SPELL_LAVA_BURST            = 77451,
     MASTERY_SPELL_ELEMENTAL_BLAST       = 120588,
     MASTERY_SPELL_HAND_OF_LIGHT         = 96172,
     MASTERY_SPELL_IGNITE                = 12654,
     MASTERY_SPELL_BLOOD_SHIELD          = 77535,
-
-    MASTERY_DRUID_BALANCE               = 77492,
-    MASTERY_DRUID_FERAL                 = 77493,
-    MASTERY_DRUID_GUARDIAN              = 77494,
-    MASTERY_DRUID_RESTORATION           = 77495
-};
-
-enum WarriorSpells
-{
-	SPELL_WARR_ENRAGE		= 12880,
-};
-
-// Warrior spell : Enrage 12880
-class spell_mastery_unshackled_fury : public SpellScriptLoader
-{
-    public:
-        spell_mastery_unshackled_fury() : SpellScriptLoader("spell_mastery_unshackled_fury") { }
-
-        class spell_mastery_unshackled_fury_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_mastery_unshackled_fury_AuraScript);
-
-            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                if (Unit* caster = GetCaster()->ToPlayer())
-                {
-                    if (caster->HasAura(MASTERY_WARRIOR_FURY) && caster->getLevel() >= 80)
-						amount = caster->GetFloatValue(PLAYER_FIELD_MASTERY) + caster->ToPlayer()->GetRatingBonusValue(CR_MASTERY);
-                }
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mastery_unshackled_fury_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_mastery_unshackled_fury_AuraScript();
-        }
+    MASTERY_SPELL_COMBO_BREAKER         = 115636,
+    MASTERY_SPELL_COMBO_BREAKER_1       = 118864,
+    MASTERY_SPELL_COMBO_BREAKER_2       = 116768,
+    MASTERY_SPELL_DISCIPLINE_SHIELD     = 77484,
+    SPELL_DK_SCENT_OF_BLOOD             = 50421,
 };
 
 // Called by Power Word : Shield - 17, Power Word : Shield (Divine Insight) - 123258, Spirit Shell - 114908, Angelic Bulwark - 114214 and Divine Aegis - 47753
@@ -128,13 +52,13 @@ class spell_mastery_shield_discipline : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mastery_shield_discipline_AuraScript);
 
-			void CalculateAmount(AuraEffect const*, int32 & amount, bool &)
+            void CalculateAmount(AuraEffect const* , int32 & amount, bool & )
             {
                 if (Unit* caster = GetCaster())
                 {
-					if (caster->HasAura(MASTERY_PRIEST_DISCIPLINE) && caster->getLevel() >= 80)
+                    if (caster->HasAura(MASTERY_SPELL_DISCIPLINE_SHIELD) && caster->getLevel() >= 80)
                     {
-						float Mastery = 1 + (caster->GetFloatValue(PLAYER_FIELD_MASTERY) * 2.5f / 100.0f);
+                        float Mastery = 1 + (caster->GetFloatValue(PLAYER_FIELD_MASTERY) * 2.5f / 100.0f);
                         amount = int32(amount * Mastery);
                     }
                 }
@@ -169,9 +93,9 @@ class spell_mastery_combo_breaker : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-						if (caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(MASTERY_MONK_WINDWALKER))
+                        if (caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(MASTERY_SPELL_COMBO_BREAKER))
                         {
-							float Mastery = caster->GetFloatValue(PLAYER_FIELD_MASTERY) * 1.4f;
+                            float Mastery = caster->GetFloatValue(PLAYER_FIELD_MASTERY) * 1.4f;
 
                             if (roll_chance_f(Mastery))
                             {
@@ -219,7 +143,7 @@ class spell_mastery_blood_shield : public SpellScriptLoader
                             // Check the Mastery aura while in Blood presence
                             if (_plr->HasAura(77513) && _plr->HasAura(48263))
                             {
-								float Mastery = _plr->GetFloatValue(PLAYER_FIELD_MASTERY) * 6.25f / 100.0f;
+                                float Mastery = _plr->GetFloatValue(PLAYER_FIELD_MASTERY) * 6.25f / 100.0f;
 
                                 int32 bp = -int32(GetHitDamage() * Mastery);
 
@@ -444,13 +368,12 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
         }
 };
 
-void AddSC_masteries_spell_scripts()
+void AddSC_mastery_spell_scripts()
 {
-	new spell_mastery_unshackled_fury();
-	new spell_mastery_shield_discipline();
-	new spell_mastery_combo_breaker();
-	new spell_mastery_blood_shield();
-	new spell_mastery_ignite();
-	new spell_mastery_hand_of_light();
-	new spell_mastery_elemental_overload();
+    new spell_mastery_shield_discipline();
+    new spell_mastery_combo_breaker();
+    new spell_mastery_blood_shield();
+    new spell_mastery_ignite();
+    new spell_mastery_hand_of_light();
+    new spell_mastery_elemental_overload();
 }

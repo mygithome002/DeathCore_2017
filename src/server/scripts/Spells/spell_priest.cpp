@@ -21,7 +21,6 @@
  * Scriptnames of files in this file should be prefixed with "spell_pri_".
  */
 
-#include "Player.h"
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
@@ -34,7 +33,7 @@ enum PriestSpells
     PRIEST_SPELL_PENANCE_DAMAGE                     = 47758,
     PRIEST_SPELL_PENANCE_HEAL                       = 47757,
     PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED        = 33619,
-    PRIEST_SPELL_REFLECTIVE_SHIELD_R1               = 33202,
+    PRIEST_SPELL_REFLECTIVE_SHIELD_R1               = 33201,
     PRIEST_SHADOW_WORD_DEATH                        = 32409,
     PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH          = 107903,
     PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH             = 107904,
@@ -44,9 +43,10 @@ enum PriestSpells
     PRIEST_LEAP_OF_FAITH_JUMP                       = 110726,
     PRIEST_INNER_WILL                               = 73413,
     PRIEST_INNER_FIRE                               = 588,
-    PRIEST_NPC_SHADOWY_APPARITION                   = 61966,
+    PRIEST_NPC_SHADOWY_APPARITION                   = 46954,
     PRIEST_SPELL_HALO_HEAL_SHADOW                   = 120696,
     PRIEST_SPELL_HALO_HEAL_HOLY                     = 120692,
+    SPELL_PRI_SWD_GLYPH_OVERRIDE                    = 129176,
 
     // Cascade
     PRIEST_CASCADE_HOLY_DAMAGE                      = 120785,
@@ -127,6 +127,8 @@ enum PriestSpells
     PRIEST_SPELL_SPECTRAL_GUISE_CHARGES             = 119030,
     PRIEST_SPELL_POWER_WORD_SHIELD                  = 17,
     PRIEST_SPELL_POWER_WORD_FORTITUDE               = 21562,
+    PRIEST_SPELL_GLYPH_OF_CONFESSIONS_SPELL         = 126123,
+    GENERIC_CONFESSIONS_DUMMY_TRIGGER               = 40384
 };
 
 // Power Word : Fortitude - 21562
@@ -845,7 +847,7 @@ class spell_pri_prayer_of_mending_divine_insight : public SpellScriptLoader
                             if (_player->HasAura(PRIEST_SPELL_DIVINE_INSIGHT_HOLY))
                                 _player->RemoveAura(PRIEST_SPELL_DIVINE_INSIGHT_HOLY);
 
-                            target->CastCustomSpell(target, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+							target->CastCustomSpell(target, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
                             if (target->HasAura(GetSpellInfo()->Id))
                                 target->RemoveAura(GetSpellInfo()->Id);
 
@@ -853,7 +855,7 @@ class spell_pri_prayer_of_mending_divine_insight : public SpellScriptLoader
 
                             if (Unit* secondTarget = target->GetNextRandomRaidMemberOrPet(radius))
                             {
-                                target->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+								target->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
                                 if (secondTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
                                     secondTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
 
@@ -1370,58 +1372,6 @@ class spell_pri_spirit_shell : public SpellScriptLoader
         }
 };
 
-// Purify - 527
-class spell_pri_purify : public SpellScriptLoader
-{
-    public:
-        spell_pri_purify() : SpellScriptLoader("spell_pri_purify") { }
-
-        class spell_pri_purify_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_purify_SpellScript);
-
-            SpellCastResult CheckCleansing()
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (Unit* target = GetExplTargetUnit())
-                    {
-                        // Create dispel mask by dispel type
-                        for (int8 i = 0; i < MAX_SPELL_EFFECTS; i++)
-                        {
-                            uint32 dispel_type = GetSpellInfo()->Effects[i].MiscValue;
-                            uint32 dispelMask  = GetSpellInfo()->GetDispelMask(DispelType(dispel_type));
-
-                            // Purity can dispell Magic.
-                            if (GetSpellInfo()->Id == 527)
-                                dispelMask = ((1<<DISPEL_MAGIC));
-
-                            DispelChargesList dispelList;
-                            target->GetDispellableAuraList(caster, dispelMask, dispelList);
-
-                            if (dispelList.empty())
-                                return SPELL_FAILED_NOTHING_TO_DISPEL;
-
-                            return SPELL_CAST_OK;
-                        }
-                    }
-                }
-
-                return SPELL_CAST_OK;
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_pri_purify_SpellScript::CheckCleansing);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_purify_SpellScript();
-        }
-};
-
 // Devouring Plague - 2944
 class spell_pri_devouring_plague : public SpellScriptLoader
 {
@@ -1441,8 +1391,8 @@ class spell_pri_devouring_plague : public SpellScriptLoader
                         if (_player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_PRIEST_SHADOW)
                         {
                             uint8 powerUsed = _player->GetPower(POWER_SHADOW_ORBS) + 1; // Don't forget PowerCost
-                            
 
+							GetCaster()->SetPower(POWER_SHADOW_ORBS, 0);
                             // Shadow Orb visual
                             if (_player->HasAura(77487))
                                 _player->RemoveAura(77487);
@@ -1485,8 +1435,7 @@ class spell_pri_devouring_plague : public SpellScriptLoader
                 if (!GetCaster())
                     return;
 
-                powerUsed = GetCaster()->GetPower(POWER_SHADOW_ORBS);
-                GetCaster()->SetPower(POWER_SHADOW_ORBS, 0);
+				powerUsed = GetCaster()->GetPower(POWER_SHADOW_ORBS) + 1;
 
                 amount *= powerUsed;
             }
@@ -1508,8 +1457,6 @@ class spell_pri_devouring_plague : public SpellScriptLoader
 
                 if (AuraEffect const* aurEff2 = aurEff->GetBase()->GetEffect(2))
                     bp *= aurEff2->GetAmount();
-
-                bp *= powerUsed;
 
                 GetCaster()->CastCustomSpell(GetCaster(), PRIEST_DEVOURING_PLAGUE_HEAL, &bp, NULL, NULL, true);
             }
@@ -1623,13 +1570,13 @@ class spell_pri_evangelism : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pri_evangelism_SpellScript);
 
-			void HandleOnHit()
-			{
+            void HandleOnHit()
+            {
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (_player->HasAura(PRIEST_EVANGELISM_AURA))
                         if (GetHitDamage())
                             _player->CastSpell(_player, PRIEST_EVANGELISM_STACK, true);
-			}
+            }
 
             void Register()
             {
@@ -1653,24 +1600,24 @@ class spell_pri_archangel : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pri_archangel_SpellScript);
 
-			void HandleOnHit()
-			{
-				if (Player* _player = GetCaster()->ToPlayer())
-				{
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
                     int stackNumber = _player->GetAura(PRIEST_EVANGELISM_STACK)->GetStackAmount();
-					if (!(stackNumber > 0))
-						return;
+                    if (!(stackNumber > 0))
+                        return;
 
-					if (Aura* archangel = _player->GetAura(GetSpellInfo()->Id))
-					{
-						if (archangel->GetEffect(0))
-						{
+                    if (Aura* archangel = _player->GetAura(GetSpellInfo()->Id))
+                    {
+                        if (archangel->GetEffect(0))
+                        {
                             archangel->GetEffect(0)->ChangeAmount(archangel->GetEffect(0)->GetAmount() * stackNumber);
                             _player->RemoveAura(PRIEST_EVANGELISM_STACK);
-						}
-					}
-				}
-			}
+                        }
+                    }
+                }
+            }
 
             void Register()
             {
@@ -2024,7 +1971,7 @@ class spell_pri_halo_damage : public SpellScriptLoader
         }
 };
 
-// Shadowy Apparition - 87212
+// Shadowy Apparition - 87426
 class spell_pri_shadowy_apparition : public SpellScriptLoader
 {
     public:
@@ -2050,7 +1997,8 @@ class spell_pri_shadowy_apparition : public SpellScriptLoader
                         if (owner && owner == player && itr->IsSummon())
                             shadowyList.push_back(itr);
                     }
-                    if (shadowyList.size() >= 3)
+
+                    if (shadowyList.size() == 3)
                         return SPELL_FAILED_DONT_REPORT;
 
                     return SPELL_CAST_OK;
@@ -2542,8 +2490,8 @@ class spell_priest_renew : public SpellScriptLoader
                     // Empowered Renew
                     if (Aura* empoweredRenew = caster->GetAura(PRIEST_RAPID_RENEWAL_AURA))
                     {
-                        uint32 heal = caster->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), GetEffect(EFFECT_0)->GetAmount(), DOT, 0);
-                        heal = GetTarget()->SpellHealingBonusTaken(caster, GetSpellInfo(), heal, DOT, 0);
+						uint32 heal = caster->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), GetEffect(EFFECT_0)->GetAmount(), DOT, NULL);
+                        heal = GetTarget()->SpellHealingBonusTaken(caster, GetSpellInfo(), heal, DOT, NULL);
 
                         int32 basepoints0 = empoweredRenew->GetEffect(EFFECT_2)->GetAmount() * GetEffect(EFFECT_0)->GetTotalTicks() * int32(heal) / 100;
                         caster->CastCustomSpell(GetTarget(), PRIEST_SPELL_EMPOWERED_RENEW, &basepoints0, NULL, NULL, true, NULL, aurEff);
@@ -2584,11 +2532,15 @@ class spell_pri_shadowform : public SpellScriptLoader
 
             void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
+				// Shadowform applies +100% armor
+				GetTarget()->UpdateArmor();
                 GetTarget()->CastSpell(GetTarget(), GetTarget()->HasAura(PRIEST_GLYPH_OF_SHADOW) ? PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH : PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH, true);
             }
 
             void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
+				// Reupdate armor after removal
+				GetTarget()->UpdateArmor();
                 GetTarget()->RemoveAurasDueToSpell(GetTarget()->HasAura(PRIEST_GLYPH_OF_SHADOW) ? PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH : PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH);
             }
 
@@ -2609,28 +2561,70 @@ class spell_pri_shadowform : public SpellScriptLoader
 class spell_pri_levitate : public SpellScriptLoader
 {
     public:
-        spell_pri_levitate() : SpellScriptLoader("spell_pri_levitate") { }
+    spell_pri_levitate() : SpellScriptLoader("spell_pri_levitate") { }
 
-        class spell_pri_levitate_SpellScript : public SpellScript
+    class spell_pri_levitate_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_pri_levitate_SpellScript);
+
+        bool Validate(SpellInfo const* /*entry*/)
         {
-            PrepareSpellScript(spell_pri_levitate_SpellScript);
+            if (!sSpellMgr->GetSpellInfo(PRIEST_SPELL_LEVITATE))
+                return false;
+            return true;
+        }
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+        void HandleDummy(SpellEffIndex /*effIndex*/)
+        {
+            if (GetCaster())
+                if (GetHitUnit())
+                    GetCaster()->CastSpell(GetHitUnit(), PRIEST_SPELL_LEVITATE, true);
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_pri_levitate_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_pri_levitate_SpellScript;
+    }
+};
+
+class spell_pri_glyph_of_swd : public SpellScriptLoader
+{
+    public:
+        spell_pri_glyph_of_swd() : SpellScriptLoader("spell_pri_glyph_of_swd") { }
+
+        class spell_pri_glyph_of_swd_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_glyph_of_swd_AuraScript);
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (GetCaster())
-                    if (GetHitUnit())
-                        GetCaster()->CastSpell(GetHitUnit(), PRIEST_SPELL_LEVITATE, true);
+                if (Player* _player = GetTarget()->ToPlayer())
+                    _player->learnSpell(SPELL_PRI_SWD_GLYPH_OVERRIDE, false);
+            }
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    if (_player->HasSpell(SPELL_PRI_SWD_GLYPH_OVERRIDE))
+                        _player->removeSpell(SPELL_PRI_SWD_GLYPH_OVERRIDE, false, false);
             }
 
             void Register()
             {
-                OnEffectHitTarget += SpellEffectFn(spell_pri_levitate_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+                OnEffectApply += AuraEffectApplyFn(spell_pri_glyph_of_swd_AuraScript::OnApply, EFFECT_0, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_pri_glyph_of_swd_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
-        SpellScript* GetSpellScript() const
+        AuraScript* GetAuraScript() const
         {
-            return new spell_pri_levitate_SpellScript;
+            return new spell_pri_glyph_of_swd_AuraScript();
         }
 };
 
@@ -2672,71 +2666,306 @@ class spell_pri_shadow_word_death : public SpellScriptLoader
         }
 };
 
-// Glyph of Holy Nova - 125045
-class spell_pri_glyph_of_holy_nova : public SpellScriptLoader
+//Divine Star
+class spell_pri_divine_star : public SpellScriptLoader
 {
     public:
-        spell_pri_glyph_of_holy_nova() : SpellScriptLoader("spell_pri_glyph_of_holy_nova") { }
+        spell_pri_divine_star() : SpellScriptLoader("spell_pri_divine_star") { }
 
-        class spell_pri_glyph_of_holy_nova_AuraScript : public AuraScript
+        class spell_pri_divine_star_SpellScript : public SpellScript
         {
-            PrepareAuraScript(spell_pri_glyph_of_holy_nova_AuraScript);
+            PrepareSpellScript(spell_pri_divine_star_SpellScript);
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void HandleAfterCast()
             {
-                if (Player* _player = GetTarget()->ToPlayer())
-                    _player->learnSpell(132157, false);
-            }
+                    if (Player* _player = GetCaster()->ToPlayer())
+                    {
+                            _player->RemoveAura(122862, _player->GetGUID());
+                            _player->RemoveAura(110745, _player->GetGUID());
+                            _player->RemoveAura(110744, _player->GetGUID());
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (Player* _player = GetTarget()->ToPlayer())
-                    if (_player->HasSpell(132157))
-                        _player->removeSpell(132157, false, false);
-            }
+                            _player->CastSpell(_player, 58880);
+                            _player->CastSpell(_player, 110745);
 
+                            std::list<Creature*> list1;
+                            Map::PlayerList const &PlList = _player->GetMap()->GetPlayers();
+                            if (PlList.isEmpty())
+                                return;
+                                for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+                                {
+                                    if (Player* Playerswhoneedsbuff = i->GetSource())
+                                    {
+										if (Playerswhoneedsbuff->IsWithinDistInMap(_player, 10.0f, true))
+										{
+											if (Playerswhoneedsbuff->IsFriendlyTo(_player))
+											{
+												int32 reducechancetoapplyheal = urand(1, 2);
+
+												if(reducechancetoapplyheal == 1)
+												_player->CastSpell(Playerswhoneedsbuff, 58880);
+												Playerswhoneedsbuff->CastSpell(Playerswhoneedsbuff, 110745);
+                                                Playerswhoneedsbuff->CastSpell(_player, 58880);
+											}
+											if (Playerswhoneedsbuff->IsHostileTo(_player))
+											{
+												int32 reducechancetoapplyhit = urand(1, 2);
+
+												if(reducechancetoapplyhit == 1)
+												_player->CastSpell(Playerswhoneedsbuff, 58880);
+												Playerswhoneedsbuff->DealDamage(Playerswhoneedsbuff, 4000);
+                                                Playerswhoneedsbuff->CastSpell(_player, 58880);
+											}
+										}
+									}
+								}
+
+                                Trinity::AnyUnfriendlyAttackableVisibleUnitInObjectRangeCheck check(_player, 6.0f);
+                                Trinity::CreatureListSearcher<Trinity::AnyUnfriendlyAttackableVisibleUnitInObjectRangeCheck> searcher(_player, list1, check);
+                                _player->VisitNearbyObject(6.0f, searcher);
+
+                                for (std::list<Creature*>::const_iterator it = list1.begin(); it != list1.end(); ++it)
+                                {
+                                    (*it)->DealDamage((*it), 4000);
+                                }
+                    }
+            }
             void Register()
             {
-                OnEffectApply += AuraEffectApplyFn(spell_pri_glyph_of_holy_nova_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-                OnEffectRemove += AuraEffectRemoveFn(spell_pri_glyph_of_holy_nova_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterCast += SpellCastFn(spell_pri_divine_star_SpellScript::HandleAfterCast);
             }
         };
 
-        AuraScript* GetAuraScript() const
+        SpellScript* GetSpellScript() const
         {
-            return new spell_pri_glyph_of_holy_nova_AuraScript();
+            return new spell_pri_divine_star_SpellScript();
         }
 };
 
-// Glyph of Levitate
-class spell_pri_glyph_of_levitate : public SpellScriptLoader
+// Glyph of Confessions (Learn)
+class spell_pri_glyph_of_confessions : public SpellScriptLoader
 {
-    public:
-        spell_pri_glyph_of_levitate() : SpellScriptLoader("spell_pri_glyph_of_levitate") { }
+public:
+    spell_pri_glyph_of_confessions() : SpellScriptLoader("spell_pri_glyph_of_confessions") { }
 
-        class spell_pri_glyph_of_levitate_AuraScript : public AuraScript
+    class spell_pri_glyph_of_confessions_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_pri_glyph_of_confessions_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            PrepareAuraScript(spell_pri_glyph_of_levitate_AuraScript);
-
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (Player* _player = GetTarget()->ToPlayer())
-                    if (GetSpellInfo()->Id == 111757)
-                        if (_player->HasAura(108939))
-                            _player->CastSpell(_player, 120449, true);
-            }
-
-            void Register()
-            {
-                //OnEffectApply += AuraEffectApplyFn(spell_pri_glyph_of_levitate_AuraScript::OnApply, EFFECT_0, SPELL_AURA_FEATHER_FALL, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-                OnEffectRemove += AuraEffectRemoveFn(spell_pri_glyph_of_levitate_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_INCREASE_SPEED, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_pri_glyph_of_levitate_AuraScript();
+            if (Player* _player = GetTarget()->ToPlayer())
+                _player->learnSpell(PRIEST_SPELL_GLYPH_OF_CONFESSIONS_SPELL, false);
         }
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (Player* _player = GetTarget()->ToPlayer())
+                if (_player->HasSpell(PRIEST_SPELL_GLYPH_OF_CONFESSIONS_SPELL))
+                    _player->removeSpell(PRIEST_SPELL_GLYPH_OF_CONFESSIONS_SPELL, false, false);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_pri_glyph_of_confessions_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_pri_glyph_of_confessions_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_pri_glyph_of_confessions_AuraScript();
+    }
+};
+
+// Confessions
+class spell_pri_confessions_emote : public SpellScriptLoader
+{
+public:
+    spell_pri_confessions_emote() : SpellScriptLoader("spell_pri_confessions_emote") { }
+
+    class spell_pri_confessions_emote_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_pri_confessions_emote_SpellScript);
+
+        void HandleOnHit()
+        {
+            if (Player* _player = GetCaster()->ToPlayer())
+            {
+                if (Unit* target = GetHitUnit())
+                {
+                    target->CastSpell(target, GENERIC_CONFESSIONS_DUMMY_TRIGGER, true);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_pri_confessions_emote_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_pri_confessions_emote_SpellScript();
+    }
+};
+
+// Confessions Dummy Trigger
+class spell_pri_confessions_emote_trigger : public SpellScriptLoader
+{
+public:
+    spell_pri_confessions_emote_trigger() : SpellScriptLoader("spell_pri_confessions_emote_trigger") { }
+
+    class spell_pri_confessions_emote_trigger_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_pri_confessions_emote_trigger_SpellScript);
+
+        void HandleOnHit()
+        {
+            if (Player* _player = GetCaster()->ToPlayer())
+            {
+                if (Unit* target = _player)
+                {
+                    target->RemoveAurasDueToSpell(GENERIC_CONFESSIONS_DUMMY_TRIGGER);
+
+                    int32 rand_eff = urand(1, 40);
+                    switch (rand_eff)
+                    {
+                    case 1:
+                        _player->TextEmote("confesses: For a long time, I thought the plural of anecdote WAS data.");
+                        break;
+                    case 2:
+                        _player->TextEmote("confesses: I always forget to gem my gear.");
+                        break;
+                    case 3:
+                        _player->TextEmote("confesses: I always wanted to be a paladin.");
+                        break;
+                    case 4:
+                        _player->TextEmote("confesses: I ask for the Light to give me strength, but I'm not sure it really does.");
+                        break;
+                    case 5:
+                        _player->TextEmote("confesses: I asked a friend for gold to buy my first mount.");
+                        break;
+                    case 6:
+                        _player->TextEmote("confesses: I dabble in archaeology, but I'm just not that interested in history.");
+                        break;
+                    case 7:
+                        _player->TextEmote("confesses: I died to an elevator once. Maybe more than once.");
+                        break;
+                    case 8:
+                        _player->TextEmote("confesses: I don't know if Milhouse is a good guy or not.");
+                        break;
+                    case 9:
+                        _player->TextEmote("confesses: I don't really have a clue who the Sin'dorei are.");
+                        break;
+                    case 10:
+                        _player->TextEmote("confesses: I don't really remember you in the mountains.");
+                        break;
+                    case 11:
+                        _player->TextEmote("confesses: I don't treat all of my mounts equally.");
+                        break;
+                    case 12:
+                        _player->TextEmote("confesses: I fell off of Dalaran.");
+                        break;
+                    case 13:
+                        _player->TextEmote("confesses: I find all these names with so many apostrophes so confusing.");
+                        break;
+                    case 14:
+                        _player->TextEmote("confesses: I forgot the Sunwell.");
+                        break;
+                    case 15:
+                        _player->TextEmote("confesses: I go into dungeons not to make Azeroth a better place, but just for loot.");
+                        break;
+                    case 16:
+                        _player->TextEmote("confesses: I have 'borrowed' things from my guild bank.");
+                        break;
+                    case 17:
+                        _player->TextEmote("confesses: I have stood in the fire.");
+                        break;
+                    case 18:
+                        _player->TextEmote("confesses: I haven't been in a barber shop in months. Goblins with scissors. Shudder.");
+                        break;
+                    case 19:
+                        _player->TextEmote("confesses: I know he's a jerk, but there's something about Garrosh...");
+                        break;
+                    case 20:
+                        _player->TextEmote("confesses: I light things on fire and yell BY FIRE BE PURGED when nobody is looking.");
+                        break;
+                    case 21:
+                        _player->TextEmote("confesses: I never use the lightwell.");
+                        break;
+                    case 22:
+                        _player->TextEmote("confesses: I once punched a gnome. No reason. I was just having a bad day.");
+                        break;
+                    case 23:
+                        _player->TextEmote("confesses: I once took a bow that a hunter wanted.");
+                        break;
+                    case 24:
+                        _player->TextEmote("confesses: I outbid a friend on an auction for something I didn't really want.");
+                        break;
+                    case 25:
+                        _player->TextEmote("confesses: I really wasn't prepared. Who knew?");
+                        break;
+                    case 26:
+                        _player->TextEmote("confesses: I said I had been in the dungeon before, but i had no idea what I was doing. It was embarassing.");
+                        break;
+                    case 27:
+                        _player->TextEmote("confesses: I saw a mage cast a spell once and my jaw really did drop at the damage.");
+                        break;
+                    case 28:
+                        _player->TextEmote("confesses: I sometimes forget if Northrend is north or south of here.");
+                        break;
+                    case 29:
+                        _player->TextEmote("confesses: I sometimes use my mount to travel really short distances. I mean REALLY short.");
+                        break;
+                    case 30:
+                        _player->TextEmote("confesses: I sometimes wonder if tauren taste like... you know.");
+                        break;
+                    case 31:
+                        _player->TextEmote("confesses: I spent six months chasing the Time-Lost Proto-Drake.");
+                        break;
+                    case 32:
+                        _player->TextEmote("confesses: I thought pandaren were a type of furbolg.");
+                        break;
+                    case 33:
+                        _player->TextEmote("confesses: I told my raid leader that I was ready, but I wasn't really ready.");
+                        break;
+                    case 34:
+                        _player->TextEmote("confesses: I wasn't really at the opening of Ahn'Qiraj, I just read about it.");
+                        break;
+                    case 35:
+                        _player->TextEmote("confesses: I went into Alterac Valley and didn't help my team at all.");
+                        break;
+                    case 36:
+                        _player->TextEmote("confesses: Oh, I took the candle.");
+                        break;
+                    case 37:
+                        _player->TextEmote("confesses: Sometimes I ask for a warlock to summon me when I'm really not that far away.");
+                        break;
+                    case 38:
+                        _player->TextEmote("confesses: Sometimes when I'm questing, I want to be alone, so I pretend I can't hear my friends.");
+                        break;
+                    case 39:
+                        _player->TextEmote("confesses: This is just a setback.");
+                        break;
+                    case 40:
+                        _player->TextEmote("confesses: Troll toes sort of creep me out.");
+                        break;
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_pri_confessions_emote_trigger_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_pri_confessions_emote_trigger_SpellScript();
+    }
 };
 
 void AddSC_priest_spell_scripts()
@@ -2771,7 +3000,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_rapture();
     new spell_pri_atonement();
     new spell_pri_spirit_shell();
-    new spell_pri_purify();
     new spell_pri_devouring_plague();
     new spell_pri_phantasm();
     new spell_pri_mind_spike();
@@ -2795,7 +3023,10 @@ void AddSC_priest_spell_scripts()
     new spell_pri_evangelism();
     new spell_pri_archangel();
     new spell_pri_levitate();
+    new spell_pri_glyph_of_swd();
     new spell_pri_shadow_word_death();
-    new spell_pri_glyph_of_holy_nova();
-    new spell_pri_glyph_of_levitate();
+    new spell_pri_divine_star();
+    new spell_pri_glyph_of_confessions();
+    new spell_pri_confessions_emote();
+    new spell_pri_confessions_emote_trigger();
 }

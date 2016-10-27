@@ -1,159 +1,355 @@
+/*
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "gate_of_the_setting_sun.h"
 
-enum Texts
+enum eSpells
 {
-    SAY_AGGRO       = 0,
-    SAY_EARTHQUAKE  = 1,
-    SAY_OVERRUN     = 2,
-    SAY_SLAY        = 3,
-    SAY_DEATH       = 4
+	SPELL_PLANT_EXPLOSIVE = 107187,
+
+	SPELL_SABOTAGE = 107268,
+	SPELL_SABOTAGE_EXPLOSION = 113645,
+
+	SPELL_PLAYER_EXPLOSION = 113654,
+
+	SPELL_MUNITION_STABLE = 109987,
+	SPELL_MUNITION_EXPLOSION = 107153,
+	SPELL_MUNITION_EXPLOSION_AURA = 120551,
 };
 
-enum Spells
+enum eEvents
 {
-    SPELL_EARTHQUAKE        = 153616,
-    SPELL_SUNDER_ARMOR      = 153726,
-    SPELL_CHAIN_LIGHTNING   = 153764,
-    SPELL_OVERRUN           = 154221,
-    SPELL_ENRAGE            = 157173,
-    SPELL_MARK_DEATH        = 153234,
-    SPELL_AURA_DEATH        = 153616
+	EVENT_EXPLOSIVES = 1,
+	EVENT_SABOTAGE = 2
 };
 
-enum Events
+enum eWorldInFlames
 {
-    EVENT_ENRAGE    = 1,
-    EVENT_ARMOR     = 2,
-    EVENT_CHAIN     = 3,
-    EVENT_QUAKE     = 4,
-    EVENT_OVERRUN   = 5
+	WIF_NONE = 0,
+	WIF_70 = 1,
+	WIF_30 = 2
 };
 
 class boss_saboteur_kiptilak : public CreatureScript
 {
-    public:
-        boss_saboteur_kiptilak() : CreatureScript("boss_saboteur_kiptilak") { }
+public:
+	boss_saboteur_kiptilak() : CreatureScript("boss_saboteur_kiptilak") {}
 
-        struct boss_saboteur_kiptilakAI : public ScriptedAI
-        {
-            boss_saboteur_kiptilakAI(Creature* creature) : ScriptedAI(creature)
-            {
-                Initialize();
-            }
+	struct boss_saboteur_kiptilakAI : public BossAI
+	{
+		boss_saboteur_kiptilakAI(Creature* creature) : BossAI(creature, DATA_KIPTILAK)
+		{
+			instance = creature->GetInstanceScript();
+		}
 
-            void Initialize()
-            {
-                _inEnrage = false;
-            }
+		InstanceScript* instance;
 
-            void Reset() override
-            {
-                _events.Reset();
-                _events.ScheduleEvent(EVENT_ENRAGE, 0);
-                _events.ScheduleEvent(EVENT_ARMOR, urand(5000, 13000));
-                _events.ScheduleEvent(EVENT_CHAIN, urand(10000, 30000));
-                _events.ScheduleEvent(EVENT_QUAKE, urand(25000, 35000));
-                _events.ScheduleEvent(EVENT_OVERRUN, urand(30000, 45000));
-                Initialize();
-            }
+		uint8 WorldInFlamesEvents;
 
-            void KilledUnit(Unit* victim) override
-            {
-                victim->CastSpell(victim, SPELL_MARK_DEATH, 0);
+		void Reset()
+		{
+			_Reset();
 
-                if (urand(0, 4))
-                    return;
+			events.ScheduleEvent(EVENT_EXPLOSIVES, urand(7500, 10000));
+			events.ScheduleEvent(EVENT_SABOTAGE, urand(22500, 30000));
 
-                Talk(SAY_SLAY);
-            }
+			WorldInFlamesEvents = 0;
+		}
 
-            void JustDied(Unit* /*killer*/) override
-            {
-                Talk(SAY_DEATH);
-            }
+		void EnterCombat(Unit* /*who*/)
+		{
+			_EnterCombat();
+		}
 
-            void EnterCombat(Unit* /*who*/) override
-            {
-                Talk(SAY_AGGRO);
-            }
+		void JustReachedHome()
+		{
+			instance->SetBossState(DATA_KIPTILAK, FAIL);
+			summons.DespawnAll();
+		}
 
-            void MoveInLineOfSight(Unit* who) override
+		void DamageTaken(Unit* attacker, uint32& damage)
+		{
+			switch (attacker->GetEntry())
+			{
+			case NPC_EXPLOSION_BUNNY_N_M:
+			case NPC_EXPLOSION_BUNNY_S_M:
+			case NPC_EXPLOSION_BUNNY_E_M:
+			case NPC_EXPLOSION_BUNNY_W_M:
+			case NPC_EXPLOSION_BUNNY_N_P:
+			case NPC_EXPLOSION_BUNNY_S_P:
+			case NPC_EXPLOSION_BUNNY_E_P:
+			case NPC_EXPLOSION_BUNNY_W_P:
+				damage = 0;
+				return;
+			}
 
-            {
-                if (who && who->GetTypeId() == TYPEID_PLAYER && me->IsValidAttackTarget(who))
-                    if (who->HasAura(SPELL_MARK_DEATH))
-                        who->CastSpell(who, SPELL_AURA_DEATH, 1);
-            }
+			float nextHealthPct = ((float(me->GetHealth()) - damage) / float(me->GetMaxHealth())) * 100;
 
-            void UpdateAI(uint32 diff) override
-            {
-                if (!UpdateVictim())
-                    return;
+			if (WorldInFlamesEvents < WIF_70 && nextHealthPct <= 70.0f)
+			{
+				DoWorldInFlamesEvent();
+				++WorldInFlamesEvents;
+			}
+			else if (WorldInFlamesEvents < WIF_30 && nextHealthPct <= 30.0f)
+			{
+				DoWorldInFlamesEvent();
+				++WorldInFlamesEvents;
+			}
+		}
 
-                _events.Update(diff);
+		void DoWorldInFlamesEvent()
+		{
+			std::list<Creature*> munitionList;
+			GetCreatureListWithEntryInGrid(munitionList, me, NPC_STABLE_MUNITION, 100.0f);
 
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
+			for (auto itr : munitionList)
+			{
+				itr->RemoveAurasDueToSpell(SPELL_MUNITION_STABLE);
+				itr->CastSpell(itr, SPELL_MUNITION_EXPLOSION, true);
+				itr->DespawnOrUnsummon(2000);
+			}
+		}
 
-                while (uint32 eventId = _events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                        case EVENT_ENRAGE:
-                            if (!HealthAbovePct(20))
-                            {
-                                DoCast(me, SPELL_ENRAGE);
-                                _events.ScheduleEvent(EVENT_ENRAGE, 6000);
-                                _inEnrage = true;
-                            }
-                            break;
-                        case EVENT_OVERRUN:
-                            Talk(SAY_OVERRUN);
-                            DoCastVictim(SPELL_OVERRUN);
-                            _events.ScheduleEvent(EVENT_OVERRUN, urand(25000, 40000));
-                            break;
-                        case EVENT_QUAKE:
-                            if (urand(0, 1))
-                                return;
+		void JustSummoned(Creature* summoned)
+		{
+			if (summoned->GetEntry() == NPC_STABLE_MUNITION)
+				summoned->AddAura(SPELL_MUNITION_STABLE, summoned);
 
-                            Talk(SAY_EARTHQUAKE);
+			summons.Summon(summoned);
+		}
 
-                            //remove enrage before casting earthquake because enrage + earthquake = 16000dmg over 8sec and all dead
-                            if (_inEnrage)
-                                me->RemoveAurasDueToSpell(SPELL_ENRAGE);
+		void UpdateAI(uint32 diff)
+		{
+			if (!UpdateVictim())
+				return;
 
-                            DoCast(me, SPELL_EARTHQUAKE);
-                            _events.ScheduleEvent(EVENT_QUAKE, urand(30000, 55000));
-                            break;
-                        case EVENT_CHAIN:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                                DoCast(target, SPELL_CHAIN_LIGHTNING);
-                            _events.ScheduleEvent(EVENT_CHAIN, urand(7000, 27000));
-                            break;
-                        case EVENT_ARMOR:
-                            DoCastVictim(SPELL_SUNDER_ARMOR);
-                            _events.ScheduleEvent(EVENT_ARMOR, urand(10000, 25000));
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                DoMeleeAttackIfReady();
-            }
+			events.Update(diff);
 
-            private:
-                EventMap _events;
-                bool _inEnrage;
-        };
+			switch (events.ExecuteEvent())
+			{
+			case EVENT_EXPLOSIVES:
+				for (uint8 i = 0; i < urand(1, 3); ++i)
+					me->CastSpell(frand(702, 740), frand(2292, 2320), 388.5f, SPELL_PLANT_EXPLOSIVE, true);
 
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new boss_saboteur_kiptilakAI(creature);
-        }
+				events.ScheduleEvent(EVENT_EXPLOSIVES, urand(7500, 12500));
+				break;
+			case EVENT_SABOTAGE:
+				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+					me->CastSpell(target, SPELL_SABOTAGE, true);
+
+				events.ScheduleEvent(EVENT_SABOTAGE, urand(22500, 30000));
+				break;
+			default:
+				break;
+			}
+
+			DoMeleeAttackIfReady();
+		}
+
+		void JustDied(Unit* /*killer*/)
+		{
+			_JustDied();
+		}
+	};
+
+	CreatureAI* GetAI(Creature* creature) const
+	{
+		return new boss_saboteur_kiptilakAI(creature);
+	}
+};
+
+class npc_munition_explosion_bunny : public CreatureScript
+{
+public:
+	npc_munition_explosion_bunny() : CreatureScript("npc_munition_explosion_bunny") { }
+
+	struct npc_munition_explosion_bunnyAI : public ScriptedAI
+	{
+		npc_munition_explosion_bunnyAI(Creature* creature) : ScriptedAI(creature) {}
+
+		float orientation;
+		uint32 checkTimer;
+
+		void Reset()
+		{
+			me->SetReactState(REACT_PASSIVE);
+			orientation = 0.0f;
+			checkTimer = 1000;
+
+			switch (me->GetEntry())
+			{
+			case NPC_EXPLOSION_BUNNY_N_M:
+			case NPC_EXPLOSION_BUNNY_N_P:
+				orientation = 0.0f;
+				break;
+			case NPC_EXPLOSION_BUNNY_S_M:
+			case NPC_EXPLOSION_BUNNY_S_P:
+				orientation = M_PI;
+				break;
+			case NPC_EXPLOSION_BUNNY_E_M:
+			case NPC_EXPLOSION_BUNNY_E_P:
+				orientation = 4.71f;
+				break;
+			case NPC_EXPLOSION_BUNNY_W_M:
+			case NPC_EXPLOSION_BUNNY_W_P:
+				orientation = 1.57f;
+				break;
+			}
+
+			float x = 0.0f;
+			float y = 0.0f;
+			GetPositionWithDistInOrientation(me, 40.0f, orientation, x, y);
+			me->GetMotionMaster()->MovePoint(1, x, y, me->GetPositionZ());
+
+			me->AddAura(SPELL_MUNITION_EXPLOSION_AURA, me);
+		}
+
+		void DamageTaken(Unit* attacker, uint32& damage)
+		{
+			damage = 0;
+		}
+
+		void MovementInform(uint32 type, uint32 id)
+		{
+			if (id == 1)
+				me->DespawnOrUnsummon();
+		}
+
+		void EnterCombat(Unit* /*who*/)
+		{
+			return;
+		}
+
+		void UpdateAI(uint32 diff)
+		{
+			if (checkTimer <= diff)
+			{
+				checkTimer = 500;
+				if (Creature* munition = GetClosestCreatureWithEntry(me, NPC_STABLE_MUNITION, 2.0f, true))
+				{
+					if (munition->HasAura(SPELL_MUNITION_STABLE))
+					{
+						munition->RemoveAurasDueToSpell(SPELL_MUNITION_STABLE);
+						munition->CastSpell(munition, SPELL_MUNITION_EXPLOSION, true);
+						munition->DespawnOrUnsummon(2000);
+					}
+				}
+			}
+			else checkTimer -= diff;
+		}
+	};
+
+	CreatureAI* GetAI(Creature* creature) const
+	{
+		return new npc_munition_explosion_bunnyAI(creature);
+	}
+};
+
+class CheckMunitionExplosionPredicate
+{
+public:
+	CheckMunitionExplosionPredicate(Unit* caster) : _caster(caster) {}
+
+	bool operator()(WorldObject* target)
+	{
+		if (!_caster || !target)
+			return true;
+
+		if (!_caster->ToTempSummon())
+			return true;
+
+		Unit* creator = _caster->ToTempSummon()->GetSummoner();
+
+		if (!creator || creator == target)
+			return true;
+
+		return false;
+	}
+
+private:
+	Unit* _caster;
+};
+
+class spell_kiptilak_munitions_explosion : public SpellScriptLoader
+{
+public:
+	spell_kiptilak_munitions_explosion() : SpellScriptLoader("spell_kiptilak_munitions_explosion") { }
+
+	class spell_kiptilak_munitions_explosion_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_kiptilak_munitions_explosion_SpellScript);
+
+		void FilterTargets(std::list<WorldObject*>& unitList)
+		{
+			if (Unit* caster = GetCaster())
+				unitList.remove_if(CheckMunitionExplosionPredicate(caster));
+		}
+
+		void Register()
+		{
+			OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_kiptilak_munitions_explosion_SpellScript::FilterTargets, EFFECT_0, TARGET_SRC_CASTER);
+			OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_kiptilak_munitions_explosion_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+		}
+	};
+
+	SpellScript* GetSpellScript() const
+	{
+		return new spell_kiptilak_munitions_explosion_SpellScript();
+	}
+};
+
+class spell_kiptilak_sabotage : public SpellScriptLoader
+{
+public:
+	spell_kiptilak_sabotage() : SpellScriptLoader("spell_kiptilak_sabotage") { }
+
+	class spell_kiptilak_sabotage_AuraScript : public AuraScript
+	{
+		PrepareAuraScript(spell_kiptilak_sabotage_AuraScript);
+
+		void OnRemove(AuraEffect const *, AuraEffectHandleModes)
+		{
+			Unit* target = GetTarget();
+
+			if (!target)
+				return;
+
+			target->CastSpell(target, SPELL_PLAYER_EXPLOSION, true);
+			target->CastSpell(target, SPELL_SABOTAGE_EXPLOSION, true);
+		}
+
+		void Register()
+		{
+			AfterEffectRemove += AuraEffectRemoveFn(spell_kiptilak_sabotage_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+		}
+	};
+
+	AuraScript* GetAuraScript() const
+	{
+		return new spell_kiptilak_sabotage_AuraScript();
+	}
 };
 
 void AddSC_boss_saboteur_kiptilak()
 {
-    new boss_saboteur_kiptilak();
+	new boss_saboteur_kiptilak();
+	new npc_munition_explosion_bunny();
+	new spell_kiptilak_munitions_explosion();
+	new spell_kiptilak_sabotage();
 }

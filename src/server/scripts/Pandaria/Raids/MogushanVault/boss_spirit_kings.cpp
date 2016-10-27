@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "mogu_shan_vault.h"
@@ -1215,14 +1232,14 @@ class spell_maddening_shout : public SpellScriptLoader
         {
             PrepareAuraScript(spell_maddening_shout_AuraScript);
 
-            void OnAbsorb(AuraEffect& aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            void OnAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
             {
                 if (Unit* attacker = dmgInfo.GetAttacker())
                     if (attacker->GetTypeId() != TYPEID_PLAYER)
                         absorbAmount = 0;
             }
 
-            void OnRemove(AuraEffect /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
                 {
@@ -1255,7 +1272,7 @@ class spell_crazed_cowardice : public SpellScriptLoader
         {
             PrepareAuraScript(spell_crazed_cowardice_AuraScript);
 
-            void HandlePeriodic(AuraEffect /*aurEff*/)
+            void HandlePeriodic(AuraEffect* /*aurEff*/)
             {
                 PreventDefaultAction();
                 

@@ -57,9 +57,13 @@ enum SpellFamilyFlag
     // Rogue
     SPELLFAMILYFLAG0_ROGUE_VANISH               = 0x00000800,
     SPELLFAMILYFLAG0_ROGUE_VAN_SPRINT           = 0x00000840, // Vanish, Sprint
+	SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT       = 0x00000860, // Vanish, Evasion, Sprint
     SPELLFAMILYFLAG1_ROGUE_SHADOWSTEP           = 0x00000200, // Shadowstep
     SPELLFAMILYFLAG0_ROGUE_KICK                 = 0x00000010, // Kick
-    SPELLFAMILYFLAG1_ROGUE_DISMANTLE_SMOKE_BOMB = 0x80100000, // Dismantle, Smoke Bomb
+    SPELLFAMILYFLAG1_ROGUE_DISMANTLE            = 0x00100000, // Dismantle
+	SPELLFAMILYFLAG1_ROGUE_DISMANTLE_SMOKE_BOMB = 0x80100000, // Dismantle, Smoke Bomb
+	SPELLFAMILYFLAG_ROGUE_BLADE_FLURRY          = 0x40000000, // Blade Flurry
+    SPELLFAMILYFLAG1_ROGUE_BLADE_FLURRY         = 0x00000800, // Blade Flurry
 
     // Warrior
     SPELLFAMILYFLAG_WARRIOR_CHARGE              = 0x00000001,
@@ -660,7 +664,7 @@ class SpellMgr
 
         // Spell proc event table
         SpellProcEventEntry const* GetSpellProcEvent(uint32 spellId) const;
-        bool IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellProcEvent, uint32 EventProcFlag, SpellInfo const* procSpell, uint32 procFlags, uint32 procExtra, bool active) const;
+        bool IsSpellProcEventCanTriggeredBy(SpellInfo const* spellProto, SpellProcEventEntry const* spellProcEvent, uint32 EventProcFlag, SpellInfo const* procSpell, uint32 procFlags, uint32 procExtra, bool active) const;
 
         // Spell proc table
         SpellProcEntry const* GetSpellProcEntry(uint32 spellId) const;

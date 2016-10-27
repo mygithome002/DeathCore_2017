@@ -189,8 +189,8 @@ void ReputationMgr::SendState(FactionState const* faction)
             itr->second.needSend = false;
             if (itr->second.ReputationListID != faction->ReputationListID)
             {
-                data << uint32(itr->second.Standing);
                 data << uint32(itr->second.ReputationListID);
+                data << uint32(itr->second.Standing);
                 ++count;
             }
         }
@@ -466,45 +466,58 @@ void ReputationMgr::SetVisible(FactionState* faction)
     SendVisible(faction);
 }
 
-void ReputationMgr::SetAtWar(RepListID repListID, bool on)
+void ReputationMgr::SetAtWar(FactionIndex FactionIndexID)
 {
-    FactionStateList::iterator itr = _factions.find(repListID);
-    if (itr == _factions.end())
-        return;
+	FactionStateList::iterator itr = _factions.find(FactionIndexID);
+	if (itr == _factions.end())
+		return;
 
-    // always invisible or hidden faction can't change war state
-    if (itr->second.Flags & (FACTION_FLAG_INVISIBLE_FORCED|FACTION_FLAG_HIDDEN))
-        return;
+	// always invisible or hidden faction can't change war state
+	if (itr->second.Flags & (FACTION_FLAG_INVISIBLE_FORCED | FACTION_FLAG_HIDDEN))
+		return;
 
-    SetAtWar(&itr->second, on);
+	SetAtWar(&itr->second, true);
+}
+
+void ReputationMgr::SetNotAtWar(FactionIndex FactionIndexID)
+{
+	FactionStateList::iterator itr = _factions.find(FactionIndexID);
+	if (itr == _factions.end())
+		return;
+
+	// always invisible or hidden faction can't change war state
+	if (itr->second.Flags & (FACTION_FLAG_INVISIBLE_FORCED | FACTION_FLAG_HIDDEN))
+		return;
+
+	SetAtWar(&itr->second, false);
 }
 
 void ReputationMgr::SetAtWar(FactionState* faction, bool atWar) const
 {
-    // not allow declare war to own faction
-    if (atWar && (faction->Flags & FACTION_FLAG_PEACE_FORCED))
-        return;
+	// not allow declare war to own faction
+	if (atWar && (faction->Flags & FACTION_FLAG_PEACE_FORCED))
+		return;
 
-    // already set
-    if (((faction->Flags & FACTION_FLAG_AT_WAR) != 0) == atWar)
-        return;
+	// already set
+	if (((faction->Flags & FACTION_FLAG_AT_WAR) != 0) == atWar)
+		return;
 
-    if (atWar)
-        faction->Flags |= FACTION_FLAG_AT_WAR;
-    else
-        faction->Flags &= ~FACTION_FLAG_AT_WAR;
+	if (atWar)
+		faction->Flags |= FACTION_FLAG_AT_WAR;
+	else
+		faction->Flags &= ~FACTION_FLAG_AT_WAR;
 
-    faction->needSend = true;
-    faction->needSave = true;
+	faction->needSend = true;
+	faction->needSave = true;
 }
 
-void ReputationMgr::SetInactive(RepListID repListID, bool on)
+void ReputationMgr::SetInactive(RepListID FactionIndex, bool Status)
 {
-    FactionStateList::iterator itr = _factions.find(repListID);
-    if (itr == _factions.end())
-        return;
+	FactionStateList::iterator itr = _factions.find(FactionIndex);
+	if (itr == _factions.end())
+		return;
 
-    SetInactive(&itr->second, on);
+	SetInactive(&itr->second, Status);
 }
 
 void ReputationMgr::SetInactive(FactionState* faction, bool inactive) const

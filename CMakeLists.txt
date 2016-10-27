@@ -2,7 +2,7 @@
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
-# Free Software Foundation; either version 3 of the License, or (at your
+# Free Software Foundation; either version 2 of the License, or (at your
 # option) any later version.
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
@@ -58,6 +58,8 @@ endif()
 
 include(CheckPlatform)
 
+include(GroupSources)
+
 # basic packagesearching and setup (further support will be needed, this is a preliminary release!)
 set(OPENSSL_EXPECTED_VERSION 1.0.0)
 set(ACE_EXPECTED_VERSION 5.8.3)
@@ -67,9 +69,8 @@ find_package(ACE REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Threads REQUIRED)
 
-if( NOT USE_MYSQL_SOURCES )
-  find_package(MySQL REQUIRED)
-endif()
+include(ConfigureBoost)
+find_package(MySQL REQUIRED)
 
 if( UNIX )
   find_package(Readline)

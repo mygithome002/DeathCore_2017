@@ -174,16 +174,16 @@ class npc_frost_warder : public CreatureScript
 };
 
 /*######
-##  Mob Frozen Orb
+##  Mob Orb
 ######*/
-class npc_frozen_orb : public CreatureScript
+class npc_orb : public CreatureScript
 {
 public:
-    npc_frozen_orb() : CreatureScript("npc_frozen_orb") { }
+	npc_orb() : CreatureScript("npc_orb") { }
 
-    struct npc_frozen_orbAI : public ScriptedAI
+	struct npc_orbAI : public ScriptedAI
     {
-        npc_frozen_orbAI(Creature* creature) : ScriptedAI(creature)
+		npc_orbAI(Creature* creature) : ScriptedAI(creature)
         {
         }
 
@@ -224,21 +224,21 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const override
     {
-        return new npc_frozen_orbAI(creature);
+		return new npc_orbAI(creature);
     }
 };
 
 /*######
-##  Mob Frozen Orb Stalker
+##  Mob Orb Stalker
 ######*/
-class npc_frozen_orb_stalker : public CreatureScript
+class npc_orb_stalker : public CreatureScript
 {
     public:
-        npc_frozen_orb_stalker() : CreatureScript("npc_frozen_orb_stalker") { }
+        npc_orb_stalker() : CreatureScript("npc_orb_stalker") { }
 
-        struct npc_frozen_orb_stalkerAI : public ScriptedAI
+        struct npc_orb_stalkerAI : public ScriptedAI
         {
-            npc_frozen_orb_stalkerAI(Creature* creature) : ScriptedAI(creature)
+            npc_orb_stalkerAI(Creature* creature) : ScriptedAI(creature)
             {
                 creature->SetVisible(false);
                 creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
@@ -277,7 +277,7 @@ class npc_frozen_orb_stalker : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const override
         {
-            return new npc_frozen_orb_stalkerAI(creature);
+            return new npc_orb_stalkerAI(creature);
         }
 };
 
@@ -285,6 +285,6 @@ void AddSC_boss_toravon()
 {
     new boss_toravon();
     new npc_frost_warder();
-    new npc_frozen_orb();
-    new npc_frozen_orb_stalker();
+    new npc_orb();
+    new npc_orb_stalker();
 }

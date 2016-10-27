@@ -46,7 +46,7 @@ public:
     {
         npc_pet_mage_mirror_imageAI(Creature* creature) : CasterAI(creature) { }
 
-        void InitializeAI() override
+        void InitializeAI()
         {
             CasterAI::InitializeAI();
             Unit* owner = me->GetOwner();
@@ -61,7 +61,7 @@ public:
         }
 
         // Do not reload Creature templates on evade mode enter - prevent visual lost
-        void EnterEvadeMode() override
+        void EnterEvadeMode()
         {
             if (me->IsInEvadeMode() || !me->IsAlive())
                 return;
@@ -77,92 +77,189 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const override
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_pet_mage_mirror_imageAI(creature);
     }
 };
 
-class npc_mage_frozen_orb : public CreatureScript
+class npc_pet_mage_ring_of_frost : public CreatureScript
 {
-public:
-    npc_mage_frozen_orb() : CreatureScript("npc_mage_frozen_orb") { }
+    public:
+        npc_pet_mage_ring_of_frost() : CreatureScript("npc_pet_mage_ring_of_frost") { }
 
-    struct npc_mage_frozen_orbAI : public ScriptedAI
-    {
-        npc_mage_frozen_orbAI(Creature* creature) : ScriptedAI(creature)
+        struct npc_pet_mage_ring_of_frostAI : public ScriptedAI
         {
-            summoner = me->ToTempSummon()->GetSummoner();
-            x = me->GetPositionX();
-            y = me->GetPositionY();
-            z = summoner->GetPositionZ() + 2;
-            o = me->GetOrientation();
-            me->NearTeleportTo(x, y, z, o, true);
-            angle = summoner->GetAngle(me);
-            newx = me->GetPositionX() + 200 * cos(angle);
-            newy = me->GetPositionY() + 200 * sin(angle);
-            CombatCheck = false;
-            DamageTimer = 1000;
-        }
-
-        float x, y, z, o, newx, newy, angle;
-        bool CombatCheck;
-        Unit* summoner;
-        uint32 DamageTimer;
-
-        void EnterCombat(Unit* /*target*/) override
-        {
-            me->CastSpell(me, SPELL_MAGE_FROZEN_ORB_SELF_SNARE, true);
-            summoner->CastSpell(summoner, SPELL_MAGE_FINGERS_OF_FROST, true);
-            CombatCheck = true;
-        }
-
-        void Reset() override
-        {
-            me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
-            me->CastSpell(me, SPELL_MAGE_FROZEN_ORB_VISUAL, true);
-            me->CastSpell(me, SPELL_MAGE_FROZEN_ORB_PERIODIC_AURA, true);
-            me->GetMotionMaster()->MovePoint(0, newx, newy, z);
-        }
-
-        void MoveInLineOfSight(Unit* /*who*/) override { }
-
-        void EnterEvadeMode() override { }
-
-        void UpdateAI(uint32 diff) override
-        {
-            if (DamageTimer <= diff)
+            npc_pet_mage_ring_of_frostAI(Creature *c) : ScriptedAI(c)
             {
-                if (summoner)
-                    summoner->CastSpell(me, SPELL_MAGE_FROZEN_ORB_DMG, true);
-
-                if (CombatCheck)
-                    me->CastSpell(me, SPELL_MAGE_FROZEN_ORB_VISUAL_DMG, true);
-
-                DamageTimer = 1000;
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             }
-            else
-                DamageTimer -= diff;
 
-
-            if (!CombatCheck)
+            void Reset()
             {
-                if (Unit* target = me->SelectNearestTarget(10))
-                    AttackStart(target);
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             }
-        }
-    };
 
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        if (!creature->ToTempSummon())
-            return NULL;
-        return new npc_mage_frozen_orbAI(creature);
-    }
+            void InitializeAI()
+            {
+                ScriptedAI::InitializeAI();
+                Unit * owner = me->GetOwner();
+                if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+                std::list<Creature*> templist;
+                me->GetCreatureListWithEntryInGrid(templist, me->GetEntry(), 200.0f);
+                if (!templist.empty())
+                    for (std::list<Creature*>::const_iterator itr = templist.begin(); itr != templist.end(); ++itr)
+                        if ((*itr)->GetOwner() == me->GetOwner() && *itr != me)
+                            (*itr)->DisappearAndDie();
+            }
+
+            void CheckIfMoveInRing(Unit *who)
+            {
+                if (who->IsAlive() && me->IsInRange(who, 2.0f, 4.7f) && me->IsWithinLOSInMap(who))
+                {
+                    if (!who->HasAura(82691))
+                    {
+                        if (!who->HasAura(91264))
+                        {
+                            me->CastSpell(who, 82691, true);
+                            me->CastSpell(who, 91264, true);
+                        }
+                    }
+                    else me->CastSpell(who, 91264, true);
+                }
+            }
+
+			void UpdateAI(uint32 diff)
+            {
+                std::list<Unit*> targets;
+                Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 5.0f);
+                Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(me, targets, u_check);
+                me->VisitNearbyObject(5.0f, searcher);
+                for (std::list<Unit*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                    if (!(*iter)->IsTotem())
+                        CheckIfMoveInRing(*iter);
+            }
+        };
+
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return new npc_pet_mage_ring_of_frostAI(pCreature);
+        }
+};
+
+enum frozenOrbSpells
+{
+    SPELL_FINGERS_OF_FROST_VISUAL   = 44544,
+    SPELL_SELF_SNARE_90             = 82736,
+    SPELL_SNARE_DAMAGE              = 84721,
+    SPELL_FINGERS_OF_FROST          = 126084
+};
+
+class npc_pet_mage_frozen_orb : public CreatureScript
+{
+    public:
+        npc_pet_mage_frozen_orb() : CreatureScript("npc_pet_mage_frozen_orb") { }
+
+        struct npc_pet_mage_frozen_orbAI : public ScriptedAI
+        {
+            npc_pet_mage_frozen_orbAI(Creature* creature) : ScriptedAI(creature)
+            {
+                //x = me->GetPositionX();
+                //y = me->GetPositionY();
+                //z = me->GetOwner()->GetPositionZ()+2;
+                //o = me->GetOrientation();
+                //dist = 30;
+                //me->NearTeleportTo(x, y, z, o, true);
+                //angle = me->GetOwner()->GetAngle(me);
+                //newx = me->GetPositionX() + dist * cos(angle);
+                //newy = me->GetPositionY() + dist * sin(angle);
+                //CombatCheck = false;
+                frozenOrbTimer = 0;
+            }
+
+
+            //float x,y,z,o,newx,newy,angle;
+            //bool CombatCheck;
+            uint32 DespawnTimer;
+            //uint32 DespawnCheckTimer;
+            uint32 frozenOrbTimer;
+            //uint32 dist;
+
+            void IsSummonedBy(Unit* owner)
+            {
+                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+                {
+                    owner->CastSpell(me, SPELL_SNARE_DAMAGE, true);
+                    owner->CastSpell(owner, SPELL_FINGERS_OF_FROST_VISUAL, true);
+                    owner->CastSpell(owner, SPELL_FINGERS_OF_FROST, true);
+                    me->AddAura(SPELL_SELF_SNARE_90, me);
+
+                    frozenOrbTimer = 1000;
+                }
+                else
+                    me->DespawnOrUnsummon();
+            }
+
+            /*void EnterCombat(Unit* /*target/)
+            {
+                if (me->IsWithinDist2d(newx,newy, 30.0f))
+                {
+                me->GetMotionMaster()->MoveCharge(newx, newy, z, 0.2f);
+                }
+                else dist = 15;
+                DespawnTimer = 10 * IN_MILLISECONDS;
+
+            }*/
+
+            void Reset()
+            {
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE);
+                me->AddUnitMovementFlag(MOVEMENTFLAG_FLYING);
+                me->SetReactState(REACT_PASSIVE);
+                DespawnTimer = 10 * IN_MILLISECONDS;
+                //me->GetMotionMaster()->MovePoint(0, newx, newy, z);
+            }
+
+			void UpdateAI(uint32 diff)
+            {
+                Unit* owner = me->GetOwner();
+
+                if (!owner)
+                    return;
+
+                if (frozenOrbTimer <= diff)
+                {
+                    if (owner && owner->ToPlayer())
+                        if (owner->ToPlayer()->HasSpellCooldown(SPELL_SNARE_DAMAGE))
+                            owner->ToPlayer()->RemoveSpellCooldown(SPELL_SNARE_DAMAGE);
+
+                    owner->CastSpell(me, SPELL_SNARE_DAMAGE, true);
+                    frozenOrbTimer = 1000;
+                }
+                else
+                    frozenOrbTimer -= diff;
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_pet_mage_frozen_orbAI(creature);
+        }
 };
 
 void AddSC_mage_pet_scripts()
 {
     new npc_pet_mage_mirror_image();
-    new npc_mage_frozen_orb();
+    new npc_pet_mage_ring_of_frost();
+    new npc_pet_mage_frozen_orb();
 }

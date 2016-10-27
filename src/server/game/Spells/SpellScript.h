@@ -55,7 +55,7 @@ enum SpellScriptState
 class _SpellScript
 {
     // internal use classes & functions
-    // DO NOT override THESE IN SCRIPTS
+    // DO NOT OVERRIDE THESE IN SCRIPTS
     protected:
         virtual bool _Validate(SpellInfo const* entry);
 
@@ -130,6 +130,7 @@ enum SpellScriptHookType
     SPELL_SCRIPT_HOOK_EFFECT_LAUNCH_TARGET,
     SPELL_SCRIPT_HOOK_EFFECT_HIT,
     SPELL_SCRIPT_HOOK_EFFECT_HIT_TARGET,
+	SPELL_SCRIPT_HOOK_EFFECT_SUCCESSFUL_DISPEL,
     SPELL_SCRIPT_HOOK_BEFORE_HIT,
     SPELL_SCRIPT_HOOK_HIT,
     SPELL_SCRIPT_HOOK_AFTER_HIT,
@@ -150,7 +151,7 @@ enum SpellScriptHookType
 class SpellScript : public _SpellScript
 {
     // internal use classes & functions
-    // DO NOT override THESE IN SCRIPTS
+    // DO NOT OVERRIDE THESE IN SCRIPTS
     public:
         #define SPELLSCRIPT_FUNCTION_TYPE_DEFINES(CLASSNAME) \
             typedef SpellCastResult(CLASSNAME::*SpellCheckCastFnType)(); \
@@ -278,6 +279,7 @@ class SpellScript : public _SpellScript
         HookList<EffectHandler> OnEffectLaunchTarget;
         HookList<EffectHandler> OnEffectHit;
         HookList<EffectHandler> OnEffectHitTarget;
+		HookList<EffectHandler> OnEffectSuccessfulDispel;
         #define SpellEffectFn(F, I, N) EffectHandlerFunction(&F, I, N)
 
         // example: BeforeHit += SpellHitFn(class::function);
@@ -313,7 +315,9 @@ class SpellScript : public _SpellScript
         // 10. OnEffectHitTarget - executed just before specified effect handler call - called for each target from spell target map
         // 11. OnHit - executed just before spell deals damage and procs auras - when spell hits target - called for each target from spell target map
         // 12. AfterHit - executed just after spell finishes all it's jobs for target - called for each target from spell target map
-
+		//
+		// this hook is only executed after a successful dispel of any aura
+        // OnEffectSuccessfulDispel - executed just after effect successfully dispelled aura(s)
         //
         // methods allowing interaction with Spell object
         //
@@ -449,7 +453,7 @@ enum AuraScriptHookType
 class AuraScript : public _SpellScript
 {
     // internal use classes & functions
-    // DO NOT override THESE IN SCRIPTS
+    // DO NOT OVERRIDE THESE IN SCRIPTS
     public:
 
     #define AURASCRIPT_FUNCTION_TYPE_DEFINES(CLASSNAME) \
@@ -821,7 +825,7 @@ class AuraScript : public _SpellScript
         DynamicObject* GetDynobjOwner() const;
 
         // removes aura with remove mode (see AuraRemoveMode enum)
-        void Remove(uint32 removeMode = 0);
+        void Remove(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         // returns aura object of script
         Aura* GetAura() const;
 

@@ -37,7 +37,7 @@ class lookup_commandscript : public CommandScript
 public:
     lookup_commandscript() : CommandScript("lookup_commandscript") { }
 
-    ChatCommand* GetCommands() const override
+    ChatCommand* GetCommands() const
     {
         static ChatCommand lookupPlayerCommandTable[] =
         {
@@ -724,7 +724,7 @@ public:
             SkillLineEntry const* skillInfo = sSkillLineStore.LookupEntry(id);
             if (skillInfo)
             {
-                std::string name = skillInfo->name;
+				std::string name = skillInfo->DisplayName_lang;
                 if (name.empty())
                     continue;
 

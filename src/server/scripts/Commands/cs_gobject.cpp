@@ -174,8 +174,12 @@ public:
             return false;
         }
 
-        /// @todo is it really necessary to add both the real and DB table guid here ?
+        // TODO: is it really necessary to add both the real and DB table guid here ?
         sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
+
+        if (handler->GetSession())
+            if (handler->GetSession()->GetPlayer())
+                handler->GetSession()->GetPlayer()->SetLastTargetedGO(guidLow);
 
         handler->PSendSysMessage(LANG_GAMEOBJECT_ADD, objectId, objectInfo->name.c_str(), guidLow, x, y, z);
         return true;
@@ -279,8 +283,8 @@ public:
 
         bool found = false;
         float x, y, z, o;
-        uint32 guidLow, id, phase;
-        uint16 mapId;
+        uint32 guidLow, id;
+        uint16 mapId, phase;
         uint32 poolId;
 
         do
@@ -293,7 +297,7 @@ public:
             z =       fields[4].GetFloat();
             o =       fields[5].GetFloat();
             mapId =   fields[6].GetUInt16();
-            phase =   fields[7].GetUInt32();
+            phase =   fields[7].GetUInt16();
             poolId =  sPoolMgr->IsPartOfAPool<GameObject>(guidLow);
             if (!poolId || sPoolMgr->IsSpawnedObject<GameObject>(guidLow))
                 found = true;

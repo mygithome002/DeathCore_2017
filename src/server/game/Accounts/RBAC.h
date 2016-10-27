@@ -517,7 +517,7 @@ enum RBACPermissions
     RBAC_PERM_COMMAND_RELOAD_ALL                             = 611,
     RBAC_PERM_COMMAND_RELOAD_ALL_ACHIEVEMENT                 = 612,
     RBAC_PERM_COMMAND_RELOAD_ALL_AREA                        = 613,
-    RBAC_PERM_COMMAND_RELOAD_ALL_EVENTAI                     = 614,
+    BAC_PERM_UNUSED_614                                      = 614,
     RBAC_PERM_COMMAND_RELOAD_ALL_GOSSIP                      = 615,
     RBAC_PERM_COMMAND_RELOAD_ALL_ITEM                        = 616,
     RBAC_PERM_COMMAND_RELOAD_ALL_LOCALES                     = 617,
@@ -534,8 +534,8 @@ enum RBACPermissions
     RBAC_PERM_COMMAND_RELOAD_COMMAND                         = 628,
     RBAC_PERM_COMMAND_RELOAD_CONDITIONS                      = 629,
     RBAC_PERM_COMMAND_RELOAD_CONFIG                          = 630,
-    RBAC_PERM_COMMAND_RELOAD_CREATURE_AI_SCRIPTS             = 631,
-    RBAC_PERM_COMMAND_RELOAD_CREATURE_AI_TEXTS               = 632,
+    RBAC_PERM_UNUSED_631                                     = 631,
+    RBAC_PERM_UNUSED_632                                     = 632,
     RBAC_PERM_COMMAND_RELOAD_CREATURE_LINKED_RESPAWN         = 633,
     RBAC_PERM_COMMAND_RELOAD_CREATURE_LOOT_TEMPLATE          = 634,
     RBAC_PERM_COMMAND_RELOAD_CREATURE_ONKILL_REPUTATION      = 635,
@@ -678,11 +678,19 @@ enum RBACPermissions
     RBAC_PERM_COMMAND_WP_UNLOAD                              = 772,
     RBAC_PERM_COMMAND_WP_RELOAD                              = 773,
     RBAC_PERM_COMMAND_WP_SHOW                                = 774,
-    RBAC_PERM_COMMAND_MODIFY_CURRENCY                        = 775, // only 4.3.4
-    RBAC_PERM_COMMAND_DEBUG_PHASE                            = 776, // Only 4.3.4
+    RBAC_PERM_COMMAND_MODIFY_CURRENCY                        = 775,
+    RBAC_PERM_COMMAND_DEBUG_PHASE                            = 776,
     RBAC_PERM_COMMAND_RESET_SPEC                             = 778,
+	RBAC_PERM_COMMAND_GUILD_GIVEXP							 = 779,
+	RBAC_PERM_COMMAND_GUILD_LEVELUP							 = 780,
 
-    // custom permissions 1000+
+    // custom permissions 1006+
+    RBAC_PERM_COMMAND_QUESTCOMPLETER                         = 1002,
+    RBAC_PERM_COMMAND_QUESTCOMPLETER_STATUS                  = 1003,
+    RBAC_PERM_COMMAND_QUESTCOMPLETER_ADD                     = 1004,
+    RBAC_PERM_COMMAND_QUESTCOMPLETER_DEL                     = 1005,
+	RBAC_PERM_COMMAND_MALL									 = 1006,
+	RBAC_PERM_COMMAND_WORLD_CHAT							 = 1007,
     RBAC_PERM_MAX
 };
 

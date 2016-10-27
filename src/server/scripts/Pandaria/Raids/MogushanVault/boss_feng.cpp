@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "GameObjectAI.h"
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
@@ -756,13 +773,13 @@ class spell_wildfire_infusion_stacks : public SpellScriptLoader
         {
             PrepareAuraScript(spell_wildfire_infusion_stacks_AuraScript);
 
-            void OnApply(AuraEffect /*aurEff*/, AuraEffectHandleModes /*mode*/)
+			void OnApply(AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget())
                     GetTarget()->AddAura(SPELL_WILDFIRE_INFUSION, GetTarget());
             }
 
-            void OnRemove(AuraEffect /*aurEff*/, AuraEffectHandleModes /*mode*/)
+			void OnRemove(AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget())
                     GetTarget()->RemoveAura(SPELL_WILDFIRE_INFUSION);
@@ -931,13 +948,13 @@ class spell_mogu_inversion : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mogu_inversion_AuraScript);
 
-            void OnApply(AuraEffect /*aurEff*/, AuraEffectHandleModes /*mode*/)
+			void OnApply(AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget())
                     GetTarget()->RemoveAurasDueToSpell(SPELL_INVERSION);
             }
 
-            void OnRemove(AuraEffect /*aurEff*/, AuraEffectHandleModes /*mode*/)
+			void OnRemove(AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget())
                     GetTarget()->CastSpell(GetTarget(), SPELL_INVERSION, true);

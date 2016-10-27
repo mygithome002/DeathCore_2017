@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "mogu_shan_vault.h"
@@ -1419,7 +1436,7 @@ class spell_spawn_flash_1_periodic : public SpellScriptLoader
         {
             PrepareAuraScript(spell_spawn_flash_1_periodic_AuraScript);
 
-            void OnRemove(AuraEffect /*aurEff*/, AuraEffectHandleModes /*mode*/)
+			void OnRemove(AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
                 {
@@ -1451,7 +1468,7 @@ class spell_spawn_flash_2_periodic : public SpellScriptLoader
         {
             PrepareAuraScript(spell_spawn_flash_2_periodic_AuraScript);
 
-            void OnRemove(AuraEffect /*aurEff*/, AuraEffectHandleModes /*mode*/)
+			void OnRemove(AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
                 {
@@ -1485,7 +1502,7 @@ class spell_spawn_flash_3_periodic : public SpellScriptLoader
         {
             PrepareAuraScript(spell_spawn_flash_3_periodic_AuraScript);
 
-            void OnRemove(AuraEffect /*aurEff*/, AuraEffectHandleModes /*mode*/)
+			void OnRemove(AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
                     if (target->GetAI())
@@ -1515,7 +1532,7 @@ class spell_touch_of_titans : public SpellScriptLoader
         {
             PrepareAuraScript(spell_touch_of_titans_AuraScript);
 
-            void OnTick(AuraEffect aurEff)
+			void OnTick(AuraEffect* aurEff)
             {
                 if (!GetTarget())
                     return;
@@ -1531,7 +1548,7 @@ class spell_touch_of_titans : public SpellScriptLoader
                 }
             }
 
-            void OnRemove(AuraEffect /*aurEff*/, AuraEffectHandleModes /*mode*/)
+			void OnRemove(AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
                 {
@@ -1603,7 +1620,7 @@ class spell_draw_power : public SpellScriptLoader
         {
             PrepareAuraScript(spell_draw_power_AuraScript);
 
-            void OnRemove(AuraEffect /*aurEff*/, AuraEffectHandleModes /*mode*/)
+			void OnRemove(AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* elegon = GetCaster())
                 {
@@ -1635,7 +1652,7 @@ class spell_core_checker : public SpellScriptLoader
         {
             PrepareAuraScript(spell_core_checker_AuraScript);
 
-            void OnTick(AuraEffect aurEff)
+			void OnTick(AuraEffect* aurEff)
             {
                 if (Unit* energyCharge = GetTarget())
                 {
@@ -1724,7 +1741,7 @@ class spell_unstable_energy : public SpellScriptLoader
         {
             PrepareAuraScript(spell_unstable_energy_AuraScript);
 
-            void OnTick(AuraEffect aurEff)
+			void OnTick(AuraEffect* aurEff)
             {
                 if (Unit* elegon = GetTarget())
                     elegon->CastSpell(elegon, SPELL_UNSTABLE_ENERGY_DAMAGE, true);

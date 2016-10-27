@@ -122,7 +122,7 @@ enum BattlegroundTimeIntervals
     INVITATION_REMIND_TIME          = 20000,                // ms
     INVITE_ACCEPT_WAIT_TIME         = 90000,                // ms
     TIME_AUTOCLOSE_BATTLEGROUND     = 120000,               // ms
-    MAX_OFFLINE_TIME                = 300,                  // secs
+    MAX_OFFLINE_TIME                = 180,                  // secs
     RESPAWN_ONE_DAY                 = 86400,                // secs
     RESPAWN_IMMEDIATELY             = 0,                    // secs
     BUFF_RESPAWN_TIME               = 180,                  // secs
@@ -144,6 +144,17 @@ enum BattlegroundBuffObjects
     BG_OBJECTID_SPEEDBUFF_ENTRY     = 179871,
     BG_OBJECTID_REGENBUFF_ENTRY     = 179904,
     BG_OBJECTID_BERSERKERBUFF_ENTRY = 179905
+};
+
+// Battleground currency rewards. Should be with precision mod.
+enum BattlegroundRandomRewards
+{
+	BG_REWARD_WINNER_HONOR_FIRST = 135,
+	BG_REWARD_WINNER_CONQUEST_FIRST = 100,
+	BG_REWARD_WINNER_HONOR_LAST = 270,
+	BG_REWARD_WINNER_CONQUEST_LAST = 50,
+	BG_REWARD_LOSER_HONOR_FIRST = 150,
+	BG_REWARD_LOSER_HONOR_LAST = 100
 };
 
 uint32 const Buff_Entries[3] = { BG_OBJECTID_SPEEDBUFF_ENTRY, BG_OBJECTID_REGENBUFF_ENTRY, BG_OBJECTID_BERSERKERBUFF_ENTRY };
@@ -203,9 +214,9 @@ enum ScoreType
     SCORE_PERSONAL_RATING_CHANGE    = 21,
     SCORE_PRE_MATCH_MMR             = 22,
     SCORE_MMR_CHANGE                = 23,
-    // tk
-    SCORE_ORB_HANDLES               = 24,
-    SCORE_ORB_SCORE                 = 25,
+    //TK
+    SCORE_ORB_HANDLES               = 21,
+    SCORE_ORB_SCORE                 = 22
 };
 
 enum BattlegroundType
@@ -446,6 +457,7 @@ class Battleground
 
         // specialized version with 2 string id args
         void SendMessage2ToAll(int32 entry, ChatMsg type, Player const* source, int32 strId1 = 0, int32 strId2 = 0);
+        void SendWarningMessageToAll(int32 entry, ChatMsg type, Player const* source, int32 strId1 = 0, int32 strId2 = 0);
 
         // Raid Group
         Group* GetBgRaid(uint32 TeamID) const { return TeamID == ALLIANCE ? m_BgRaids[TEAM_ALLIANCE] : m_BgRaids[TEAM_HORDE]; }

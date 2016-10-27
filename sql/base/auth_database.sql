@@ -43,7 +43,7 @@ CREATE TABLE `account` (
 `locale`  tinyint(3) UNSIGNED NOT NULL DEFAULT 0 ,
 `os`  varchar(3) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' ,
 `recruiter`  int(10) UNSIGNED NOT NULL DEFAULT 0 ,
-`hasBoost`  tinyint(1) NOT NULL DEFAULT 1 ,
+`hasBoost`  tinyint(1) NOT NULL DEFAULT 0 ,
 PRIMARY KEY (`id`)
 )
 ENGINE=InnoDB
@@ -479,7 +479,7 @@ PRIMARY KEY (`id`)
 ENGINE=InnoDB
 DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
 COMMENT='Realm System'
-AUTO_INCREMENT=1
+AUTO_INCREMENT=2
 
 ;
 
@@ -487,6 +487,7 @@ AUTO_INCREMENT=1
 -- Records of realmlist
 -- ----------------------------
 BEGIN;
+INSERT INTO `realmlist` VALUES ('1', 'DeathCore 5.4.8 (Alpha)', '127.0.0.1', '127.0.0.1', '255.255.255.0', '8085', '0', '0', '1', '0', '0', '18414');
 COMMIT;
 
 -- ----------------------------
@@ -572,4 +573,4 @@ CREATE UNIQUE INDEX `idx_name` ON `realmlist`(`name`) USING BTREE ;
 -- ----------------------------
 -- Auto increment value for `realmlist`
 -- ----------------------------
-ALTER TABLE `realmlist` AUTO_INCREMENT=1;
+ALTER TABLE `realmlist` AUTO_INCREMENT=2;

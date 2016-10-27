@@ -17,7 +17,6 @@ set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
   World/achievement_scripts.cpp
   World/areatrigger_scripts.cpp
-  World/boss_emerald_dragons.cpp
   World/chat_log.cpp
   World/go_scripts.cpp
   World/guards.cpp
@@ -27,6 +26,9 @@ set(scripts_STAT_SRCS
   World/npc_professions.cpp
   World/npc_taxi.cpp
   World/npcs_special.cpp
+  World/player_scripts.cpp
+  World/boss_emerald_dragons.cpp
+  World/boss_city_kings.cpp
 )
 
 message("  -> Prepared: World")

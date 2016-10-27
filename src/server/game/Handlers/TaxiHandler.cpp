@@ -112,17 +112,31 @@ void WorldSession::SendTaxiMenu(Creature* unit)
 
     WorldPacket data(SMSG_SHOWTAXINODES, (4 + 8 + 4 + 4 * 4));
     data.WriteBit(1); //unk
-    data.WriteGuidMask(Guid, 3, 0, 4, 2, 1, 7, 6, 5);
+    data.WriteBit(Guid[3]);
+    data.WriteBit(Guid[0]);
+    data.WriteBit(Guid[4]);
+    data.WriteBit(Guid[2]);
+    data.WriteBit(Guid[1]);
+    data.WriteBit(Guid[7]);
+    data.WriteBit(Guid[6]);
+    data.WriteBit(Guid[5]);
     data.WriteBits(TaxiMaskSize, 24);
+    data.FlushBits();
 
-    data.WriteGuidBytes(Guid, 0, 3);
+    data.WriteByteSeq(Guid[0]);
+    data.WriteByteSeq(Guid[3]);
     data << uint32(curloc);
-    data.WriteGuidBytes(Guid, 5, 2, 6, 1, 7, 4);
+    data.WriteByteSeq(Guid[5]);
+    data.WriteByteSeq(Guid[2]);
+    data.WriteByteSeq(Guid[6]);
+    data.WriteByteSeq(Guid[1]);
+    data.WriteByteSeq(Guid[7]);
+    data.WriteByteSeq(Guid[4]);
 
     GetPlayer()->m_taxi.AppendTaximaskTo(data, GetPlayer()->isTaxiCheater());
     SendPacket(&data);
 
-    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_SHOWTAXINODES");
+    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_SHOW_TAXI_NODES");
 
     GetPlayer()->SetTaxiCheater(lastTaxiCheaterState);
 }
@@ -326,15 +340,8 @@ void WorldSession::HandleActivateTaxiOpcode(WorldPacket& recvData)
 
 void WorldSession::SendActivateTaxiReply(ActivateTaxiReply reply)
 {
-    ObjectGuid guid(_player->GetGUID());
-
     WorldPacket data(SMSG_ACTIVATETAXIREPLY, 1 + 1 + 8);
-    data.WriteGuidMask(guid, 2, 7);
-    data.WriteBit(!reply);
-    data.WriteGuidMask(guid, 0, 3, 6, 5, 1, 4);
-    data.FlushBits();
-    data.WriteGuidBytes(guid, 1, 5, 7, 4, 2, 6, 3, 0);
-
+    data.WriteBits(reply, 4);
     SendPacket(&data);
 
     TC_LOG_DEBUG("network", "WORLD: Sent SMSG_ACTIVATETAXIREPLY");

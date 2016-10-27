@@ -834,6 +834,12 @@ namespace Trinity
                 if (u->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET)
                     return false;
 
+                if (u->IsFriendlyTo(i_funit))
+                    return false;
+
+                if (!u->IsValidAttackTarget(i_funit))
+                    return false;
+
                 if (u->GetTypeId() == TYPEID_UNIT && ((Creature*)u)->IsTotem())
                     return false;
 
@@ -914,8 +920,8 @@ namespace Trinity
             float i_range;
             bool i_playerOnly;
     };
-    
-    class AnyUnitHavingBuffInObjectRangeCheck
+
+	class AnyUnitHavingBuffInObjectRangeCheck
     {
         public:
             AnyUnitHavingBuffInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, uint32 spellid, bool isfriendly)
@@ -933,26 +939,6 @@ namespace Trinity
             float i_range;
             bool i_friendly;
             uint32 i_spellid;
-    };
-    
-    class AnyUnitNotHavingTypeInRangeCheck
-    {
-        public:
-            AnyUnitNotHavingTypeInRangeCheck(Unit const* funit, uint32 type, float range)
-                : ctype(type), _refUnit(funit), _range(range) {}
-            bool operator()(Unit* u)
-            {
-                return (_refUnit->IsWithinDistInMap(u, _range) && u->GetCreatureType() != ctype);
-            }
-
-            bool operator()(WorldObject* obj)
-            {
-                return (obj->ToUnit() && _refUnit->IsWithinDistInMap(obj->ToUnit(), _range) && obj->ToUnit()->GetCreatureType() != ctype);
-            }
-        private:
-            uint32 ctype;
-            Unit const* _refUnit;
-            float _range;
     };
 
     class AnyGroupedUnitInObjectRangeCheck
@@ -982,6 +968,27 @@ namespace Trinity
             bool _raid;
     };
 
+    class AnyGroupedPlayerInObjectRangeCheck
+    {
+        public:
+            AnyGroupedPlayerInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : _source(obj), _refUnit(funit), _range(range) {}
+            bool operator()(Unit* u)
+            {
+                if (!_refUnit->IsInRaidWith(u))
+                    return false;
+                else if (!_refUnit->IsInPartyWith(u))
+                    return false;
+
+                return _refUnit->IsFriendlyTo(u) && u->IsAlive() && _source->IsWithinDistInMap(u, _range) && (u->GetTypeId() == TYPEID_PLAYER);
+            }
+
+        private:
+            WorldObject const* _source;
+            Unit const* _refUnit;
+            float _range;
+            bool _raid;
+    };
+
     class AnyUnitInObjectRangeCheck
     {
         public:
@@ -996,24 +1003,6 @@ namespace Trinity
         private:
             WorldObject const* i_obj;
             float i_range;
-    };
-    
-    class AnyUnitAttackableForCasterInObjectRangeCheck
-    {
-        public:
-            AnyUnitAttackableForCasterInObjectRangeCheck(WorldObject const* obj, float range, Unit* caster) : i_obj(obj), i_range(range), i_caster(caster) {}
-            bool operator()(Unit* u)
-            {
-                if (u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range)
-                    && !u->IsFriendlyTo(i_caster))
-                    return true;
-
-                return false;
-            }
-        private:
-            WorldObject const* i_obj;
-            float i_range;
-            Unit* i_caster;
     };
 
     // Success at unit in range, range update for next check (this can be use with UnitLastSearcher to find nearest unit)
@@ -1511,7 +1500,7 @@ namespace Trinity
             uint64 _casterGUID;
     };
 
-    class UnitAuraTypeCheck
+	class UnitAuraTypeCheck
     {
         public:
             UnitAuraTypeCheck(bool present, AuraType type) : _present(present), _type(type) {}
@@ -1571,34 +1560,6 @@ namespace Trinity
             Builder& i_builder;
             std::vector<WorldPacketList> i_data_cache;
                                                             // 0 = default, i => i-1 locale index
-    };
-    
-    // Success at unit in range, range update for next check (this can be use with CreatureLastSearcher to find nearest creature)
-    class NearestCreaturePetEntryWithLiveStateInObjectRangeCheck
-    {
-        public:
-            NearestCreaturePetEntryWithLiveStateInObjectRangeCheck(WorldObject const& obj, Player* owner, uint32 entry, bool alive, float range)
-                : i_obj(obj), i_owner(owner), i_entry(entry), i_alive(alive), i_range(range) {}
-
-            bool operator()(Creature* u)
-            {
-                if (u->GetEntry() == i_entry && u->IsAlive() == i_alive && i_obj.IsWithinDistInMap(u, i_range) && u->GetOwner() == i_owner)
-                {
-                    i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
-                    return true;
-                }
-                return false;
-            }
-            float GetLastRange() const { return i_range; }
-        private:
-            WorldObject const& i_obj;
-            Player* i_owner;
-            uint32 i_entry;
-            bool   i_alive;
-            float  i_range;
-
-            // prevent clone this object
-            NearestCreaturePetEntryWithLiveStateInObjectRangeCheck(NearestCreaturePetEntryWithLiveStateInObjectRangeCheck const&);
     };
 }
 #endif

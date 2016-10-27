@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
- * Copyright (C) 2013-2014 TimelessCore <http://timeless.sk/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,7 +14,6 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include "Battleground.h"
 #include "BattlegroundMgr.h"
 #include "RatedMgr.h"
@@ -809,9 +807,13 @@ void Battleground::EndBattleground(uint32 winner)
             if (IsRated())
             {
                 if (team == winner)
+                {
                     rInfo->UpdateStats(GetRatedType(), loserMatchmakerRating, personalRatingChange, matchmakerRatingChange, true, true);
+                }
                 else
+                {
                     rInfo->UpdateStats(GetRatedType(), winnerMatchmakerRating, personalRatingChange, matchmakerRatingChange, false, true);
+                }
             }
             continue;
         }
@@ -889,13 +891,12 @@ void Battleground::EndBattleground(uint32 winner)
                 GroupRatedStats statsByGroup = GetBgRaid(team)->GetRatedStats(GetRatedType());
                 SetTeamMatchmakerRating(team, statsByGroup.averageMMR);
             };
-
             updateAverageMMRforTeam(winner);
             updateAverageMMRforTeam(GetOtherTeam(winner));
         }
 
-        uint32 winnerKills = player->GetRandomWinner() ? sWorld->getIntConfig(CONFIG_BG_REWARD_WINNER_HONOR_LAST) : sWorld->getIntConfig(CONFIG_BG_REWARD_WINNER_HONOR_FIRST);
-        uint32 loserKills = player->GetRandomWinner() ? sWorld->getIntConfig(CONFIG_BG_REWARD_LOSER_HONOR_LAST) : sWorld->getIntConfig(CONFIG_BG_REWARD_LOSER_HONOR_FIRST);
+		uint32 winnerKills = player->GetRandomWinner() ? BG_REWARD_WINNER_HONOR_LAST : BG_REWARD_WINNER_HONOR_FIRST;
+		uint32 loserKills = player->GetRandomWinner() ? BG_REWARD_LOSER_HONOR_LAST : BG_REWARD_LOSER_HONOR_FIRST;
 
         // remove temporary currency bonus auras before rewarding player
         player->RemoveAura(SPELL_HONORABLE_DEFENDER_25Y);
@@ -910,12 +911,12 @@ void Battleground::EndBattleground(uint32 winner)
                 if (!player->GetRandomWinner())
                 {
                     // 100cp awarded for the first random battleground won each day
-                    player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_ARENA, sWorld->getIntConfig(CONFIG_BG_REWARD_WINNER_CONQUEST_FIRST));
+					player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_RBG, BG_REWARD_WINNER_CONQUEST_FIRST);
                     player->SetRandomWinner(true);
                 }
             }
             else // 50cp awarded for each non-rated battleground won
-                player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_ARENA, sWorld->getIntConfig(CONFIG_BG_REWARD_WINNER_CONQUEST_LAST));
+				player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_RBG, BG_REWARD_WINNER_CONQUEST_LAST);
 
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1);
 
@@ -925,6 +926,7 @@ void Battleground::EndBattleground(uint32 winner)
                 if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
                 {
                     guild->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1, 0, 0, NULL, player);
+
                     if (IsRated())
                     {
                         if (IsBattleground())
@@ -1018,6 +1020,8 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             player->SpawnCorpseBones();
         }
     }
+    else // try to resurrect the offline player
+        sObjectAccessor->ConvertCorpseForPlayer(guid);
 
     // BG subclass specific code
     RemovePlayer(player, guid, team);                           

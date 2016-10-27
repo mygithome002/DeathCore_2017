@@ -33,7 +33,7 @@ class event_commandscript : public CommandScript
 public:
     event_commandscript() : CommandScript("event_commandscript") { }
 
-    ChatCommand* GetCommands() const override
+    ChatCommand* GetCommands() const
     {
         static ChatCommand eventCommandTable[] =
         {

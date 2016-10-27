@@ -739,6 +739,10 @@ enum TrinityStrings
 //                                      = 749, see LANG_PINFO_ACC_OS
     LANG_BATTLEGROUND_PREMATURE_FINISH_WARNING = 750,       // "Not enough players. This game will close in %u mins."
     LANG_BATTLEGROUND_PREMATURE_FINISH_WARNING_SECS = 751,  // "Not enough players. This game will close in %u seconds."
+    LANG_BATTLEGROUND_START_2_MINUTES   = 773,
+    LANG_BATTLEGROUND_START_1_MINUTE    = 774,
+    LANG_BATTLEGROUND_START_30_SECONDS  = 775,
+    LANG_BATTLEGROUND_HAS_BEGUN         = 776,
 //                                      = 752, see LANG_PINFO_ACC_IP
 //  LANG_BG_WS_START_TWO_MINUTES        = 753, - defined above
 //  LANG_BG_AB_START_TWO_MINUTES        = 754, - defined above
@@ -1037,7 +1041,8 @@ enum TrinityStrings
     LANG_BG_AV_H_CAPTAIN_DEAD           = 1331,
     LANG_BG_AV_A_CAPTAIN_DEAD           = 1332,
     LANG_BG_AV_START_TWO_MINUTES        = 1333,
-    // kotmogu
+
+	// Temple of Kotmogu
     LANG_BG_TOK_START_TWO_MINUTE         = 1345,
     LANG_BG_TOK_START_ONE_MINUTE         = 1346,
     LANG_BG_TOK_START_HALF_MINUTE        = 1347,
@@ -1050,7 +1055,6 @@ enum TrinityStrings
     LANG_BG_TOK_ORB_GREEN                = 1354,
     LANG_BG_TOK_ORB_BLUE                 = 1355,
     LANG_BG_TOK_ORBS_SPAWNED             = 1356,
-    
     // FREE IDS                           1334-1999
 
     // Ticket Strings 2000-2029
@@ -1127,6 +1131,19 @@ enum TrinityStrings
     LANG_NPCINFO_MECHANIC_IMMUNE        = 5037,
     LANG_NPCINFO_UNIT_FIELD_FLAGS       = 5038,
     // Room for more Trinity strings      5039-9999
+
+    LANG_COMMAND_QC                     = 5062, // Syntax: .qc $quest\n\nSearches Quest Completer to see if $quest is bugged.
+    LANG_COMMAND_QC_COMPLETE            = 5063, // %s completed!
+    LANG_COMMAND_QC_FOUND               = 5064, // %s is bugged!
+    LANG_COMMAND_QC_EMPTY               = 5065, // %s is not bugged! 
+    LANG_COMMAND_QC_ADD                 = 5066, // Syntax: .qc add $quest\n\nAdds $quest to the quest completer.
+    LANG_COMMAND_QC_ADD_SUCCESS         = 5067, // %s was added!
+    LANG_COMMAND_QC_ADD_ERROR           = 5068, // %s was not added due to a SQL error.
+    LANG_COMMAND_QC_ADD_EXISTS          = 5069, // %s is already in Quest Completer!
+    LANG_COMMAND_QC_DEL                 = 5070, // Syntax: .qc del $quest\n\nDeletes $quest from the quest completer.
+    LANG_COMMAND_QC_DEL_SUCCESS         = 5071, // %s was removed!
+    LANG_COMMAND_QC_DEL_ERROR           = 5072, // %s is not in the Quest Completer.
+    LANG_COMMAND_QC_DEL_ERROR2          = 5073, // There was a error with your request.
 
     // Level requirement notifications
     LANG_SAY_REQ                        = 6604,

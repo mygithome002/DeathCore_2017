@@ -316,14 +316,9 @@ void WorldSession::HandleDestroyItemOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleReadItem(WorldPacket& recvData)
 {
-    ObjectGuid Guid;
     uint8 bag, slot;
     recvData >> bag >> slot;
-
-    recvData.ReadGuidMask(Guid, 2, 1, 3, 7, 6, 4, 0, 5);
-
-    recvData.ReadGuidBytes(Guid, 0, 6, 3, 5, 1, 7, 4, 2);
-
+    
     Item* pItem = _player->GetItemByPos(bag, slot);
 
     if (pItem && pItem->GetTemplate()->PageText)
@@ -642,7 +637,7 @@ void WorldSession::HandleListInventoryOpcode(WorldPacket& recvData)
     SendListInventory(guid);
 }
 
-void WorldSession::SendListInventory(uint64 vendorGuid)
+void WorldSession::SendListInventory(uint64 vendorGuid, uint32 vendorEntry)
 {
     TC_LOG_DEBUG("network", "WORLD: Sent SMSG_LIST_INVENTORY");
 
@@ -660,8 +655,10 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     if (vendor->HasUnitState(UNIT_STATE_MOVING))
         vendor->StopMoving();
 
-    VendorItemData const* vendorItems = vendor->GetVendorItems();
+	VendorItemData const* vendorItems = vendorEntry ? sObjectMgr->GetNpcVendorItemList(vendorEntry) : vendor->GetVendorItems();
     uint32 rawItemCount = vendorItems ? vendorItems->GetItemCount() : 0;
+
+	SetCurrentVendor(vendorEntry);
 
     bool hasExtendedCost[MAX_VENDOR_ITEMS];
     ByteBuffer itemsData;
@@ -686,7 +683,8 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
                     continue;
 
                 uint32 leftInStock = !vendorItem->maxcount ? 0xFFFFFFFF : vendor->GetVendorItemCurrentCount(vendorItem);
-                if (!_player->IsGameMaster()) // ignore conditions if GM on
+                
+				/*if (!_player->IsGameMaster()) // ignore conditions if GM on
                 {
                     // Respect allowed class
                     if (!(itemTemplate->AllowableClass & _player->getClassMask()) && itemTemplate->Bonding == BIND_WHEN_PICKED_UP)
@@ -700,7 +698,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
                     // Items sold out are not displayed in list
                     if (leftInStock == 0)
                         continue;
-                }
+                }*/
 
                 int32 price = vendorItem->IsGoldRequired(itemTemplate) ? uint32(floor(itemTemplate->BuyPrice * discountMod)) : 0;
 
@@ -974,11 +972,65 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::SendEnchantmentLog(uint64 target, uint64 caster, uint32 itemId, uint32 enchantId)
 {
+    ObjectGuid CasterGuid = caster;
+    ObjectGuid OwnerGuid; // TODO implemente
+    ObjectGuid TargetGuid = target;
     WorldPacket data(SMSG_ENCHANTMENT_LOG, (8+8+4+4));
-    data.appendPackGUID(target);
-    data.appendPackGUID(caster);
+
     data << uint32(itemId);
+    data << uint32(0);     // EnchantSlot
     data << uint32(enchantId);
+
+    data.WriteBit(OwnerGuid[6]);
+    data.WriteBit(OwnerGuid[7]);
+    data.WriteBit(CasterGuid[6]);
+    data.WriteBit(CasterGuid[4]);
+    data.WriteBit(OwnerGuid[5]);
+    data.WriteBit(TargetGuid[7]);
+    data.WriteBit(TargetGuid[2]);
+    data.WriteBit(TargetGuid[3]);
+    data.WriteBit(OwnerGuid[4]);
+    data.WriteBit(OwnerGuid[3]);
+    data.WriteBit(TargetGuid[6]);
+    data.WriteBit(CasterGuid[1]);
+    data.WriteBit(OwnerGuid[2]);
+    data.WriteBit(CasterGuid[5]);
+    data.WriteBit(TargetGuid[4]);
+    data.WriteBit(CasterGuid[0]);
+    data.WriteBit(TargetGuid[1]);
+    data.WriteBit(OwnerGuid[0]);
+    data.WriteBit(CasterGuid[3]);
+    data.WriteBit(CasterGuid[7]);
+    data.WriteBit(TargetGuid[5]);
+    data.WriteBit(TargetGuid[0]);
+    data.WriteBit(CasterGuid[2]);
+    data.WriteBit(OwnerGuid[1]);
+
+    data.WriteByteSeq(OwnerGuid[0]);
+    data.WriteByteSeq(CasterGuid[2]);
+    data.WriteByteSeq(TargetGuid[7]);
+    data.WriteByteSeq(OwnerGuid[1]);
+    data.WriteByteSeq(CasterGuid[4]);
+    data.WriteByteSeq(TargetGuid[5]);
+    data.WriteByteSeq(OwnerGuid[4]);
+    data.WriteByteSeq(TargetGuid[2]);
+    data.WriteByteSeq(CasterGuid[6]);
+    data.WriteByteSeq(CasterGuid[0]);
+    data.WriteByteSeq(TargetGuid[0]);
+    data.WriteByteSeq(TargetGuid[4]);
+    data.WriteByteSeq(OwnerGuid[3]);
+    data.WriteByteSeq(CasterGuid[5]);
+    data.WriteByteSeq(TargetGuid[1]);
+    data.WriteByteSeq(CasterGuid[3]);
+    data.WriteByteSeq(CasterGuid[7]);
+    data.WriteByteSeq(OwnerGuid[7]);
+    data.WriteByteSeq(TargetGuid[3]);
+    data.WriteByteSeq(OwnerGuid[6]);
+    data.WriteByteSeq(OwnerGuid[2]);
+    data.WriteByteSeq(OwnerGuid[5]);
+    data.WriteByteSeq(TargetGuid[6]);
+    data.WriteByteSeq(CasterGuid[1]);
+
     GetPlayer()->SendMessageToSet(&data, true);
 }
 
@@ -1546,6 +1598,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
     }
 
     // Validate
+
     if (!player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_TRANSMOGRIFIER))
     {
         TC_LOG_DEBUG("network", "WORLD: HandleTransmogrifyItems - Unit (GUID: %u) not found or player can't interact with it.", GUID_LOPART(npcGuid));

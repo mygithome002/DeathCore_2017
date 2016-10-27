@@ -27,7 +27,6 @@
 void WorldSession::HandleDismissControlledVehicle(WorldPacket &recvData)
 {
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_DISMISS_CONTROLLED_VEHICLE");
-
     uint64 vehicleGUID = _player->GetCharmGUID();
 
     if (!vehicleGUID)                                       // something wrong here...
@@ -47,7 +46,6 @@ void WorldSession::HandleDismissControlledVehicle(WorldPacket &recvData)
 void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket& recvData)
 {
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE");
-
     Unit* vehicle_base = GetPlayer()->GetVehicleBase();
     if (!vehicle_base)
     {
@@ -140,23 +138,25 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket& recvData)
 void WorldSession::HandleEnterPlayerVehicle(WorldPacket& recvData)
 {
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_PLAYER_VEHICLE_ENTER");
-
     ObjectGuid guid;
     recvData.ReadGuidMask(guid, 5, 7, 3, 0, 2, 4, 6, 1);
-
     recvData.ReadGuidBytes(guid, 5, 3, 1, 2, 7, 0, 6, 4);
-
+	/*uint64 guid;
+	recvData >> guid;*/
+	//TODO: this does not work, the guid obtained is wrong
     if (Player* player = ObjectAccessor::FindPlayer(guid))
     {
-        if (!player->GetVehicleKit())
-            return;
-        if (!player->IsInRaidWith(_player))
-            return;
-        if (!player->IsWithinDistInMap(_player, INTERACTION_DISTANCE))
-            return;
-
+		if (!player->GetVehicleKit()){
+			return;
+		}
+		if (!player->IsInRaidWith(_player)){
+			return;
+		}
+		if (!player->IsWithinDistInMap(_player, INTERACTION_DISTANCE)){
+			return;
+		}
         _player->EnterVehicle(player);
-    }
+    }	
 }
 
 void WorldSession::HandleEjectPassenger(WorldPacket& data)
@@ -168,10 +168,8 @@ void WorldSession::HandleEjectPassenger(WorldPacket& data)
         TC_LOG_ERROR("network", "HandleEjectPassenger: Player %u is not in a vehicle!", GetPlayer()->GetGUIDLow());
         return;
     }
-
-    uint64 guid;
-    data >> guid;
-
+	uint64 guid;
+	data >> guid;
     if (IS_PLAYER_GUID(guid))
     {
         Player* player = ObjectAccessor::FindPlayer(guid);

@@ -155,6 +155,7 @@ enum WorldBoolConfigs
     CONFIG_CHATLOG_BGROUND,
     CONFIG_AUTOBROADCAST,
     CONFIG_ALLOW_TICKETS,
+	CONFIG_LFG_LOCATION_ALL,
     CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES,
     CONFIG_PRESERVE_CUSTOM_CHANNELS,
     CONFIG_PDUMP_NO_PATHS,
@@ -358,6 +359,7 @@ enum WorldIntConfigs
     CONFIG_BATTLE_PET_LOADOUT_UNLOCK_COUNT,
     CONFIG_BATTLE_PET_INITIAL_LEVEL,
     CONFIG_BLACKMARKET_MAX_AUCTIONS,
+	CONFIG_RATE_XP_WEEKEND_EVID,
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -426,6 +428,7 @@ enum Rates
     RATE_DURABILITY_LOSS_ABSORB,
     RATE_DURABILITY_LOSS_BLOCK,
     RATE_MOVESPEED,
+	RATE_XP_WEEKEND,
     MAX_RATES
 };
 
@@ -650,7 +653,7 @@ class World
         void SendGMText(int32 string_id, ...);
         void SendGlobalMessage(WorldPacket* packet, WorldSession* self = 0, uint32 team = 0);
         void SendGlobalGMMessage(WorldPacket* packet, WorldSession* self = 0, uint32 team = 0);
-        void SendZoneMessage(uint32 zone, WorldPacket* packet, WorldSession* self = 0, uint32 team = 0);
+        bool SendZoneMessage(uint32 zone, WorldPacket* packet, WorldSession* self = 0, uint32 team = 0);
         void SendZoneText(uint32 zone, const char *text, WorldSession* self = 0, uint32 team = 0);
         void SendServerMessage(ServerMessageType type, const char *text = "", Player* player = NULL);
 

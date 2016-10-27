@@ -458,7 +458,7 @@ void AccountMgr::LoadRBAC()
     {
         Field* field = result->Fetch();
         uint32 newId = field[0].GetUInt32();
-        if (secId != newId)
+        if (secId != newId || permissions == NULL)
         {
             secId = newId;
             permissions = &_defaultPermissions[secId];
@@ -521,7 +521,7 @@ bool AccountMgr::HasPermission(uint32 accountId, uint32 permissionId, uint32 rea
         return false;
     }
 
-    rbac::RBACData rbac(accountId, "", realmId);
+    rbac::RBACData rbac(accountId, "", realmId, GetSecurity(accountId));
     rbac.LoadFromDB();
     bool hasPermission = rbac.HasPermission(permissionId);
 

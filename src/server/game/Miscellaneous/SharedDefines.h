@@ -23,6 +23,7 @@
 #include <cassert>
 
 #define MAX_CREATURE_BASE_HP 5
+#define MAX_EFFECTS 32
 
 enum SpellEffIndex
 {
@@ -208,6 +209,13 @@ enum Classes
     (1<<(CLASS_MAGE-1))   |(1<<(CLASS_WARLOCK-1))|(1<<(CLASS_DRUID-1)) | \
     (1<<(CLASS_DEATH_KNIGHT-1))) |(1<<(CLASS_MONK-1))
 
+enum eclipseState
+{
+    ECLIPSE_NONE,
+    ECLIPSE_LUNAR,
+    ECLIPSE_SOLAR,
+};
+
 // valid classes for creature_template.unit_class
 enum UnitClass
 {
@@ -257,13 +265,6 @@ enum Stats
 };
 
 #define MAX_STATS                        5
-
-enum eclipseState
-{
-    ECLIPSE_NONE,
-    ECLIPSE_LUNAR,
-    ECLIPSE_SOLAR,
-};
 
 enum Powers
 {
@@ -650,7 +651,7 @@ enum SpellAttr7
     SPELL_ATTR7_IS_CHEAT_SPELL                   = 0x00000008, //  3 Cannot cast if caster doesn't have UnitFlag2 & UNIT_FLAG2_ALLOW_CHEAT_SPELLS
     SPELL_ATTR7_UNK4                             = 0x00000010, //  4 Only 47883 (Soulstone Resurrection) and test spell.
     SPELL_ATTR7_SUMMON_TOTEM                     = 0x00000020, //  5 Only Shaman totems.
-    SPELL_ATTR7_UNK6                             = 0x00000040, //  6 Dark Surge, Surge of Light, Burning Breath triggers (boss spells).
+    SPELL_ATTR7_NO_PUSHBACK_ON_DAMAGE            = 0x00000040, //  6 Does not cause spell pushback on damage
     SPELL_ATTR7_UNK7                             = 0x00000080, //  7 66218 (Launch) spell.
     SPELL_ATTR7_HORDE_ONLY                       = 0x00000100, //  8 Teleports, mounts and other spells.
     SPELL_ATTR7_ALLIANCE_ONLY                    = 0x00000200, //  9 Teleports, mounts and other spells.
@@ -791,6 +792,7 @@ enum SpellAttr10
 #define MIN_TALENT_SPECS        1
 #define MAX_TALENT_SPECS        2
 #define MAX_GLYPH_SLOT_INDEX    6
+#define MIN_SPECIALIZATION_LEVEL    10
 #define MAX_SPECIALIZATIONS     4
 
 // Custom values
@@ -1070,17 +1072,17 @@ enum SpellEffects
     SPELL_EFFECT_167                                = 167,
     SPELL_EFFECT_PET_BAR                            = 168, // This is to activate the Pet Control Bar
     SPELL_EFFECT_DESTROY_ITEM                       = 169,
-    SPELL_EFFECT_170                                = 170,
+    SPELL_EFFECT_UPDATE_ZONE_AURAS_AND_PHASES       = 170, // NYI
     SPELL_EFFECT_171                                = 171, // Summons gamebject
     SPELL_EFFECT_RESURRECT_WITH_AURA                = 172,
     SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB             = 173, // Guild tab unlocked (guild perk)
-    SPELL_EFFECT_174                                = 174,
+    SPELL_EFFECT_APPLY_AURA_ON_PET                  = 174, // NYI
     SPELL_EFFECT_175                                = 175, // Unused (4.3.4)
-    SPELL_EFFECT_176                                = 176, // Some kind of sanctuary effect (Vanish)
+    SPELL_EFFECT_SANCTUARY_2                        = 176, // NYI
     SPELL_EFFECT_177                                = 177,
     SPELL_EFFECT_178                                = 178, // Unused (4.3.4)
     SPELL_EFFECT_CREATE_AREATRIGGER                 = 179,
-    SPELL_EFFECT_180                                = 180, // Unused (4.3.4)
+    SPELL_EFFECT_UPDATE_AREATRIGGER                 = 180, // NYI
     SPELL_EFFECT_REMOVE_TALENT                      = 181, // Eg: Tome of the Clear Mind
     SPELL_EFFECT_182                                = 182,
     SPELL_EFFECT_183                                = 183,
@@ -1774,7 +1776,7 @@ enum Targets
     TARGET_UNK_126                     = 126,
     TARGET_UNK_127                     = 127,
     TARGET_UNK_128                     = 128, // not used (5.4.8)
-    TARGET_UNIT_CONE_ENEMY_129         = 129,
+    TARGET_UNK_129                     = 129,
     TARGET_UNK_130                     = 130,
     TARGET_UNK_131                     = 131,
     TARGET_UNK_132                     = 132,
@@ -1782,8 +1784,8 @@ enum Targets
     TARGET_UNK_134                     = 134,
     TARGET_UNK_135                     = 135, // 2 spells
     TARGET_UNK_136                     = 136, // 2 spells
-    TARGET_DEST_DYN_MOV_FLAGS          = 137,
-    TARGET_UNIT_CONE_ANY_138           = 138,
+    TARGET_UNK_137                     = 137,
+    TARGET_UNK_138                     = 138,
     TARGET_UNK_139                     = 139,
     TARGET_UNK_140                     = 140,
     TARGET_UNK_141                     = 141,
@@ -1831,7 +1833,8 @@ enum SpellPreventionType
     SPELL_PREVENTION_TYPE_NONE      = 0,
     SPELL_PREVENTION_TYPE_SILENCE   = 1,
     SPELL_PREVENTION_TYPE_PACIFY    = 2,
-    SPELL_PREVENTION_TYPE_UNK       = 3 // Only a few spells have this, but most of the should be interruptable.
+    SPELL_PREVENTION_TYPE_UNK       = 3, // Only a few spells have this, but most of the should be interruptable.
+	SPELL_PREVENTION_TYPE_UNK2      = 4
 };
 
 enum GameobjectTypes
@@ -3213,7 +3216,7 @@ enum CreatureTypeFlags
     CREATURE_TYPEFLAGS_EXOTIC           = 0x00010000,         // Can be tamed by hunter as exotic pet
     CREATURE_TYPEFLAGS_UNK17            = 0x00020000,         // ? Related to vehicles/pvp?
     CREATURE_TYPEFLAGS_UNK18            = 0x00040000,         // ? Related to vehicle/siege weapons?
-    CREATURE_TYPEFLAGS_UNK19            = 0x00080000,
+    CREATURE_TYPEFLAGS_PROJECTILE_COLLISION = 0x00080000,     // Projectiles can collide with this creature - interacts with TARGET_DEST_TRAJ
     CREATURE_TYPEFLAGS_UNK20            = 0x00100000,
     CREATURE_TYPEFLAGS_UNK21            = 0x00200000,
     CREATURE_TYPEFLAGS_UNK22            = 0x00400000,
@@ -3664,15 +3667,15 @@ enum TotemCategory
 enum UnitDynFlags
 {
     UNIT_DYNFLAG_NONE                       = 0x0000,
-    // UNIT_DYNFLAG_UNK1                    = 0x0001,       // Could be related to battle pet tracking
+    UNIT_DYNFLAG_HIDE_MODEL                 = 0x0001, // Object model is not shown with this flag
     UNIT_DYNFLAG_LOOTABLE                   = 0x0002,
     UNIT_DYNFLAG_TRACK_UNIT                 = 0x0004,
-    UNIT_DYNFLAG_TAPPED                     = 0x0008,       // Lua_UnitIsTapped
-    UNIT_DYNFLAG_TAPPED_BY_PLAYER           = 0x0010,       // Lua_UnitIsTappedByPlayer
+    UNIT_DYNFLAG_TAPPED                     = 0x0008, // Lua_UnitIsTapped
+    UNIT_DYNFLAG_TAPPED_BY_PLAYER           = 0x0010, // Lua_UnitIsTappedByPlayer
     UNIT_DYNFLAG_SPECIALINFO                = 0x0020,
     UNIT_DYNFLAG_DEAD                       = 0x0040,
     UNIT_DYNFLAG_REFER_A_FRIEND             = 0x0080,
-    UNIT_DYNFLAG_TAPPED_BY_ALL_THREAT_LIST  = 0x0100        // Lua_UnitIsTappedByAllThreatList
+    UNIT_DYNFLAG_TAPPED_BY_ALL_THREAT_LIST  = 0x0100  // Lua_UnitIsTappedByAllThreatList
 };
 
 enum CorpseDynFlags
@@ -3827,7 +3830,10 @@ enum DiminishingGroup
     DIMINISHING_SLEEP               = 17,
     DIMINISHING_TAUNT               = 18,
     DIMINISHING_LIMITONLY           = 19,
-    DIMINISHING_DRAGONS_BREATH      = 20
+    DIMINISHING_DRAGONS_BREATH      = 20,
+    DIMINISHING_DEEP_FREEZE         = 21,
+    DIMINISHING_RING_OF_FROST       = 22,
+    DIMINISHING_PARALYTIC_POISON    = 23
 };
 
 enum SummonCategory

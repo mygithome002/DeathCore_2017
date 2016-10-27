@@ -276,6 +276,121 @@ public:
     };
 };
 
+
+/*######
+## npc_eye_of_acherus
+######*/
+
+enum EyeOfAcherus
+{
+	DISPLAYID_EYE_HUGE = 26320,
+	DISPLAYID_EYE_SMALL = 25499,
+
+	SPELL_EYE_PHASEMASK = 70889,
+	SPELL_EYE_VISUAL = 51892,
+	SPELL_EYE_FL_BOOST_RUN = 51923,
+	SPELL_EYE_FL_BOOST_FLY = 51890,
+	SPELL_EYE_CONTROL = 51852,
+};
+
+enum Texts
+{
+	SAY_EYE_LAUNCHED = 1,
+	SAY_EYE_UNDER_CONTROL = 2,
+};
+
+static Position Center[] =
+{
+	{ 2346.550049f, -5694.430176f, 426.029999f, 0.0f },
+};
+
+class npc_eye_of_acherus : public CreatureScript
+{
+public:
+	npc_eye_of_acherus() : CreatureScript("npc_eye_of_acherus") { }
+
+	CreatureAI* GetAI(Creature* creature) const
+	{
+		return new npc_eye_of_acherusAI(creature);
+	}
+
+	struct npc_eye_of_acherusAI : public ScriptedAI
+	{
+		npc_eye_of_acherusAI(Creature* creature) : ScriptedAI(creature)
+		{
+			Reset();
+		}
+
+		uint32 startTimer;
+		bool IsActive;
+
+		void Reset()
+		{
+			if (Unit* controller = me->GetCharmer())
+				me->SetLevel(controller->getLevel());
+
+			me->CastSpell(me, SPELL_EYE_FL_BOOST_FLY, true);
+			me->SetDisplayId(DISPLAYID_EYE_HUGE);
+			Talk(SAY_EYE_LAUNCHED);
+			me->SetSpeed(MOVE_FLIGHT, 3.4f, true);
+			me->SetHomePosition(2363.970589f, -5659.861328f, 504.316833f, 0);
+			me->GetMotionMaster()->MoveCharge(1752.858276f, -5878.270996f, 145.136444f, 0); //position center
+			me->SetReactState(REACT_AGGRESSIVE);
+			me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
+
+			IsActive = false;
+			startTimer = 2000;
+		}
+
+		void AttackStart(Unit *) {}
+		void MoveInLineOfSight(Unit *) {}
+
+		void JustDied(Unit* /*killer*/)
+		{
+			if (Unit* charmer = me->GetCharmer())
+				charmer->RemoveAurasDueToSpell(SPELL_EYE_CONTROL);
+		}
+
+		void UpdateAI(uint32 diff)
+		{
+			if (me->IsCharmed())
+			{
+				if (startTimer <= diff && !IsActive)    // fly to start point
+				{
+					me->CastSpell(me, SPELL_EYE_PHASEMASK, true);
+					me->CastSpell(me, SPELL_EYE_VISUAL, true);
+					me->CastSpell(me, SPELL_EYE_FL_BOOST_FLY, true);
+
+					me->CastSpell(me, SPELL_EYE_FL_BOOST_RUN, true);
+					me->SetSpeed(MOVE_FLIGHT, 3.4f, true);
+					me->GetMotionMaster()->MovePoint(0, 1711.0f, -5820.0f, 147.0f);
+					return;
+				}
+				else
+					startTimer -= diff;
+			}
+			else
+				me->DespawnOrUnsummon();
+		}
+
+		void MovementInform(uint32 type, uint32 pointId)
+		{
+			if (type != POINT_MOTION_TYPE || pointId != 0)
+				return;
+
+			// I think the green morph is not blizzlike...
+			me->SetDisplayId(DISPLAYID_EYE_SMALL);
+
+			// for some reason it does not work when this spell is casted before the waypoint movement
+			me->CastSpell(me, SPELL_EYE_VISUAL, true);
+			me->CastSpell(me, SPELL_EYE_FL_BOOST_FLY, true);
+			Talk(SAY_EYE_UNDER_CONTROL);
+			((Player*)(me->GetCharmer()))->SetClientControl(me, 1);
+			me->SetSpeed(MOVE_FLIGHT, 3.4f, true);
+		}
+	};
+};
+
 class npc_unworthy_initiate_anchor : public CreatureScript
 {
 public:
@@ -1041,6 +1156,15 @@ class npc_scarlet_miner : public CreatureScript
                 }
             }
 
+			void InitCartQuest(Player* who)
+			{
+				if (who != NULL)
+					carGUID = me->FindNearestCreature(28817, 100, true)->GetGUID();
+				InitWaypoint();
+				Start(false, false, who->GetGUID());
+				SetDespawnAtFar(false);
+			}
+
             void UpdateAI(uint32 diff) override
             {
                 if (IntroPhase)
@@ -1074,12 +1198,92 @@ class npc_scarlet_miner : public CreatureScript
         }
 };
 
+/*######
+## go_inconspicuous_mine_car
+######*/
+
+enum MineCar
+
+{
+	SPELL_HIDE_IN_MINE_CAR = 52463,
+	NPC_SCARLET_MINER = 28841,
+	NPC_MINE_CAR = 28817,
+	QUEST_MASSACRE_AT_LIGHTS_POINT = 12701
+
+};
+
+class go_inconspicuous_mine_car : public GameObjectScript
+{
+public:
+	go_inconspicuous_mine_car() : GameObjectScript("go_inconspicuous_mine_car") { }
+
+	bool OnGossipHello(Player* player, GameObject* /*go*/)
+	{
+		if (player->GetQuestStatus(QUEST_MASSACRE_AT_LIGHTS_POINT) == QUEST_STATUS_INCOMPLETE)
+		{
+			// Hack Why SkyFire Dont Support Custom Summon Location
+			if (Creature* miner = player->SummonCreature(NPC_SCARLET_MINER, 2383.869629f, -5900.312500f, 107.996086f, player->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 1))
+			{
+				player->CastSpell(player, SPELL_HIDE_IN_MINE_CAR, true);
+				if (Creature* car = player->FindNearestCreature(28817, true))
+				{
+					if (car->GetEntry() == NPC_MINE_CAR)
+					{
+						car->AI()->SetGUID(miner->GetGUID());
+						CAST_AI(npc_scarlet_miner::npc_scarlet_minerAI, miner->AI())->InitCartQuest(player);
+					}
+					//else sLog->outError(LOG_FILTER_TSCR, "TSCR: OnGossipHello vehicle entry is not correct.");
+				}
+				//else sLog->outError(LOG_FILTER_TSCR, "TSCR: OnGossipHello player is not on the vehicle.");
+			}
+			else {}//sLog->outError(LOG_FILTER_TSCR, "TSCR: OnGossipHello Scarlet Miner cant be found by script.");
+		}
+		return true;
+	}
+
+};
+
+class npc_frostbrood_vanquisher : public CreatureScript
+{
+public:
+	npc_frostbrood_vanquisher() : CreatureScript("npc_frostbrood_vanquisher") { }
+
+	CreatureAI* GetAI(Creature* creature) const
+	{
+		return new npc_frostbrood_vanquisherAI(creature);
+	}
+
+	struct npc_frostbrood_vanquisherAI : public ScriptedAI
+	{
+		npc_frostbrood_vanquisherAI(Creature* creature) : ScriptedAI(creature)
+		{
+			Reset();
+		}
+
+		void Reset()
+		{
+			me->SetSpeed(MOVE_FLIGHT, 2.5f, true);
+		}
+
+		void MovementInform(uint32 type, uint32 pointId)
+		{
+			if (type != POINT_MOTION_TYPE)
+				return;
+
+			((Player*)(me->GetCharmer()))->SetClientControl(me, 1);
+			me->SetSpeed(MOVE_FLIGHT, 2.5f, true);
+		}
+	};
+};
+
 // npc 28912 quest 17217 boss 29001 mob 29007 go 191092
 
 void AddSC_the_scarlet_enclave_c1()
 {
     new npc_unworthy_initiate();
     new npc_unworthy_initiate_anchor();
+	new npc_eye_of_acherus();
+
     new go_acherus_soul_prison();
     new npc_death_knight_initiate();
     new npc_salanar_the_horseman();
@@ -1089,4 +1293,6 @@ void AddSC_the_scarlet_enclave_c1()
     new npc_scarlet_ghoul();
     new npc_scarlet_miner();
     new npc_scarlet_miner_cart();
+	new go_inconspicuous_mine_car();
+	new npc_frostbrood_vanquisher();
 }

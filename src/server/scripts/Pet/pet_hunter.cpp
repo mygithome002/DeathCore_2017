@@ -17,7 +17,7 @@
 
 /*
  * Ordered alphabetically using scriptname.
- * Scriptnames of files in this file should be prefixed with "npc_pet_hun_".
+ * Scriptnames of files in this file should be prefixed with "npc_pet_hunter_".
  */
 
 #include "ScriptMgr.h"
@@ -44,9 +44,9 @@ class npc_pet_hunter_snake_trap : public CreatureScript
         {
             npc_pet_hunter_snake_trapAI(Creature* creature) : ScriptedAI(creature) { }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void EnterCombat(Unit* /*who*/) { }
 
-            void Reset() override
+            void Reset()
             {
                 _spellTimer = 0;
 
@@ -68,7 +68,7 @@ class npc_pet_hunter_snake_trap : public CreatureScript
             }
 
             // Redefined for random target selection:
-            void MoveInLineOfSight(Unit* who) override
+            void MoveInLineOfSight(Unit* who)
             {
                 if (!me->GetVictim() && me->CanCreatureAttack(who))
                 {
@@ -88,7 +88,7 @@ class npc_pet_hunter_snake_trap : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 diff) override
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -134,13 +134,99 @@ class npc_pet_hunter_snake_trap : public CreatureScript
             uint32 _spellTimer;
         };
 
-        CreatureAI* GetAI(Creature* creature) const override
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_pet_hunter_snake_trapAI(creature);
+        }
+};
+
+class npc_pet_hunter_murder_of_crows : public CreatureScript
+{
+    public:
+        npc_pet_hunter_murder_of_crows() : CreatureScript("npc_pet_hunter_murder_of_crows") { }
+
+        struct npc_pet_hunter_murder_of_crowsAI : public ScriptedAI
+        {
+            npc_pet_hunter_murder_of_crowsAI(Creature *creature) : ScriptedAI(creature)
+            {
+                me->SetReactState(REACT_DEFENSIVE);
+            }
+
+			void UpdateAI(uint32 diff)
+            {
+                if (me->GetReactState() != REACT_DEFENSIVE)
+                    me->SetReactState(REACT_DEFENSIVE);
+
+                if (!UpdateVictim())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_pet_hunter_murder_of_crowsAI(creature);
+        }
+};
+
+class npc_pet_hunter_dire_beast : public CreatureScript
+{
+    public:
+        npc_pet_hunter_dire_beast() : CreatureScript("npc_pet_hunter_dire_beast") { }
+
+        struct npc_pet_hunter_dire_beastAI : public ScriptedAI
+        {
+            npc_pet_hunter_dire_beastAI(Creature *creature) : ScriptedAI(creature) {}
+
+            void Reset()
+            {
+                me->SetReactState(REACT_DEFENSIVE);
+
+                if (me->GetOwner())
+                    if (me->GetOwner()->GetVictim() || me->GetOwner()->getAttackerForHelper())
+                        AttackStart(me->GetOwner()->GetVictim() ? me->GetOwner()->GetVictim() : me->GetOwner()->getAttackerForHelper());
+            }
+
+			void UpdateAI(uint32 diff)
+            {
+                if (me->GetReactState() != REACT_DEFENSIVE)
+                    me->SetReactState(REACT_DEFENSIVE);
+
+                if (!UpdateVictim())
+                {
+                    if (Unit* owner = me->GetOwner())
+                        if (Unit* newVictim = owner->getAttackerForHelper())
+                            AttackStart(newVictim);
+
+                    return;
+                }
+
+                if (me->GetVictim())
+                    if (Unit* owner = me->GetOwner())
+                        if (Unit* ownerVictim = owner->getAttackerForHelper())
+                            if (me->GetVictim()->GetGUID() != ownerVictim->GetGUID())
+                                AttackStart(ownerVictim);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_pet_hunter_dire_beastAI(creature);
         }
 };
 
 void AddSC_hunter_pet_scripts()
 {
     new npc_pet_hunter_snake_trap();
+    new npc_pet_hunter_murder_of_crows();
+    new npc_pet_hunter_dire_beast();
 }

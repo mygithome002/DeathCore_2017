@@ -268,8 +268,7 @@ struct CUFProfile
 
 struct SpellCooldown
 {
-    //time_t end;
-    time_t end_ms;
+    time_t end;
     uint16 itemid;
 };
 
@@ -375,6 +374,8 @@ struct PlayerCreateInfoAction
 
 typedef std::list<PlayerCreateInfoAction> PlayerCreateInfoActions;
 
+typedef std::list<SkillRaceClassInfoEntry const*> PlayerCreateInfoSkills;
+
 struct PlayerInfo
 {
                                                             // existence checked by displayId != 0
@@ -389,8 +390,9 @@ struct PlayerInfo
     uint16 displayId_m;
     uint16 displayId_f;
     PlayerCreateInfoItems item;
-    PlayerCreateInfoSpells spell;
+    PlayerCreateInfoSpells customSpells;
     PlayerCreateInfoActions action;
+	PlayerCreateInfoSkills skills;
 
     PlayerLevelInfo* levelInfo;                             //[level-1] 0..MaxPlayerLevel-1
 };
@@ -439,8 +441,8 @@ enum RuneCooldowns
 enum RuneType
 {
     RUNE_BLOOD      = 0,
-    RUNE_FROST      = 1,
-    RUNE_UNHOLY     = 2,
+    RUNE_UNHOLY     = 1,
+    RUNE_FROST      = 2,
     RUNE_DEATH      = 3,
     NUM_RUNE_TYPES  = 4
 };
@@ -964,6 +966,15 @@ enum PlayerCommandStates
     CHEAT_WATERWALK = 0x10
 };
 
+struct auraEffectData
+{
+    auraEffectData(uint8 slot, uint8 effect, uint32 amount, uint32 baseamount) : _slot(slot), _effect(effect), _amount(amount), _baseamount(amount)  {}
+    uint8 _slot;
+    uint8 _effect;
+    uint32 _amount;
+    uint32 _baseamount;
+};
+
 class PlayerTaxi
 {
     public:
@@ -1267,7 +1278,7 @@ class Player : public Unit, public GridObject<Player>
         explicit Player(WorldSession* session);
         ~Player();
 
-        virtual void InitializeDynamicUpdateFields() override;
+		virtual void InitializeDynamicUpdateFields();
 
         void CleanupsBeforeDelete(bool finalCleanup = true);
 
@@ -1340,6 +1351,7 @@ class Player : public Unit, public GridObject<Player>
 
         void XPGainAborted();
         void GiveXP(uint32 xp, Unit* victim, float group_rate=1.0f);
+		void GiveGatheringXP();
         void GiveLevel(uint8 level);
 
         void InitStatsForLevel(bool reapplyMods = false);
@@ -1376,8 +1388,10 @@ class Player : public Unit, public GridObject<Player>
         void UpdateInnerTime (time_t time) { time_inn_enter = time; }
 
         Pet* GetPet() const;
-        Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime);
+        Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime, PetSaveMode slotID = PET_SLOT_UNK_SLOT, bool stampeded = false);
         void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false);
+		bool HavePetSummoned(uint32 petEntry);
+
 
         PhaseMgr& GetPhaseMgr() { return phaseMgr; }
 
@@ -1694,7 +1708,7 @@ class Player : public Unit, public GridObject<Player>
         /***                   LOAD SYSTEM                     ***/
         /*********************************************************/
 
-        bool LoadFromDB(uint32 guid, SQLQueryHolder *holder);
+        bool LoadFromDB(uint32 guid, SQLQueryHolder *holder, PreparedQueryResult accountResult);
         bool isBeingLoaded() const;
 
         void Initialize(uint32 guid);
@@ -1753,7 +1767,7 @@ class Player : public Unit, public GridObject<Player>
         Unit* GetSelectedUnit() const;
         Player* GetSelectedPlayer() const;
 
-        void SetTarget(uint64 /*guid*/) override { } /// Used for serverside target changes, does not apply to players
+		void SetTarget(uint64 /*guid*/) {} /// Used for serverside target changes, does not apply to players
         void SetSelection(uint64 guid) { SetUInt64Value(UNIT_FIELD_TARGET, guid); }
 
         uint8 GetComboPoints() const { return m_comboPoints; }
@@ -1814,7 +1828,9 @@ class Player : public Unit, public GridObject<Player>
         void learnSpell(uint32 spell_id, bool dependent);
         void removeSpell(uint32 spell_id, bool disabled = false, bool learn_low_rank = true);
         void resetSpells(bool myClassOnly = false);
-        void learnDefaultSpells();
+		void LearnCustomSpells();
+		void LearnDefaultSkills();
+		void LearnDefaultSkill(SkillRaceClassInfoEntry const* rcInfo);
         void learnQuestRewardedSpells();
         void learnQuestRewardedSpells(Quest const* quest);
         void learnSpellHighRank(uint32 spellid);
@@ -1861,7 +1877,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 CalculateTalentsPoints() const;
         void CastPassiveTalentSpell(uint32 spellId);
         void RemovePassiveTalentSpell(uint32 spellId);
-        int32 CalculateMonkMeleeAttacks(float coeff, int32 APmultiplier);
+		int32 CalculateMonkMeleeAttacks(float coeff, int32 APmultiplier);
 
         void ResetSpec();
 
@@ -1902,12 +1918,14 @@ class Player : public Unit, public GridObject<Player>
         static uint32 const infinityCooldownDelay = MONTH;  // used for set "infinity cooldowns" for spells and check
         static uint32 const infinityCooldownDelayCheck = MONTH/2;
         bool HasSpellCooldown(uint32 spell_id) const;
-        uint64 GetSpellCooldownDelay(uint32 spell_id, bool in_ms = false) const;
+        uint32 GetSpellCooldownDelay(uint32 spell_id) const;
         void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, time_t end_time);
+		void SpellCooldownReduction(uint32 spell_id, time_t end_time);
         void ModifySpellCooldown(uint32 spellId, int32 cooldown);
         void SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
+		void ReduceSpellCooldown(uint32 spell_id, time_t modifyTime);
         void RemoveSpellCooldown(uint32 spell_id, bool update = false);
         void RemoveSpellCategoryCooldown(uint32 cat, bool update = false);
         void SendClearCooldown(uint32 spell_id, Unit* target);
@@ -1961,6 +1979,7 @@ class Player : public Unit, public GridObject<Player>
 
         void UpdateZoneDependentAuras(uint32 zone_id);    // zones
         void UpdateAreaDependentAuras(uint32 area_id);    // subzones
+		void UpdateDampeningAuras();
 
         void UpdateAfkReport(time_t currTime);
         void UpdatePvPFlag(time_t currTime);
@@ -2029,7 +2048,6 @@ class Player : public Unit, public GridObject<Player>
 
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
-        void ApplySpellPenetrationBonus(int32 amount, bool apply);
         void UpdateResistances(uint32 school);
         void UpdateArmor();
         void UpdateMaxHealth();
@@ -2042,7 +2060,7 @@ class Player : public Unit, public GridObject<Player>
         void UpdateRating(CombatRating cr);
         void UpdateAllRatings();
         void UpdateMastery();
-        void UpdatePVPPower(int32 amount);
+		void UpdatePvpPower(int32 amount);
         
         void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& min_damage, float& max_damage);
 
@@ -2070,7 +2088,6 @@ class Player : public Unit, public GridObject<Player>
 
         void UpdateAllSpellCritChances();
         void UpdateSpellCritChance(uint32 school);
-        void UpdateArmorPenetration(int32 amount);
         void UpdateExpertise(WeaponAttackType attType);
         void ApplyManaRegenBonus(int32 amount, bool apply);
         void ApplyHealthRegenBonus(int32 amount, bool apply);
@@ -2156,7 +2173,7 @@ class Player : public Unit, public GridObject<Player>
         int16 GetSkillTempBonusValue(uint32 skill) const;
         uint16 GetSkillStep(uint16 skill) const;            // 0...6
         bool HasSkill(uint32 skill) const;
-        void learnSkillRewardedSpells(uint32 id, uint32 value);
+		void LearnSkillRewardedSpells(uint32 id, uint32 value);
 
         WorldLocation& GetTeleportDest() { return m_teleport_dest; }
         bool IsBeingTeleported() const { return mSemaphoreTeleport_Near || mSemaphoreTeleport_Far; }
@@ -2277,6 +2294,7 @@ class Player : public Unit, public GridObject<Player>
         void SendBattlefieldWorldStates();
 
         void SendAurasForTarget(Unit* target);
+		void SendCooldownAtLogin();
 
         PlayerMenu* PlayerTalkClass;
         std::vector<ItemSetEffect*> ItemSetEff;
@@ -2386,7 +2404,7 @@ class Player : public Unit, public GridObject<Player>
 
         void SetClientControl(Unit* target, bool allowMove);
 
-        void SetMover(Unit* target);
+        void SetMover(Unit* target, bool sendMoverGUID = true);
 
         void SetSeer(WorldObject* target) { m_seer = target; }
         void SetViewpoint(WorldObject* target, bool apply);
@@ -2415,11 +2433,23 @@ class Player : public Unit, public GridObject<Player>
         float m_homebindZ;
 
         WorldLocation GetStartPosition() const;
-        
-        uint32 m_lastEclipseState;
+
+		uint32 m_lastEclipseState;
 
         uint8 m_free_slot = 0;
         uint8 m_slot;
+
+		// current pet slot
+		PetSaveMode m_currentPetSlot;
+        uint32 m_petSlotUsed;
+
+		void setPetSlotUsed(PetSaveMode slot, bool used)
+        {
+            if (used)
+                m_petSlotUsed |= (1 << int32(slot));
+            else
+                m_petSlotUsed &= ~(1 << int32(slot));
+        }
 
         // Pets slots and lists
         uint8 GetPetSlot(){ return m_slot > 100 ? 100 : m_slot; };
@@ -2621,8 +2651,13 @@ class Player : public Unit, public GridObject<Player>
         /*! These methods send different packets to the client in apply and unapply case.
             These methods are only sent to the current unit.
         */
+
+		void SendMovementSetCanFly(bool apply);
+		void SendMovementSetHover(bool apply);
         void SendMovementSetCanTransitionBetweenSwimAndFly(bool apply);
-        void SendMovementSetCollisionHeight(float height);
+        void SendMovementSetWaterWalking(bool apply);
+		void SendMovementSetFeatherFall(bool apply);
+		void SendMovementSetCollisionHeight(float height);
 
         bool CanFly() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY); }
 
@@ -2645,9 +2680,13 @@ class Player : public Unit, public GridObject<Player>
         VoidStorageItem* GetVoidStorageItem(uint8 slot) const;
         VoidStorageItem* GetVoidStorageItem(uint64 id, uint8& slot) const;
 
-        // Monk releated..
         Creature* GetTransSpirit() { return transcendence_spirit; }
-		void SetTransSpirit(Creature* creature) { transcendence_spirit = creature; }
+        void SetTransSpirit(Creature* creature) { transcendence_spirit = creature; }
+
+        void OnCombatExit();
+
+		uint32 GetLastTargetedGO() { return _lastTargetedGO; }
+		void SetLastTargetedGO(uint32 lastTargetedGO) { _lastTargetedGO = lastTargetedGO; }
 
         void ReadyCheckComplete();
 
@@ -2673,6 +2712,13 @@ class Player : public Unit, public GridObject<Player>
 
         void SetKnockBackTime(uint32 timer) { m_knockBackTimer = timer; }
         uint32 GetKnockBackTime() const { return m_knockBackTimer; }
+
+        // To silence achievement announcements
+        void SilenceAchievementAnnounce(bool silence) { m_isAchievementAnnounceSilenced = silence; }
+        bool IsAchievementAnnounceSilenced() const { return m_isAchievementAnnounceSilenced; }
+
+        uint64 greenGuid;
+        uint64 purpleGuid;
 
     protected:
         // Gamemaster whisper whitelist
@@ -2776,8 +2822,8 @@ class Player : public Unit, public GridObject<Player>
         void _SaveWeeklyQuestStatus(SQLTransaction& trans);
         void _SaveMonthlyQuestStatus(SQLTransaction& trans);
         void _SaveSeasonalQuestStatus(SQLTransaction& trans);
-        void _SaveSkills(SQLTransaction& trans);
-        void _SaveSpells(SQLTransaction& trans);
+		void _SaveSkills(SQLTransaction& trans);
+        void _SaveSpells(SQLTransaction& charTrans, SQLTransaction& accountTrans);
         void _SaveEquipmentSets(SQLTransaction& trans);
         void _SaveBGData(SQLTransaction& trans);
         void _SaveGlyphs(SQLTransaction& trans);
@@ -2967,7 +3013,6 @@ class Player : public Unit, public GridObject<Player>
         Item* _StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool update);
         Item* _LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, Field* fields);
 
-        // Monk releated
         Creature* transcendence_spirit;
 
         std::set<uint32> m_refundableItems;
@@ -3035,11 +3080,16 @@ class Player : public Unit, public GridObject<Player>
 
         PhaseMgr phaseMgr;
 
+		uint32 _lastTargetedGO;
+
         uint32 _ConquestCurrencytotalWeekCap;
 
         BattlePetMgr* m_battlePetMgr;
 
         uint32 m_knockBackTimer;
+
+        // To silence achievement announcements
+        bool m_isAchievementAnnounceSilenced;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

@@ -21,11 +21,9 @@
  * Scriptnames of files in this file should be prefixed with "spell_pal_".
  */
 
-#include "Player.h"
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
-#include "Group.h"
 #include "GridNotifiers.h"
 
 enum PaladinSpells
@@ -99,7 +97,9 @@ enum PaladinSpells
     PALADIN_SPELL_GLYPH_OF_DENOUNCE_PROC         = 115654,
     PALADIN_SPELL_SANCTIFIED_WRATH_TALENT        = 53376,
     PALADIN_SPELL_SANCTIFIED_WRATH_BONUS         = 114232,
-    PALADIN_SPELL_AVENGING_WRATH                 = 31884
+    PALADIN_SPELL_AVENGING_WRATH                 = 31884,
+    PALADIN_SPELL_GLYPH_OF_PROTECTOR_OF_INNO     = 93466,
+    PALADIN_SPELL_PROTECTOR_OF_INNO_HEAL         = 94289
 };
 
 // Called by Avenging Wrath - 31884
@@ -728,58 +728,6 @@ class spell_pal_hand_of_protection : public SpellScriptLoader
         }
 };
 
-// Cleanse - 4987 and Cleanse - 122288 (Symbiosis)
-class spell_pal_cleanse : public SpellScriptLoader
-{
-    public:
-        spell_pal_cleanse() : SpellScriptLoader("spell_pal_cleanse") { }
-
-        class spell_pal_cleanse_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_cleanse_SpellScript);
-
-            SpellCastResult CheckCleansing()
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (Unit* target = GetExplTargetUnit())
-                    {
-                        // Create dispel mask by dispel type
-                        for (int8 i = 0; i < MAX_SPELL_EFFECTS; i++)
-                        {
-                            uint32 dispel_type = GetSpellInfo()->Effects[i].MiscValue;
-                            uint32 dispelMask  = GetSpellInfo()->GetDispelMask(DispelType(dispel_type));
-
-                            // Epuration can dispell Magic with Sacred Cleansing
-                            if (caster->HasAura(PALADIN_SPELL_SACRED_CLEANSING) && GetSpellInfo()->Id == 4987)
-                                dispelMask = DISPEL_ALL_MASK;
-
-                            DispelChargesList dispelList;
-                            target->GetDispellableAuraList(caster, dispelMask, dispelList);
-
-                            if (dispelList.empty())
-                                return SPELL_FAILED_NOTHING_TO_DISPEL;
-
-                            return SPELL_CAST_OK;
-                        }
-                    }
-                }
-
-                return SPELL_CAST_OK;
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_pal_cleanse_SpellScript::CheckCleansing);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_cleanse_SpellScript();
-        }
-};
-
 // Divine Shield - 642 and Divine Shield - 110700
 class spell_pal_divine_shield : public SpellScriptLoader
 {
@@ -923,7 +871,7 @@ class spell_pal_lights_hammer : public SpellScriptLoader
                     if (GetCaster()->GetOwner())
                     {
                         GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_HEAL, true, 0, NULL, GetCaster()->GetOwner()->GetGUID());
-                        GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_DAMAGE, true, 0, NULL, GetCaster()->GetOwner()->GetGUID());
+						GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_DAMAGE, true, 0, NULL, GetCaster()->GetOwner()->GetGUID());
                     }
                 }
             }
@@ -1130,7 +1078,7 @@ class spell_pal_word_of_glory : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pal_word_of_glory_SpellScript);
 
-			bool Validate(SpellInfo const* /*spellInfo*/) override
+			bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(PALADIN_SPELL_WORD_OF_GLORY))
                     return false;
@@ -1143,6 +1091,12 @@ class spell_pal_word_of_glory : public SpellScriptLoader
                 {
                     if (Unit* unitTarget = GetHitUnit())
                     {
+                        int32 bp = 0;
+                        bp = GetHitHeal();
+
+                        if (!unitTarget->IsFriendlyTo(_player) && _player->HasAura(54938))
+                            return;
+
                         if ((unitTarget->GetTypeId() != TYPEID_PLAYER && !unitTarget->IsPet()) || unitTarget->IsHostileTo(_player))
                             unitTarget = _player;
 
@@ -1162,6 +1116,19 @@ class spell_pal_word_of_glory : public SpellScriptLoader
                                 aura->GetEffect(0)->ChangeAmount(aura->GetEffect(0)->GetAmount() * (holyPower + 1));
                                 aura->SetNeedClientUpdateForTargets();
                             }
+                        }
+
+                        if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_PROTECTOR_OF_INNO))
+                        {
+                            // Target cannot be player and must be friendly
+                            if (unitTarget != _player && _player->IsFriendlyTo(unitTarget))
+                            {
+                                
+                                bp = bp * 0.2f;
+                                _player->CastCustomSpell(_player, PALADIN_SPELL_PROTECTOR_OF_INNO_HEAL, &bp, NULL, NULL, true);
+
+                            }
+
                         }
 
                         if (!_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
@@ -1196,7 +1163,7 @@ class spell_pal_judgment : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pal_judgment_SpellScript);
 
-			bool Validate(SpellInfo const* /*spellInfo*/) override
+			bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(PALADIN_SPELL_JUDGMENT))
                     return false;
@@ -1364,7 +1331,7 @@ class spell_pal_holy_shock_heal : public SpellScriptLoader
                         int32 damage = -GetHitDamage();
 
                         if (caster->HasAura(PALADIN_SPELL_DAYBREAK_PROC))
-                            unitTarget->CastCustomSpell(unitTarget, PALADIN_SPELL_DAYBREAK_HEAL, &damage, NULL, NULL, true, NULL, NULL, caster->GetGUID());
+							unitTarget->CastCustomSpell(unitTarget, PALADIN_SPELL_DAYBREAK_HEAL, &damage, NULL, NULL, true, NULL, NULL, caster->GetGUID());
                     }
                 }
             }
@@ -1654,7 +1621,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_seal_of_insight();
     new spell_pal_blinding_light();
     new spell_pal_hand_of_protection();
-    new spell_pal_cleanse();
     new spell_pal_divine_shield();
     new spell_pal_inquisition();
     new spell_pal_execution_sentence();

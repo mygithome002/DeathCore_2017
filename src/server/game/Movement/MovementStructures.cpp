@@ -1,4 +1,4 @@
-    /*
+/*
  * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -1788,7 +1788,7 @@ MovementStatusElements const MovementStartPitchUp[] = // 5.4.8 18414
     MSEEnd
 };
 
-MovementStatusElements const MoveChngTransport[]= // 5.4.8 18414
+MovementStatusElements const MoveChngTransport[]=
 {
     MSEPositionX,
     MSEPositionY,
@@ -3535,7 +3535,7 @@ MovementStatusElements const ForceMoveUnrootAck[] = // 5.4.8 18414
     MSEForcesCount,
     MSEHasMovementFlags2,
     MSEHasOrientation,
-    MSEHasTransportTime3,
+    MSETransportVehicleId,
     MSEHasTransportGuidByte0,
     MSEHasTransportGuidByte2,
     MSEHasTransportTime2,
@@ -3565,7 +3565,7 @@ MovementStatusElements const ForceMoveUnrootAck[] = // 5.4.8 18414
     MSETransportGuidByte1,
     MSETransportTime2,
     MSETransportPositionZ,
-    MSETransportTime3,
+    MSETransportVehicleId,
     MSETransportGuidByte5,
     MSETransportPositionY,
     MSETransportGuidByte6,
@@ -3585,7 +3585,6 @@ MovementStatusElements const ForceMoveUnrootAck[] = // 5.4.8 18414
     MSEPitch,
     MSEEnd,
 };
-
 
 MovementStatusElements const MovementFallReset[] =
 {

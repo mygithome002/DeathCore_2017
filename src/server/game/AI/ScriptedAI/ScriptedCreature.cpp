@@ -226,14 +226,14 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 school, uint32 mec
             continue;
 
         //Make sure that the spell uses the requested amount of power
-        if (powerCostMin && tempSpell->GetSpellPowerCost(me->ToUnit()).ManaCost < powerCostMin)
+        if (powerCostMin && tempSpell->ManaCost < powerCostMin)
             continue;
 
-        if (powerCostMax && tempSpell->GetSpellPowerCost(me->ToUnit()).ManaCost > powerCostMax)
+        if (powerCostMax && tempSpell->ManaCost > powerCostMax)
             continue;
 
         //Continue if we don't have the mana to actually cast this spell
-        if (tempSpell->GetSpellPowerCost(me->ToUnit()).ManaCost > (uint32)me->GetPower(Powers(tempSpell->GetSpellPowerCost(me->ToUnit()).PowerType)))
+        if (tempSpell->ManaCost > (uint32)me->GetPower(Powers(tempSpell->PowerType)))
             continue;
 
         //Check if the spell meets our range requirements
@@ -451,6 +451,15 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea(uint32 const diff)
 
     EnterEvadeMode();
     return true;
+}
+
+void Scripted_NoMovementAI::AttackStart(Unit* target)
+{
+	if (!target)
+		return;
+
+	if (me->Attack(target, true))
+		DoStartNoMovement(target);
 }
 
 // BossAI - for instanced bosses

@@ -66,6 +66,28 @@ class AreaTrigger_at_bassin_curse : public AreaTriggerScript
     }
 };
 
+// Npc's : 54993 - 55083 - 57431
+class vehicle_balance_pole : public VehicleScript
+{
+public:
+	vehicle_balance_pole() : VehicleScript("vehicle_balance_pole") {}
+
+	void OnAddPassenger(Vehicle* veh, Unit* passenger, int8 /*seatId*/)
+	{
+		if (passenger->HasAura(102938))
+			passenger->ExitVehicle();
+	}
+	void OnRemovePassenger(Vehicle* veh, Unit* passenger)
+	{
+		if (veh->GetBase()->GetPositionZ() == 116.521004f) // Hack
+		{
+			veh->GetPassenger(0)->AddAura(102938, passenger);
+		}
+			/*if (passenger->IsOnVehicle()) // Maybe the player
+				passenger->AddAura(102938, passenger);*/
+	}
+};
+
 class mob_tushui_monk : public CreatureScript
 {
 public:
@@ -306,7 +328,7 @@ public:
     {
         PrepareAuraScript(spell_shu_benediction_AuraScript);
 
-        void OnApply(AuraEffect /*aurEff*/, AuraEffectHandleModes /*mode*/)
+		void OnApply(AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             Unit* target = GetTarget();
 
@@ -328,7 +350,7 @@ public:
             }
         }
 
-        void OnRemove(AuraEffect /*aurEff*/, AuraEffectHandleModes /*mode*/)
+		void OnRemove(AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             Unit* target = GetTarget();
 

@@ -22,7 +22,7 @@
 #include <ace/Sig_Handler.h>
 
 #include "Common.h"
-#include "SystemConfig.h"
+#include "GitRevision.h"
 #include "SignalHandler.h"
 #include "World.h"
 #include "WorldRunnable.h"
@@ -89,7 +89,7 @@ public:
 
     void SetDelayTime(uint32 t) { _delaytime = t; }
 
-    void run() override
+	void run()
     {
         if (!_delaytime)
             return;
@@ -126,7 +126,7 @@ int Master::Run()
     BigNumber seed1;
     seed1.SetRand(16 * 8);
 
-    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon)", _FULLVERSION);
+    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon)", GitRevision::GetFullVersion());
     TC_LOG_INFO("server.worldserver", "<Ctrl-C> to stop.\n");
 	TC_LOG_INFO("server.worldserver", " ");
 	TC_LOG_INFO("server.worldserver", "██████╗ ███████╗ █████╗ ████████╗██╗  ██╗");
@@ -144,7 +144,7 @@ int Master::Run()
 	TC_LOG_INFO("server.worldserver", "   ");                                                        
 	TC_LOG_INFO("server.worldserver", "   ");                                                        
 	TC_LOG_INFO("server.worldserver", "  	Noffearr Death ProjecT 2016(c) Open-Sourced Game Emulation"); 
-    TC_LOG_INFO("server.worldserver", "		       http://www.noffearrdeathproject.org ");
+    TC_LOG_INFO("server.worldserver", "		  http://www.noffearrdeathproject.org ");
 	TC_LOG_INFO("server.worldserver", "   ");                                                        
 	TC_LOG_INFO("server.worldserver", "   "); 
 
@@ -302,7 +302,7 @@ int Master::Run()
     // set server online (allow connecting now)
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag & ~%u, population = 0 WHERE id = '%u'", REALM_FLAG_INVALID, realmID);
 
-    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon) ready...", _FULLVERSION);
+    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon) ready...", GitRevision::GetFullVersion());
 
     // when the main thread closes the singletons get unloaded
     // since worldrunnable uses them, it will crash if unloaded after master
@@ -324,7 +324,7 @@ int Master::Run()
 
     _StopDB();
 
-    TC_LOG_INFO("server.worldserver", "Halting process...");
+    TC_LOG_INFO("server.worldserver", "Stopping CLI Thread...");
 
     if (cliThread)
     {
@@ -382,6 +382,8 @@ int Master::Run()
 
     OpenSSLCrypto::threadsCleanup();
     // Exit the process with specified return value
+    TC_LOG_INFO("server.worldserver", "Stopping Master Process...");
+    exit(0);
     return World::GetExitCode();
 }
 
@@ -492,7 +494,7 @@ bool Master::_StartDB()
     ClearOnlineAccounts();
 
     ///- Insert version info into DB
-    WorldDatabase.PExecute("UPDATE version SET core_version = '%s', core_revision = '%s'", _FULLVERSION, _HASH);        // One-time query
+    WorldDatabase.PExecute("UPDATE version SET core_version = '%s', core_revision = '%s'", GitRevision::GetFullVersion(), GitRevision::GetHash());        // One-time query
 
     sWorld->LoadDBVersion();
 

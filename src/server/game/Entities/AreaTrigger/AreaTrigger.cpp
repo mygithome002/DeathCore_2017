@@ -89,6 +89,9 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         case 116011: // Rune of Power
             SetVisualRadius(3.5f);
             break;
+		case 116235:// Amethyst Pool
+            SetVisualRadius(3.5f);
+            break;
     }
 
     if (!GetMap()->AddToMap(this))
@@ -106,8 +109,6 @@ void AreaTrigger::Update(uint32 p_time)
 
     WorldObject::Update(p_time);
 
-    // TODO: Find a better place for this
-
     SpellInfo const* m_spellInfo = sSpellMgr->GetSpellInfo(GetUInt32Value(AREATRIGGER_FIELD_SPELL_ID));
     if (!m_spellInfo)
         return;
@@ -123,37 +124,270 @@ void AreaTrigger::Update(uint32 p_time)
 
     switch (m_spellInfo->Id)
     {
-        case 116011: // Rune of Power
+        case 102793:// Ursol's Vortex
         {
             std::list<Unit*> targetList;
-            bool affected = false;
-            radius = 2.25f;
+            radius = 8.0f;
 
-            Trinity::AnyFriendlyUnitInRangeCheck u_check(caster, radius);
-            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInRangeCheck> searcher(caster, targetList, u_check);
-            caster->VisitNearbyObject(radius, searcher);
+            Trinity::NearestAttackableUnitInObjectRangeCheck u_check(this, caster, radius);
+            Trinity::UnitListSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> searcher(this, targetList, u_check);
+            VisitNearbyObject(radius, searcher);
+
+            if (!targetList.empty())
+                for (auto itr : targetList)
+                    if (!itr->HasAura(127797))
+                        caster->CastSpell(itr, 127797, true);
+
+            break;
+        }
+        case 115460:// Healing Sphere
+        {
+            std::list<Unit*> targetList;
+            radius = 1.0f;
+
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(this, caster, radius);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(this, targetList, u_check);
+            VisitNearbyObject(radius, searcher);
 
             if (!targetList.empty())
             {
                 for (auto itr : targetList)
                 {
-                    if (/*itr->GetGUID() == caster->GetGUID() ||*/ itr->GetEntry() == 60199 && itr->GetOwnerGUID() == caster->GetGUID())
+                    caster->CastSpell(itr, 115464, true); // Healing Sphere heal
+                    SetDuration(0);
+                    return;
+                }
+            }
+
+            break;
+        }
+        case 115817:// Cancel Barrier
+        {
+            std::list<Unit*> targetList;
+            radius = 6.0f;
+
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(this, caster, radius);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(this, targetList, u_check);
+            VisitNearbyObject(radius, searcher);
+
+            if (!targetList.empty())
+                for (auto itr : targetList)
+                    itr->CastSpell(itr, 115856, true);
+
+            break;
+        }
+        case 116011:// Rune of Power
+        {
+            std::list<Unit*> targetList;
+            bool affected = false;
+            radius = 2.25f;
+
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(this, caster, radius);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(this, targetList, u_check);
+            VisitNearbyObject(radius, searcher);
+
+            if (!targetList.empty())
+            {
+                for (auto itr : targetList)
+                {
+                    if (itr->GetGUID() == caster->GetGUID())
                     {
+                        caster->CastSpell(itr, 116014, true); // Rune of Power
                         affected = true;
 
-                        if (!caster->HasAura(116014))
-                            caster->CastSpell(caster, 116014, true);
+                        if (caster->ToPlayer())
+                            caster->ToPlayer()->UpdateManaRegen();
 
                         return;
                     }
                 }
             }
 
-            if (!affected && caster->HasAura(116014))
+            if (!affected)
                 caster->RemoveAura(116014);
 
             break;
         }
+        case 116235:// Amethyst Pool
+        {
+            std::list<Unit*> targetList;
+            radius = 10.0f;
+
+            Trinity::NearestAttackableUnitInObjectRangeCheck u_check(this, caster, radius);
+            Trinity::UnitListSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> searcher(this, targetList, u_check);
+            VisitNearbyObject(radius, searcher);
+
+            if (!targetList.empty())
+            {
+                for (auto itr : targetList)
+                {
+                    // Amethyst Pool - Periodic Damage
+                    if (itr->GetDistance(this) > 3.5f)
+                        itr->RemoveAura(130774);
+                    else if (!itr->HasAura(130774))
+                        caster->CastSpell(itr, 130774, true);
+                }
+            }
+
+            break;
+        }
+        case 116546:// Draw Power
+        {
+            std::list<Unit*> targetList;
+            radius = 30.0f;
+
+            Trinity::NearestAttackableUnitInObjectRangeCheck u_check(this, caster, radius);
+            Trinity::UnitListSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> searcher(this, targetList, u_check);
+            VisitNearbyObject(radius, searcher);
+
+            for (auto itr : targetList)
+            {
+                if (itr->IsInAxe(caster, this, 2.0f))
+                {
+                    if (!itr->HasAura(116663))
+                        caster->AddAura(116663, itr);
+                }
+                else
+                    itr->RemoveAurasDueToSpell(116663);
+            }
+
+            break;
+        }
+        case 117032:// Healing Sphere (Afterlife)
+        {
+            std::list<Unit*> targetList;
+            radius = 1.0f;
+
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(this, caster, radius);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(this, targetList, u_check);
+            VisitNearbyObject(radius, searcher);
+
+            if (!targetList.empty())
+            {
+                for (auto itr : targetList)
+                {
+                    if (itr->GetGUID() == caster->GetGUID())
+                    {
+                        caster->CastSpell(itr, 125355, true); // Heal for 15% of life
+                        SetDuration(0);
+                        return;
+                    }
+                }
+            }
+
+            break;
+        }
+        case 119031:// Gift of the Serpent (Mastery)
+        {
+            std::list<Unit*> targetList;
+            radius = 1.0f;
+
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(this, caster, radius);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(this, targetList, u_check);
+            VisitNearbyObject(radius, searcher);
+
+            if (!targetList.empty())
+            {
+                for (auto itr : targetList)
+                {
+                    caster->CastSpell(itr, 124041, true); // Gift of the Serpent heal
+                    SetDuration(0);
+                    return;
+                }
+            }
+
+            break;
+        }
+        case 121286:// Chi Sphere (Afterlife)
+        {
+            std::list<Unit*> targetList;
+            radius = 1.0f;
+
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(this, caster, radius);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(this, targetList, u_check);
+            VisitNearbyObject(radius, searcher);
+
+            if (!targetList.empty())
+            {
+                for (auto itr : targetList)
+                {
+                    if (itr->GetGUID() == caster->GetGUID())
+                    {
+                        caster->CastSpell(itr, 121283, true); // Restore 1 Chi
+                        SetDuration(0);
+                        return;
+                    }
+                }
+            }
+
+            break;
+        }
+        case 121536:// Angelic Feather
+        {
+            std::list<Unit*> targetList;
+            radius = 1.0f;
+
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(this, caster, radius);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(this, targetList, u_check);
+            VisitNearbyObject(radius, searcher);
+
+            if (!targetList.empty())
+            {
+                for (auto itr : targetList)
+                {
+                    caster->CastSpell(itr, 121557, true); // Angelic Feather increase speed
+                    SetDuration(0);
+                    return;
+                }
+            }
+
+            break;
+        }
+        case 122035:// Path of Blossom
+        {
+            std::list<Unit*> targetList;
+            radius = 1.0f;
+
+            Trinity::NearestAttackableUnitInObjectRangeCheck u_check(this, caster, radius);
+            Trinity::UnitListSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> searcher(this, targetList, u_check);
+            VisitNearbyObject(radius, searcher);
+
+            if (!targetList.empty())
+            {
+                for (auto itr : targetList)
+                {
+                    caster->CastSpell(itr, 122036, true); // Path of Blossom damage
+                    SetDuration(0);
+                    return;
+                }
+            }
+
+            break;
+        }
+        case 124503:// Gift of the Ox
+        case 124506:// Gift of the Ox²
+        {
+            std::list<Unit*> targetList;
+            radius = 1.0f;
+
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(this, caster, radius);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(this, targetList, u_check);
+            VisitNearbyObject(radius, searcher);
+
+            for (auto itr : targetList)
+            {
+                if (itr->GetGUID() != caster->GetGUID())
+                    continue;
+
+                caster->CastSpell(itr, 124507, true); // Gift of the Ox - Heal
+                SetDuration(0);
+                return;
+            }
+
+            break;
+        }
+        default:
+            break;
     }
 }
 

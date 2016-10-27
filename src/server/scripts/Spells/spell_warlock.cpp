@@ -24,7 +24,9 @@
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
-#include "Creature.h"
+#include "Pet.h"
+#include "PetDefines.h"
+#include "TemporarySummon.h"
 
 enum WarlockSpells
 {
@@ -37,10 +39,13 @@ enum WarlockSpells
     WARLOCK_DEMONIC_CIRCLE_TELEPORT         = 48020,
     WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST       = 62388,
     WARLOCK_UNSTABLE_AFFLICTION_DISPEL      = 31117,
+    WARLOCK_UNSTABLE_AFFLI_DISPEL_CRIT      = 131736,
+    SPELL_WARLOCK_GLYPH_OF_UNSTABLE_AFFLI   = 56233,
+    WARLOCK_FEAR                            = 5782,
     WARLOCK_GLYPH_OF_FEAR                   = 56244,
     WARLOCK_FEAR_EFFECT                     = 118699,
     WARLOCK_GLYPH_OF_FEAR_EFFECT            = 130616,
-    WARLOCK_CREATE_HEALTHSTONE              = 120038,
+    WARLOCK_CREATE_HEALTHSTONE              = 6201,
     WARLOCK_HARVEST_LIFE_HEAL               = 125314,
     WARLOCK_DRAIN_LIFE_HEAL                 = 89653,
     WARLOCK_SOULBURN_AURA                   = 74434,
@@ -112,7 +117,15 @@ enum WarlockSpells
     WARLOCK_SUMMON_OBSERVER                 = 112869,
     WARLOCK_SUMMON_WRATHGUARD               = 112870,
     WARLOCK_SUMMON_ABYSSAL                  = 112921,
-    WARLOCK_SUMMON_TERRORGUARD              = 112927
+    WARLOCK_SUMMON_TERRORGUARD              = 112927,
+    WARLOCK_SPELL_DEMONIC_SLASH             = 114175,
+    WARLOCK_SPELL_GRIMOIRE_OF_SERVICE       = 108501,
+    WARLOCK_SPELL_IMP_FIREBOLT              = 3110,
+    WARLOCK_SPELL_IMP_SINGLE_MAGIC          = 89808,
+    WARLOCK_SPELL_VOIDWALKER_SUFFERING      = 17735,
+    WARLOCK_SPELL_SUCCUBUS_SEDUCTION        = 6358,
+    WARLOCK_SPELL_FELHUNTER_SPELL_LOCK      = 19647,
+    WARLOCK_SPELL_FELGUARD_AXE_STUN         = 89766
 };
 
 // Grimoire of Supremacy - 108499
@@ -713,7 +726,7 @@ class spell_warl_shield_of_shadow : public SpellScriptLoader
 
             void OnUpdate(uint32 diff, AuraEffect* aurEff)
             {
-                /*if (Player* _player = GetCaster()->ToPlayer())
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Pet* pet = _player->GetPet())
                     {
@@ -725,7 +738,7 @@ class spell_warl_shield_of_shadow : public SpellScriptLoader
                                 pet->addSpell(WARLOCK_THREATENING_PRESENCE);
                         }
                     }
-                }*/
+                }
             }
 
             void Register()
@@ -793,27 +806,26 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
 
                             player->RemoveAura(WARLOCK_SUPPLANT_DEMONIC_COMMAND);
 
-/*                            switch (pet->GetEntry())
+                            switch (pet->GetEntry())
                             {
-                                case ENTRY_IMP:
+                                case 416:
                                     bp = 132411;// Single Magic
                                     break;
-                                case ENTRY_VOIDWALKER:
+                                case 1860:
                                     bp = 132413;// Shadow Bulwark
                                     break;
-                                case ENTRY_SUCCUBUS:
-                                    bp = 119909;// Whiplash
+                                case 1863:
+                                    bp = 137706;// Whiplash
                                     break;
-                                case ENTRY_FELHUNTER:
+                                case 417:
                                     bp = 132409;// Spell Lock
                                     break;
-                                case ENTRY_FELGUARD:
+                                case 17252:
                                     bp = 132410;// Pursuit
                                     break;
                                 default:
                                     break;
                             }
-*/
 
                             if (bp)
                                 player->CastCustomSpell(player, WARLOCK_SUPPLANT_DEMONIC_COMMAND, &bp, NULL, NULL, true);
@@ -837,58 +849,54 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
                     // EFFECT_8 : +50% on EFFECT_4 and EFFECT_5 of Drain Soul -> Always set to 0
                     // EFFECT_9 : Always set to 0
                     // EFFECT_10 : Always set to 0
-                    if (Aura* GoS = player->GetAura(WARLOCK_GRIMOIRE_OF_SACRIFICE))
+                    if (Aura* grimoireOfSacrifice = player->GetAura(WARLOCK_GRIMOIRE_OF_SACRIFICE))
                     {
-                        if (GoS->GetEffect(EFFECT_10))
-                            GoS->GetEffect(EFFECT_10)->SetAmount(0);
-                        if (GoS->GetEffect(EFFECT_9))
-                            GoS->GetEffect(EFFECT_9)->SetAmount(0);
-                        if (GoS->GetEffect(EFFECT_8))
-                            GoS->GetEffect(EFFECT_8)->SetAmount(0);
-
-                        if (GoS->GetEffect(EFFECT_6))
-                            if (!player->HasSpell(108415))
-                                GoS->GetEffect(EFFECT_6)->SetAmount(0);
+                        if (grimoireOfSacrifice->GetEffect(EFFECT_10))
+                            grimoireOfSacrifice->GetEffect(EFFECT_10)->SetAmount(0);
+                        if (grimoireOfSacrifice->GetEffect(EFFECT_9))
+                            grimoireOfSacrifice->GetEffect(EFFECT_9)->SetAmount(0);
+                        if (grimoireOfSacrifice->GetEffect(EFFECT_8))
+                            grimoireOfSacrifice->GetEffect(EFFECT_8)->SetAmount(0);
 
                         switch (player->GetSpecializationId(player->GetActiveSpec()))
                         {
-							case CHAR_SPECIALIZATION_WARLOCK_AFFLICTION:
-                                if (GoS->GetEffect(EFFECT_3))
-                                    GoS->GetEffect(EFFECT_3)->SetAmount(0);
-                                if (GoS->GetEffect(EFFECT_4))
-                                    GoS->GetEffect(EFFECT_4)->SetAmount(0);
+                            case CHAR_SPECIALIZATION_WARLOCK_AFFLICTION:
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_3))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_3)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_4))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_4)->SetAmount(0);
                                 break;
                             case CHAR_SPECIALIZATION_WARLOCK_DEMONOLOGY:
-                                if (GoS->GetEffect(EFFECT_2))
-                                    GoS->GetEffect(EFFECT_2)->SetAmount(0);
-                                if (GoS->GetEffect(EFFECT_4))
-                                    GoS->GetEffect(EFFECT_4)->SetAmount(0);
-                                if (GoS->GetEffect(EFFECT_5))
-                                    GoS->GetEffect(EFFECT_5)->SetAmount(0);
-                                if (GoS->GetEffect(EFFECT_7))
-                                    GoS->GetEffect(EFFECT_7)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_2))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_2)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_4))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_4)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_5))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_5)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_7))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_7)->SetAmount(0);
                                 break;
                             case CHAR_SPECIALIZATION_WARLOCK_DESTRUCTION:
-                                if (GoS->GetEffect(EFFECT_2))
-                                    GoS->GetEffect(EFFECT_2)->SetAmount(0);
-                                if (GoS->GetEffect(EFFECT_3))
-                                    GoS->GetEffect(EFFECT_3)->SetAmount(0);
-                                if (GoS->GetEffect(EFFECT_5))
-                                    GoS->GetEffect(EFFECT_5)->SetAmount(0);
-                                if (GoS->GetEffect(EFFECT_7))
-                                    GoS->GetEffect(EFFECT_7)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_2))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_2)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_3))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_3)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_5))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_5)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_7))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_7)->SetAmount(0);
                                 break;
-							case CHAR_SPECIALIZATION_NONE:
-                                if (GoS->GetEffect(EFFECT_2))
-                                    GoS->GetEffect(EFFECT_2)->SetAmount(0);
-                                if (GoS->GetEffect(EFFECT_3))
-                                    GoS->GetEffect(EFFECT_3)->SetAmount(0);
-                                if (GoS->GetEffect(EFFECT_4))
-                                    GoS->GetEffect(EFFECT_4)->SetAmount(0);
-                                if (GoS->GetEffect(EFFECT_5))
-                                    GoS->GetEffect(EFFECT_5)->SetAmount(0);
-                                if (GoS->GetEffect(EFFECT_7))
-                                    GoS->GetEffect(EFFECT_7)->SetAmount(0);
+                            case CHAR_SPECIALIZATION_NONE:
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_2))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_2)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_3))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_3)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_4))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_4)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_5))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_5)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_7))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_7)->SetAmount(0);
                             default:
                                 break;
                         }
@@ -935,7 +943,7 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
 };
 
 // Flames of Xoroth - 120451
-/*class spell_warl_flames_of_xoroth : public SpellScriptLoader
+class spell_warl_flames_of_xoroth : public SpellScriptLoader
 {
     public:
         spell_warl_flames_of_xoroth() : SpellScriptLoader("spell_warl_flames_of_xoroth") { }
@@ -964,7 +972,7 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
                 return SPELL_CAST_OK;
             }
 
-            void HandleDummy(SpellEffIndex )//effIndex)
+            void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 if (!GetCaster())
                     return;
@@ -1013,7 +1021,7 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
             return new spell_warl_flames_of_xoroth_SpellScript();
         }
 };
-*/
+
 // Soul Link - 108446
 class spell_warl_soul_link_dummy : public SpellScriptLoader
 {
@@ -1031,10 +1039,10 @@ class spell_warl_soul_link_dummy : public SpellScriptLoader
 
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    /*if (GetTarget()->GetGUID() == _player->GetGUID())
+                    if (GetTarget()->GetGUID() == _player->GetGUID())
                         if (Pet* pet = _player->GetPet())
                             if (pet->HasAura(WARLOCK_SOUL_LINK_DUMMY_AURA))
-                                pet->RemoveAura(WARLOCK_SOUL_LINK_DUMMY_AURA);*/
+                                pet->RemoveAura(WARLOCK_SOUL_LINK_DUMMY_AURA);
 
                     if (_player->HasAura(WARLOCK_SOUL_LINK_DUMMY_AURA))
                         _player->RemoveAura(WARLOCK_SOUL_LINK_DUMMY_AURA);
@@ -1192,7 +1200,7 @@ class spell_warl_archimondes_vengance : public SpellScriptLoader
                 {
                     if (target->HasAura(aurEff->GetSpellInfo()->Id, _player->GetGUID()))
                     {
-                        int32 bp = int32(eventInfo.GetDamageInfo()->GetDamage() / 4) * 2;
+                        int32 bp = int32(eventInfo.GetDamageInfo()->GetDamage() / 4);
 
                         if (!bp)
                             return;
@@ -1604,8 +1612,8 @@ class spell_warl_soul_leech : public SpellScriptLoader
 
                             _player->CastCustomSpell(_player, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
 
-                            //if (Pet* pet = _player->GetPet())
-                                //_player->CastCustomSpell(pet, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
+                            if (Pet* pet = _player->GetPet())
+                                _player->CastCustomSpell(pet, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
                         }
                     }
                 }
@@ -1938,12 +1946,12 @@ class spell_warl_soul_swap : public SpellScriptLoader
                         {
                             // Soul Swap override spell
                             caster->CastSpell(caster, WARLOCK_SOUL_SWAP_AURA, true);
-                            //caster->RemoveSoulSwapDOT(target);
+                            caster->RemoveSoulSwapDOT(target);
                         }
                         else if (GetSpellInfo()->Id == 86213)
                         {
                             caster->CastSpell(target, WARLOCK_SOUL_SWAP_VISUAL, true);
-                            //caster->ApplySoulSwapDOT(target);
+                            caster->ApplySoulSwapDOT(target);
                             caster->RemoveAurasDueToSpell(WARLOCK_SOUL_SWAP_AURA);
 
                             if (caster->HasAura(56226) && caster->ToPlayer()) // Glyph of Soul Swap
@@ -2016,11 +2024,11 @@ class spell_warl_drain_soul : public SpellScriptLoader
 
             void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
             {
-                if (GetCaster())
+                if (Unit* caster = GetCaster())
                 {
                     AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
-                    if (removeMode == AURA_REMOVE_BY_DEATH)
-                        GetCaster()->SetPower(POWER_SOUL_SHARDS, GetCaster()->GetPower(POWER_SOUL_SHARDS) + 300);
+                    if (removeMode == AURA_REMOVE_BY_DEATH) //Fixed BinaryMind, now it grants 3 soul shards at killing enemy that give honor/exp
+                        caster->CastSpell(caster, 95810, true);
                 }
             }
 
@@ -2036,81 +2044,6 @@ class spell_warl_drain_soul : public SpellScriptLoader
         }
 };
 
-enum PortalEntries
-{
-    PORTAL_GREEN_ENTRY = 59262,
-    PORTAL_PURPLE_ENTRY = 59271
-};
-
-uint32 GreenVisuals[6] =
-{
-    113930, // 0
-    113903, // 1
-    113911, // 2
-    113912, // 3
-    113913, // 4
-    113914  // 5
-};
-
-uint32 PurpleVisuals[6] =
-{
-    113931, // 0
-    113915, // 1
-    113916, // 2
-    113917, // 3
-    113918, // 4
-    113919  // 5
-};
-
-// Demonic Gateway (periodic add charge) - 113901
-class spell_warl_demonic_gateway_charges : public SpellScriptLoader
-{
-    public:
-        spell_warl_demonic_gateway_charges() : SpellScriptLoader("spell_warl_demonic_gateway_charges") { }
-
-        class spell_warl_demonic_gateway_charges_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warl_demonic_gateway_charges_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
-            {
-                if (Unit* target = GetTarget())
-                    if (Aura* demonicGateway = target->GetAura(WARLOCK_DEMONIC_GATEWAY_PERIODIC_CHARGE))
-                        if (demonicGateway->GetCharges() < 5)
-                        {
-                            demonicGateway->SetCharges(demonicGateway->GetCharges() + 1);
-
-                            if (Unit* portalgreen = target->FindNearestCreaturePet(target->ToPlayer(), PORTAL_GREEN_ENTRY,  sWorld->GetMaxVisibleDistanceInBGArenas()))
-                                if (portalgreen->GetOwner() == target)
-                                {
-                                    if (demonicGateway->GetCharges() <= 1)
-                                        portalgreen->CastSpell(portalgreen, 113900, true);
-
-                                    portalgreen->CastSpell(portalgreen, GreenVisuals[demonicGateway->GetCharges()], true);
-                                }
-                            if (Unit* portalpurple = target->FindNearestCreaturePet(target->ToPlayer(), PORTAL_PURPLE_ENTRY,  sWorld->GetMaxVisibleDistanceInBGArenas()))
-                                if (portalpurple->GetOwner() == target)
-                                {
-                                    if (demonicGateway->GetCharges() <= 1)
-                                        portalpurple->CastSpell(portalpurple, 113900, true);
-
-                                    portalpurple->CastSpell(portalpurple, PurpleVisuals[demonicGateway->GetCharges()], true);
-                                }
-                        }
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_demonic_gateway_charges_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warl_demonic_gateway_charges_AuraScript();
-        }
-};
-
 // Demonic Gateway - 111771
 class spell_warl_demonic_gateway : public SpellScriptLoader
 {
@@ -2121,29 +2054,26 @@ class spell_warl_demonic_gateway : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warl_demonic_gateway_SpellScript);
 
-            SpellCastResult CheckLoS()
-            {
-                Unit* caster = GetCaster();
-                WorldLocation* dest = const_cast<WorldLocation*>(GetExplTargetDest());
-                if (!dest)
-                    return SPELL_FAILED_DONT_REPORT;
-
-                if (dest->GetPositionZ() > caster->GetPositionZ() + 5.0f || dest->GetPositionZ() < caster->GetPositionZ() - 5.0f)
-                    return SPELL_FAILED_NOPATH;
-
-                return SPELL_CAST_OK;
-            }
-
             void HandleAfterCast()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
+				{
                     _player->CastSpell(_player, WARLOCK_SPAWN_PURPLE_DEMONIC_GATEWAY, true);
+					_player->CastSpell(_player, 113886, true);
+					if (Unit* caster = GetCaster())
+					{
+						if (Creature* purplenearestportal = caster->FindNearestCreature(59271, 1))
+						{
+							purplenearestportal->DisappearAndDie();	
+							return;
+						}
+					}	
+				}	
             }
 
             void Register()
             {
                 AfterCast += SpellCastFn(spell_warl_demonic_gateway_SpellScript::HandleAfterCast);
-                OnCheckCast += SpellCheckCastFn(spell_warl_demonic_gateway_SpellScript::CheckLoS);
             }
         };
 
@@ -2196,7 +2126,7 @@ class spell_warl_chaos_bolt : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (_player->HasAura(WARLOCK_PYROCLASM))
-                        if (Aura* backdraft = _player->GetAura(WARLOCK_BACKDRAFT))
+                        if(Aura* backdraft = _player->GetAura(WARLOCK_BACKDRAFT))
                             backdraft->ModCharges(-3);
             }
 
@@ -2232,7 +2162,7 @@ class spell_warl_ember_tap : public SpellScriptLoader
                         float pct;
                         float Mastery;
 
-						Mastery = 3.0f * _player->GetFloatValue(PLAYER_FIELD_MASTERY) / 100.0f;
+                        Mastery = 3.0f * _player->GetFloatValue(PLAYER_FIELD_MASTERY) / 100.0f;
 
                         pct = 0.15f * (1 + Mastery);
 
@@ -2557,8 +2487,8 @@ class spell_warl_soul_harverst : public SpellScriptLoader
                         {
                             _player->SetHealth(_player->GetHealth() + int32(_player->GetMaxHealth() / 50));
 
-                            //if (Pet* pet = _player->GetPet())
-                                //pet->SetHealth(pet->GetHealth() + int32(pet->GetMaxHealth() / 50));
+                            if (Pet* pet = _player->GetPet())
+                                pet->SetHealth(pet->GetHealth() + int32(pet->GetMaxHealth() / 50));
                         }
                     }
 
@@ -2732,17 +2662,22 @@ class spell_warl_fear : public SpellScriptLoader
 
             void HandleAfterHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                // Sanity check
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                if (Player* playerCaster = caster->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (_player->HasAura(WARLOCK_GLYPH_OF_FEAR))
+                        if (playerCaster->HasAura(WARLOCK_GLYPH_OF_FEAR))
                         {
-                            _player->CastSpell(target, WARLOCK_GLYPH_OF_FEAR_EFFECT, true);
-                            _player->AddSpellCooldown(5782, 0, time(NULL) + 5);
+                            playerCaster->CastSpell(target, WARLOCK_GLYPH_OF_FEAR_EFFECT, true);
+                            playerCaster->AddSpellCooldown(WARLOCK_FEAR, 0, time(NULL) + 5);
                         }
                         else
-                            _player->CastSpell(target, WARLOCK_FEAR_EFFECT, true);
+                            playerCaster->CastSpell(target, WARLOCK_FEAR_EFFECT, true);
                     }
                 }
             }
@@ -2811,33 +2746,6 @@ class spell_warl_banish : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_warl_banish_SpellScript();
-        }
-};
-
-// Create Healthstone - 6201
-class spell_warl_create_healthstone : public SpellScriptLoader
-{
-    public:
-        spell_warl_create_healthstone() : SpellScriptLoader("spell_warl_create_healthstone") { }
-
-        class spell_warl_create_healthstone_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_create_healthstone_SpellScript);
-
-            void HandleAfterCast()
-            {
-                GetCaster()->CastSpell(GetCaster(), WARLOCK_CREATE_HEALTHSTONE, true);
-            }
-
-            void Register()
-            {
-                AfterCast += SpellCastFn(spell_warl_create_healthstone_SpellScript::HandleAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_create_healthstone_SpellScript();
         }
 };
 
@@ -2925,12 +2833,11 @@ class spell_warl_demonic_circle_summon : public SpellScriptLoader
             {
                 if (GetTarget())
                 {
-                    // If effect is removed by expire remove the summoned demonic circle too.
-                    if (!(mode & AURA_EFFECT_HANDLE_REAPPLY))
-                        GetTarget()->RemoveGameObject(GetId(), true);
+					// If effect is removed by expire remove the summoned demonic circle too.
+					if (!(mode & AURA_EFFECT_HANDLE_REAPPLY))
+						GetTarget()->RemoveGameObject(GetId(), true);
 
-                    if (GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID()))
-                        GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID())->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, true);
+					GetTarget()->RemoveAura(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST);
                 }
             }
 
@@ -2946,10 +2853,13 @@ class spell_warl_demonic_circle_summon : public SpellScriptLoader
 
                         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_CIRCLE_TELEPORT);
 
-                        if (GetTarget()->IsWithinDist(circle, spellInfo->GetMaxRange(true)))
-                            GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID())->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, false);
-                        else
-                            GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID())->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, true);
+						if (GetTarget()->IsWithinDist(circle, 20))
+						{
+							if (!GetTarget()->HasAura(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST))
+								GetTarget()->CastSpell(GetTarget(), WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, true);
+						}
+						else
+							GetTarget()->RemoveAura(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST);
                     }
                 }
             }
@@ -2985,19 +2895,19 @@ class spell_warl_demonic_circle_teleport : public SpellScriptLoader
                     {
                         player->NearTeleportTo(circle->GetPositionX(), circle->GetPositionY(), circle->GetPositionZ(), circle->GetOrientation());
                         player->RemoveMovementImpairingAuras();
-                        player->Relocate(circle->GetPositionX(), circle->GetPositionY(), circle->GetPositionZ(), circle->GetOrientation());
+                        /*player->Relocate(circle->GetPositionX(), circle->GetPositionY(), circle->GetPositionZ(), circle->GetOrientation());
 
                         if (aurEff->GetSpellInfo()->Id == WARLOCK_SOULBURN_DEMONIC_CIRCLE_TELE)
                             if (player->HasAura(WARLOCK_SOULBURN_AURA))
                                 player->RemoveAurasDueToSpell(WARLOCK_SOULBURN_AURA);
 
-                        //WorldPacket data(SMSG_MOVE_UPDATE);
+                        WorldPacket data(SMSG_PLAYER_MOVE);
                         player->m_movementInfo.pos.m_positionX = player->GetPositionX();
                         player->m_movementInfo.pos.m_positionY = player->GetPositionY();
                         player->m_movementInfo.pos.m_positionZ = player->GetPositionZ();
                         player->m_movementInfo.pos.m_orientation = player->GetOrientation();
-                        //WorldSession::WriteMovementInfo(data, &player->m_movementInfo);
-                        //player->SendMessageToSet(&data, player);
+                        player->WriteMovementInfo(data);
+                        player->SendMessageToSet(&data, player);*/
                     }
                 }
             }
@@ -3032,13 +2942,33 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
             void HandleDispel(DispelInfo* dispelInfo)
             {
-                if (Unit* caster = GetCaster())
-                    if (AuraEffect const* aurEff = GetEffect(EFFECT_0))
+                // Sanity checks
+                if (!dispelInfo)
+                    return;
+
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                // Check for glyph of unstable affliction
+                bool glyphed = caster->HasAura(SPELL_WARLOCK_GLYPH_OF_UNSTABLE_AFFLI);
+
+                if (AuraEffect const* aurEff = GetEffect(EFFECT_0))
+                {
+                    int32 damage = aurEff->GetAmount() * 7;
+
+                    if (Unit* dispeller = dispelInfo->GetDispeller())
                     {
-                        int32 damage = aurEff->GetAmount() * 7;
-                        // backfire damage and silence
-                        caster->CastCustomSpell(dispelInfo->GetDispeller(), WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, NULL, NULL, true, NULL, aurEff);
+                        if (glyphed)
+                            caster->CastCustomSpell(dispeller, WARLOCK_UNSTABLE_AFFLI_DISPEL_CRIT, &damage, NULL, NULL, true, NULL, aurEff);
+                        else
+                            caster->CastCustomSpell(dispeller, WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, NULL, NULL, true, NULL, aurEff);
                     }
+
+                    if (Unit* target = GetUnitOwner())
+                        if (glyphed)
+                            caster->CastCustomSpell(target, WARLOCK_UNSTABLE_AFFLI_DISPEL_CRIT, &damage, NULL, NULL, true, NULL, aurEff);
+                }
             }
 
             void Register()
@@ -3051,6 +2981,91 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
         {
             return new spell_warl_unstable_affliction_AuraScript();
         }
+};
+
+// Grimoire of Service - 108501
+class spell_warl_grimoire_of_service : public SpellScriptLoader
+{
+    public:
+		spell_warl_grimoire_of_service() : SpellScriptLoader("spell_warl_grimoire_of_service") { }
+
+		class spell_warl_grimoire_of_service_SpellScript : public SpellScript
+        {
+			PrepareSpellScript(spell_warl_grimoire_of_service_SpellScript);
+
+            void HandleAfterCast()
+            {
+				if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Pet* pet = _player->GetPet())
+                    {
+                        if (Unit* target = GetHitUnit())
+                        {
+                            if (pet->GetEntry() == PET_ENTRY_IMP) // Grimoire: Imp
+                            {
+							    pet->CastSpell(_player, WARLOCK_SPELL_IMP_SINGLE_MAGIC, true);
+								pet->CastSpell(target, WARLOCK_SPELL_IMP_FIREBOLT, true);
+                            }
+
+                            if (pet->GetEntry() == PET_ENTRY_VOIDWALKER) // Grimoire: Voidwalker
+								pet->CastSpell(target, WARLOCK_SPELL_VOIDWALKER_SUFFERING, true);
+
+                            if (pet->GetEntry() == PET_ENTRY_SUCCUBUS) // Grimoire: Succubus
+								pet->CastSpell(target, WARLOCK_SPELL_SUCCUBUS_SEDUCTION, true);
+
+                            if (pet->GetEntry() == PET_ENTRY_FELHUNTER) // Grimoire: Felhunter
+								pet->CastSpell(target, WARLOCK_SPELL_FELHUNTER_SPELL_LOCK, true);
+
+                            if (pet->GetEntry() == PET_ENTRY_FELGUARD) // Grimoire: Felguard
+								pet->CastSpell(target, WARLOCK_SPELL_FELGUARD_AXE_STUN, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+				AfterCast += SpellCastFn(spell_warl_grimoire_of_service_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+			return new spell_warl_grimoire_of_service_SpellScript();
+        }
+};
+
+// Create Healthstone - 6201
+class spell_warl_create_healthstone : public SpellScriptLoader
+{
+public:
+	spell_warl_create_healthstone() : SpellScriptLoader("spell_warl_create_healthstone") { }
+
+	class spell_warl_create_healthstone_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_warl_create_healthstone_SpellScript);
+
+		void HandleAfterCast()
+		{
+			if (Unit* caster = GetCaster())
+			{
+				Player* _player = GetCaster()->ToPlayer();
+				_player->DestroyItemCount(5512, 1, true);
+				_player->AddItem(5512, 1);
+				return;
+			}
+		}
+
+		void Register()
+		{
+			AfterCast += SpellCastFn(spell_warl_create_healthstone_SpellScript::HandleAfterCast);
+		}
+	};
+
+	SpellScript* GetSpellScript() const
+	{
+		return new spell_warl_create_healthstone_SpellScript();
+	}
 };
 
 void AddSC_warlock_spell_scripts()
@@ -3071,7 +3086,7 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_shield_of_shadow();
     new spell_warl_agony();
     new spell_warl_grimoire_of_sacrifice();
-//    new spell_warl_flames_of_xoroth();
+    new spell_warl_flames_of_xoroth();
     new spell_warl_soul_link_dummy();
     new spell_warl_soul_link();
     new spell_warl_archimondes_vengeance_cooldown();
@@ -3098,7 +3113,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_soul_swap();
     new spell_warl_nightfall();
     new spell_warl_drain_soul();
-    new spell_warl_demonic_gateway_charges();
     new spell_warl_demonic_gateway();
     new spell_warl_rain_of_fire();
     new spell_warl_chaos_bolt();
@@ -3115,10 +3129,11 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_harvest_life();
     new spell_warl_fear();
     new spell_warl_banish();
-    new spell_warl_create_healthstone();
     new spell_warl_seed_of_corruption();
     new spell_warl_soulshatter();
     new spell_warl_demonic_circle_summon();
     new spell_warl_demonic_circle_teleport();
     new spell_warl_unstable_affliction();
+    new spell_warl_grimoire_of_service();
+	new spell_warl_create_healthstone();
 }

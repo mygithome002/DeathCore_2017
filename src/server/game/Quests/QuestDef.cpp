@@ -75,14 +75,10 @@ Quest::Quest(Field* questRecord)
         RewardItemIdCount[i] = questRecord[49+i].GetUInt16();
 
     for (int i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
-    {
-        RewardChoiceItems[i].rewardItemCount = questRecord[59 + i].GetUInt16();
-        RewardChoiceItems[i].rewardItemId = questRecord[53 + i].GetUInt32();
-        RewardChoiceItems[i].requiredClass = -1;
-    }
-    
+        RewardChoiceItemId[i] = questRecord[53+i].GetUInt32();
+
     for (int i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
-        
+        RewardChoiceItemCount[i] = questRecord[59+ i].GetUInt16();
 
     for (int i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
         RewardFactionId[i] = questRecord[65+i].GetUInt16();
@@ -139,6 +135,9 @@ Quest::Quest(Field* questRecord)
     for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
         OfferRewardEmoteDelay[i] = questRecord[127+i].GetInt32();
 
+	for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+		ObjectiveText[i] = questRecord[128 + i].GetString();
+
     // int32 WDBVerified = questRecord[131].GetInt32();
 
     if (SpecialFlags & QUEST_SPECIAL_FLAGS_AUTO_ACCEPT)
@@ -153,7 +152,7 @@ Quest::Quest(Field* questRecord)
             ++_rewItemsCount;
 
     for (int i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
-        if (RewardChoiceItems[i].rewardItemId)
+        if (RewardChoiceItemId[i])
             ++_rewChoiceItemsCount;
 
     for (int i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
@@ -264,23 +263,20 @@ uint32 Quest::CalculateHonorGain(uint8 level) const
 }
 
 // Note: These next two functions will need to be changed/extended once QuestPackageItem.db2 is implemented
-bool Quest::IsRewChoiceItemValid(uint32 itemId, uint8 pClass) const
+bool Quest::IsRewChoiceItemValid(uint32 itemId) const
 {
     for (uint8 i = 0; i < QUEST_REWARD_CHOICES_COUNT; i++)
-        if (RewardChoiceItems[i].rewardItemId == itemId && 
-            (RewardChoiceItems[i].requiredClass == -1 || RewardChoiceItems[i].requiredClass== pClass)
-            )
+        if (RewardChoiceItemId[i] == itemId)
             return true;
 
     return false;
 }
 
-uint32 Quest::GetRewChoiceItemCount(uint32 itemId, uint8 pClass) const
+uint32 Quest::GetRewChoiceItemCount(uint32 itemId) const
 {
     for (uint8 i = 0; i < QUEST_REWARD_CHOICES_COUNT; i++)
-        if (RewardChoiceItems[i].rewardItemId == itemId &&
-            (RewardChoiceItems[i].requiredClass == -1 || RewardChoiceItems[i].requiredClass == pClass))
-            return RewardChoiceItems[i].rewardItemCount;
+        if (RewardChoiceItemId[i] == itemId)
+            return RewardChoiceItemCount[i];
 
     return 0;
 }

@@ -35,6 +35,7 @@
 #include "Player.h"
 #include "WorldSession.h"
 #include "Opcodes.h"
+#include "AchievementMgr.h"
 
 extern GridState* si_GridStates[];                          // debugging code, should be deleted some day
 
@@ -164,6 +165,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
         return false;
 
     Difficulty targetDifficulty = player->GetDifficulty(entry->IsRaid());
+
     //The player has a heroic mode and tries to enter into instance which has no a heroic mode
     MapDifficulty const* mapDiff = GetMapDifficultyData(entry->MapID, targetDifficulty);
     if (!mapDiff)
@@ -177,11 +179,16 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
         else    // attempt to downscale
             mapDiff = GetDownscaledMapDifficultyData(entry->MapID, targetDifficulty);
     }
+
     // FIXME: mapDiff is never used
 
-    //Bypass checks for GMs
+    // Bypass checks for GMs
     if (player->IsGameMaster())
         return true;
+
+    // Disable instances for players
+	//player->GetSession()->SendAreaTriggerMessage("Instances are disabled!");
+	//return false;
 
     char const* mapName = entry->name;
 

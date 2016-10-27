@@ -25,13 +25,16 @@
 #include "MoveSpline.h"
 #include "Player.h"
 
-#define MIN_QUIET_DISTANCE 28.0f
-#define MAX_QUIET_DISTANCE 43.0f
+#define MIN_QUIET_DISTANCE 8.0f
+#define MAX_QUIET_DISTANCE 15.0f
 
 template<class T>
 void FleeingMovementGenerator<T>::_setTargetLocation(T* owner)
 {
     if (!owner)
+        return;
+
+    if (i_inPlace)
         return;
 
     if (owner->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
@@ -107,7 +110,7 @@ void FleeingMovementGenerator<T>::DoInitialize(T* owner)
         return;
 
     owner->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
-    owner->AddUnitState(UNIT_STATE_FLEEING | UNIT_STATE_FLEEING_MOVE);
+    owner->AddUnitState(UNIT_STATE_FLEEING);
     _setTargetLocation(owner);
 }
 

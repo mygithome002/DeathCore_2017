@@ -1,160 +1,352 @@
+/*
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
-#include "temple_of_the_jade_serpent.h"
 
-enum Texts
+#define TYPE_CLASS_FIGMENT 8
+#define TYPE_CLASS_FIGMENT_DIE 9
+
+enum eBosses
 {
-    SAY_AGGRO       = 0,
-    SAY_EARTHQUAKE  = 1,
-    SAY_OVERRUN     = 2,
-    SAY_SLAY        = 3,
-    SAY_DEATH       = 4
+	BOSS_SHA_OF_DOUBT,
 };
 
-enum Spells
+enum eSpells
 {
-    SPELL_EARTHQUAKE        = 153616,
-    SPELL_SUNDER_ARMOR      = 153726,
-    SPELL_CHAIN_LIGHTNING   = 153764,
-    SPELL_OVERRUN           = 154221,
-    SPELL_ENRAGE            = 157173,
-    SPELL_MARK_DEATH        = 153234,
-    SPELL_AURA_DEATH        = 153616
+	SPELL_WITHER_WILL = 106736,
+	SPELL_TOUCH_OF_NOTHINGNESS = 106113,
+	SPELL_FIGMENT_OF_DOUBT = 106937,
+	SPELL_BOUNDS_OF_REALITY = 131498,
+	SPELL_BOUNDS_OF_REALITY_2 = 117665,
+	SPELL_CHI_WAVE = 132464,
+	SPELL_CHI_WAVE_2 = 132466,
+
+	SPELL_FIGMENT_OF_DOUBT_2 = 106935,
+	SPELL_FIGMENT_OF_DOUBT_3 = 106936,
+	SPELL_COPY_WEAPON = 41054,
+	SPELL_COPY_WEAPON_2 = 41055,
+	SPELL_GROW = 104921,
+	SPELL_DROWNED_STATE = 117509,
+	SPELL_DRAW_DOUBT = 106290,
+	SPELL_KNOCK_BACK_SELF = 117525,
+	SPELL_GATHERING_DOUBT = 117570,
+	SPELL_GATHERING_DOUBT_2 = 117571,
+	SPELL_INVISIBILITY_DETECTION = 126839,
+	SPELL_WEAKENED_BLOWS = 115798,
+	SPELL_RELEASE_DOUBT = 106112,
 };
 
-enum Events
+enum eEvents
 {
-    EVENT_ENRAGE    = 1,
-    EVENT_ARMOR     = 2,
-    EVENT_CHAIN     = 3,
-    EVENT_QUAKE     = 4,
-    EVENT_OVERRUN   = 5
+	EVENT_WITHER_WILL = 1,
+	EVENT_TOUCH_OF_NOTHINGNESS = 2,
+	EVENT_BOUNDS_OF_REALITY = 3,
+
+	EVENT_GATHERING_DOUBT = 4,
+
+	EVENT_SPELL_PHANTOM_STRIKE = 5,
+	EVENT_SPELL_ARMOR_BUFF = 6,
+	EVENT_SPELL_FURY = 7,
+	EVENT_SANCTUARY = 8,
+	EVENT_SIPHON_ESSENCE = 9,
+	EVENT_STUN = 10,
+	EVENT_BLADE_SONG = 11,
+	EVENT_UNTAMED_FURY = 12,
+	EVENT_GLIMPSE_OF_MADNESS = 13,
+};
+
+enum eCreatures
+{
+	CREATURE_SHA_OF_DOUBT = 56439,
+};
+
+enum eTalks
+{
+	TALK_AGGRO,
+	TALK_DEATH,
+	TALK_FIGMENT_01,
+	TALK_FIGMENT_02,
+	TALK_RESET,
+	TALK_SLAY_01,
+	TALK_SLAY_02,
 };
 
 class boss_sha_of_doubt : public CreatureScript
 {
-    public:
-        boss_sha_of_doubt() : CreatureScript("boss_sha_of_doubt") { }
+public:
+	boss_sha_of_doubt() : CreatureScript("boss_sha_of_doubt") { }
 
-        struct boss_sha_of_doubtAI : public ScriptedAI
-        {
-            boss_sha_of_doubtAI(Creature* creature) : ScriptedAI(creature)
-            {
-                Initialize();
-            }
+	CreatureAI* GetAI(Creature* creature) const
+	{
+		return new boss_sha_of_doubt_AI(creature);
+	}
 
-            void Initialize()
-            {
-                _inEnrage = false;
-            }
+	struct boss_sha_of_doubt_AI : public BossAI
+	{
+		boss_sha_of_doubt_AI(Creature* creature) : BossAI(creature, BOSS_SHA_OF_DOUBT)
+		{
+			me->CastSpell(me, SPELL_INVISIBILITY_DETECTION, false);
+		}
+		bool isAtBoundsOfReality;
 
-            void Reset() override
-            {
-                _events.Reset();
-                _events.ScheduleEvent(EVENT_ENRAGE, 0);
-                _events.ScheduleEvent(EVENT_ARMOR, urand(5000, 13000));
-                _events.ScheduleEvent(EVENT_CHAIN, urand(10000, 30000));
-                _events.ScheduleEvent(EVENT_QUAKE, urand(25000, 35000));
-                _events.ScheduleEvent(EVENT_OVERRUN, urand(30000, 45000));
-                Initialize();
-            }
+		void Reset()
+		{
+			Talk(TALK_RESET);
+			events.Reset();
+			_Reset();
+		}
 
-            void KilledUnit(Unit* victim) override
-            {
-                victim->CastSpell(victim, SPELL_MARK_DEATH, 0);
+		void KilledUnit(Unit* u)
+		{
+			Talk(TALK_SLAY_01 + urand(0, 1));
+		}
 
-                if (urand(0, 4))
-                    return;
+		void JustDied(Unit* u)
+		{
+			Talk(TALK_DEATH);
+		}
 
-                Talk(SAY_SLAY);
-            }
+		void EnterCombat(Unit* unit)
+		{
+			Talk(TALK_AGGRO);
+			events.ScheduleEvent(EVENT_WITHER_WILL, 5000);
+			events.ScheduleEvent(EVENT_TOUCH_OF_NOTHINGNESS, 500);
+			events.ScheduleEvent(EVENT_BOUNDS_OF_REALITY, 3000);
+		}
 
-            void JustDied(Unit* /*killer*/) override
-            {
-                Talk(SAY_DEATH);
-            }
+		void UpdateAI(uint32 diff)
+		{
+			if (!UpdateVictim())
+				return;
 
-            void EnterCombat(Unit* /*who*/) override
-            {
-                Talk(SAY_AGGRO);
-            }
+			events.Update(diff);
 
-            void MoveInLineOfSight(Unit* who) override
+			while (uint32 eventId = events.ExecuteEvent())
+			{
+				switch (eventId)
+				{
+				case EVENT_WITHER_WILL:
+					if (!me->HasAura(SPELL_BOUNDS_OF_REALITY_2))
+					{
+						if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+						{
+							me->CastSpell(target, SPELL_WITHER_WILL, false);
+							me->CastSpell(target, SPELL_WITHER_WILL, false);
+						}
+					}
+					events.ScheduleEvent(EVENT_WITHER_WILL, 5000);
 
-            {
-                if (who && who->GetTypeId() == TYPEID_PLAYER && me->IsValidAttackTarget(who))
-                    if (who->HasAura(SPELL_MARK_DEATH))
-                        who->CastSpell(who, SPELL_AURA_DEATH, 1);
-            }
+					break;
+				case EVENT_TOUCH_OF_NOTHINGNESS:
+					if (!me->HasAura(SPELL_BOUNDS_OF_REALITY_2))
+						if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+							me->CastSpell(target, SPELL_TOUCH_OF_NOTHINGNESS, false);
+					events.ScheduleEvent(EVENT_TOUCH_OF_NOTHINGNESS, 30000);
 
-            void UpdateAI(uint32 diff) override
-            {
-                if (!UpdateVictim())
-                    return;
+					break;
+				case EVENT_BOUNDS_OF_REALITY:
+				{
+					Talk(TALK_FIGMENT_01 + urand(0, 1));
+					if (me->GetInstanceScript())
+						me->GetInstanceScript()->SetData(TYPE_CLASS_FIGMENT, 0);
+					me->CastSpell(me, SPELL_BOUNDS_OF_REALITY_2, false);
+					//Spawns the figment of doubt
+					Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
 
-                _events.Update(diff);
+					if (!PlayerList.isEmpty())
+					{
+						for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+						{
+							Player* plr = i->GetSource();
+							if (!plr)
+								continue;
+							plr->CastSpell(plr, SPELL_FIGMENT_OF_DOUBT_3, false);
+							plr->CastSpell(plr, SPELL_DRAW_DOUBT, false);
+						}
+					}
+					events.ScheduleEvent(EVENT_BOUNDS_OF_REALITY, 60000);
 
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
+					break;
+				}
+				default:
+					break;
+				}
+			}
 
-                while (uint32 eventId = _events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                        case EVENT_ENRAGE:
-                            if (!HealthAbovePct(20))
-                            {
-                                DoCast(me, SPELL_ENRAGE);
-                                _events.ScheduleEvent(EVENT_ENRAGE, 6000);
-                                _inEnrage = true;
-                            }
-                            break;
-                        case EVENT_OVERRUN:
-                            Talk(SAY_OVERRUN);
-                            DoCastVictim(SPELL_OVERRUN);
-                            _events.ScheduleEvent(EVENT_OVERRUN, urand(25000, 40000));
-                            break;
-                        case EVENT_QUAKE:
-                            if (urand(0, 1))
-                                return;
+			if (!me->HasAura(SPELL_BOUNDS_OF_REALITY_2))
+				DoMeleeAttackIfReady();
+		}
+	};
+};
 
-                            Talk(SAY_EARTHQUAKE);
+class mob_figment_of_doubt : public CreatureScript
+{
+public:
+	mob_figment_of_doubt() : CreatureScript("mob_figment_of_doubt") { }
 
-                            //remove enrage before casting earthquake because enrage + earthquake = 16000dmg over 8sec and all dead
-                            if (_inEnrage)
-                                me->RemoveAurasDueToSpell(SPELL_ENRAGE);
+	CreatureAI* GetAI(Creature* creature) const
+	{
+		return new mob_figment_of_doubt_AI(creature);
+	}
 
-                            DoCast(me, SPELL_EARTHQUAKE);
-                            _events.ScheduleEvent(EVENT_QUAKE, urand(30000, 55000));
-                            break;
-                        case EVENT_CHAIN:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                                DoCast(target, SPELL_CHAIN_LIGHTNING);
-                            _events.ScheduleEvent(EVENT_CHAIN, urand(7000, 27000));
-                            break;
-                        case EVENT_ARMOR:
-                            DoCastVictim(SPELL_SUNDER_ARMOR);
-                            _events.ScheduleEvent(EVENT_ARMOR, urand(10000, 25000));
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                DoMeleeAttackIfReady();
-            }
+	enum Classes
+	{
+		CLASS_DPS,
+		CLASS_HEAL,
+		CLASS_TANK,
+	};
 
-            private:
-                EventMap _events;
-                bool _inEnrage;
-        };
+	struct mob_figment_of_doubt_AI : public ScriptedAI
+	{
+		mob_figment_of_doubt_AI(Creature* creature) : ScriptedAI(creature)
+		{
+			me->CastSpell(me, SPELL_GROW, false);
+			Classes cl = Classes(me->GetInstanceScript()->GetData(TYPE_CLASS_FIGMENT));
+			if (cl <= CLASS_TANK)
+				_class = cl;
+			else
+				_class = CLASS_DPS;
+		}
+		EventMap events;
+		Classes _class;
 
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new boss_sha_of_doubtAI(creature);
-        }
+		void JustDied(Unit* killer)
+		{
+			me->CastSpell(me, SPELL_DROWNED_STATE, false);
+			me->RemoveAura(SPELL_GATHERING_DOUBT);
+			me->DespawnOrUnsummon(5000);
+			me->GetInstanceScript()->SetData(TYPE_CLASS_FIGMENT_DIE, _class);
+		}
+
+		void EnterCombat(Unit* u)
+		{
+			me->CastSpell(me, SPELL_GATHERING_DOUBT, false);
+			events.ScheduleEvent(EVENT_GATHERING_DOUBT, 1000);
+
+			events.ScheduleEvent(EVENT_SIPHON_ESSENCE, 8000);
+			switch (_class)
+			{
+			case CLASS_DPS:
+				events.ScheduleEvent(EVENT_SPELL_FURY, 5000);
+				events.ScheduleEvent(EVENT_BLADE_SONG, 13000);
+				events.ScheduleEvent(EVENT_GLIMPSE_OF_MADNESS, 8000);
+			case CLASS_HEAL:
+				events.ScheduleEvent(EVENT_SPELL_PHANTOM_STRIKE, 20000);
+				events.ScheduleEvent(EVENT_STUN, 7000);
+			case CLASS_TANK:
+				events.ScheduleEvent(EVENT_SPELL_ARMOR_BUFF, 10000);
+				events.ScheduleEvent(EVENT_SANCTUARY, 10000);
+				events.ScheduleEvent(EVENT_STUN, 7000);
+				break;
+			}
+		}
+
+		void UpdateAI(uint32 diff)
+		{
+			if (!UpdateVictim())
+				return;
+
+			events.Update(diff);
+
+			while (uint32 eventId = events.ExecuteEvent())
+			{
+				switch (eventId)
+				{
+				case EVENT_GATHERING_DOUBT:
+					if (me->GetAuraCount(SPELL_GATHERING_DOUBT_2) == 30)
+					{
+						me->CastSpell(me, SPELL_RELEASE_DOUBT, false);
+						me->RemoveAura(SPELL_GATHERING_DOUBT);
+						me->DealDamage(me, me->GetMaxHealth());
+
+						me->DespawnOrUnsummon(5000);
+
+						uint64 guid_sha_of_doubt = 0;
+
+						if (me->GetInstanceScript())
+							guid_sha_of_doubt = me->GetInstanceScript()->GetData64(CREATURE_SHA_OF_DOUBT);
+
+						if (guid_sha_of_doubt != 0)
+						{
+							Creature* creature = me->GetMap()->GetCreature(guid_sha_of_doubt);
+							if (!creature)
+								return;
+
+							const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(SPELL_RELEASE_DOUBT);
+							if (!spellInfo)
+								return;
+
+							creature->CastSpell(creature, SPELL_CHI_WAVE, true);
+							me->HealBySpell(creature, spellInfo, uint32(float(creature->GetMaxHealth())* 0.1f));
+						}
+					}
+					else
+						events.ScheduleEvent(EVENT_GATHERING_DOUBT, 1000);
+					break;
+				case EVENT_SPELL_PHANTOM_STRIKE:
+					if (me->GetVictim())
+						me->CastSpell(me->GetVictim(), 9806, false);
+					events.ScheduleEvent(EVENT_SPELL_PHANTOM_STRIKE, 20000);
+					break;
+				case EVENT_SPELL_ARMOR_BUFF:
+					me->CastSpell(me, 34199, false);
+					events.ScheduleEvent(EVENT_SPELL_ARMOR_BUFF, 10000);
+					break;
+				case EVENT_SPELL_FURY:
+					me->CastSpell(me, 15494, false);
+					events.ScheduleEvent(EVENT_SPELL_FURY, 5000);
+					break;
+				case EVENT_SANCTUARY:
+					me->CastSpell(me, 69207, false);
+					events.ScheduleEvent(EVENT_SANCTUARY, 10000);
+					break;
+				case EVENT_SIPHON_ESSENCE:
+					me->CastSpell(me, 40291, false);
+					events.ScheduleEvent(EVENT_SIPHON_ESSENCE, 8000);
+					break;
+				case EVENT_STUN:
+					if (me->GetVictim())
+						me->CastSpell(me->GetVictim(), 23454, false);
+					events.ScheduleEvent(EVENT_STUN, 7000);
+					break;
+				case EVENT_BLADE_SONG:
+					me->CastSpell(me, 38282, false);
+					events.ScheduleEvent(EVENT_BLADE_SONG, 13000);
+					break;
+				case EVENT_UNTAMED_FURY:
+					me->CastSpell(me, 23719, false);
+					events.ScheduleEvent(EVENT_UNTAMED_FURY, 9000);
+					break;
+				case EVENT_GLIMPSE_OF_MADNESS:
+					if (me->GetVictim())
+						me->CastSpell(me->GetVictim(), 26108, false);
+					events.ScheduleEvent(EVENT_GLIMPSE_OF_MADNESS, 8000);
+					break;
+				}
+			}
+
+			DoMeleeAttackIfReady();
+		}
+	};
 };
 
 void AddSC_boss_sha_of_doubt()
 {
-    new boss_sha_of_doubt();
+	new boss_sha_of_doubt();
+	new mob_figment_of_doubt();
 }

@@ -155,7 +155,7 @@ class npc_lao_softfoot : public CreatureScript
                         player->FailQuest(30634); // Barring Entry
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 npc_escortAI::UpdateAI(uiDiff);
 

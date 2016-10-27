@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -123,6 +123,57 @@ enum DruidSpells
     SPELL_DRUID_INCARNATION_CHOSEN_OF_ELUNE = 122114,
     SPELL_DRUID_GLYPH_OF_BLOOMING           = 121840,
     SPELL_DRUID_GLYPH_OF_THE_TREANT         = 114282,
+    SPELL_DRUID_GLYPH_OF_LIFEBLOOM          = 114228,
+    SPELL_DRUID_REJUVENATION                = 774,
+    SPELL_DRUID_GENESIS                     = 145518,
+    SPELL_DRUID_ASTRAL_INSIGH               = 145138,
+    SPELL_DRUID_YSERAS_GIFT                 = 145109,
+    SPELL_CHARM_WOODLAND_CREATURE           = 127757,
+    SPELL_DRUID_ASTRAL_INSIGHT              = 145138,
+    SPELL_DRUID_TOOTH_AND_CLAW_AURA         = 135286,
+    SPELL_DRUID_TOOTH_AND_CLAW_ABSORB       = 135597,
+    SPELL_DRUID_TOOTH_AND_CLAW_VISUAL_AURA  = 135601,
+    SPELL_DRUID_GLYPH_OF_EFFLORESCENCE      = 145529,
+    SPELL_DRUID_WILD_MUSHROOM_GROWING       = 138611,
+    SPELL_DRUID_WILD_MUSHROOM_MOD_SCALE     = 138616,
+    SPELL_GLYPH_OF_MIGHT_OF_URSOC           = 116238,
+    SPELL_DRUID_MIGHT_OF_URSOC              = 106922,
+    SPELL_DRUID_DREAM_OF_CENARIUS           = 108373,
+    SPELL_DRUID_DREAM_OF_CENARIUS_BALANCE   = 145151,
+    SPELL_DRUID_DREAM_OF_CENARIUS_CAT       = 145152,
+    SPELL_DRUID_DREAM_OF_CENARIUS_BEAR      = 145162,
+    SPELL_DRUID_DREAM_OF_CENARIUS_RESTOR    = 145153,
+    SPELL_TREANT_RESTORATION_SPELL          = 113828,
+    SPELL_TREANT_BALANCE_SPELL              = 113769
+};
+
+// Tooth and Claw - 135597
+class spell_dru_tooth_and_claw_absorb : public SpellScriptLoader
+{
+    public:
+        spell_dru_tooth_and_claw_absorb() : SpellScriptLoader("spell_dru_tooth_and_claw_absorb") { }
+
+        class spell_dru_tooth_and_claw_absorb_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_tooth_and_claw_absorb_AuraScript);
+
+			void Absorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                if (Unit* attacker = dmgInfo.GetAttacker())
+                    if (!attacker->HasAura(SPELL_DRUID_TOOTH_AND_CLAW_VISUAL_AURA))
+                        absorbAmount = 0;
+            }
+
+            void Register()
+            {
+				OnEffectAbsorb += AuraEffectAbsorbFn(spell_dru_tooth_and_claw_absorb_AuraScript::Absorb, EFFECT_0);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_tooth_and_claw_absorb_AuraScript();
+        }
 };
 
 // Glyph of the Treant - 125047
@@ -1029,14 +1080,26 @@ class spell_dru_symbiosis : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dru_symbiosis_SpellScript);
 
+            SpellCastResult CheckSymbosis()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        // Symbosis can't be cast on self nor other druids
+                        if (caster == target || target->getClass() == CLASS_DRUID)
+                            return SPELL_FAILED_NO_VALID_TARGETS;
+                    }
+                }
+
+                return SPELL_CAST_OK;
+            }
+
             void HandleScriptEffect(SpellEffIndex effIndex)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (!GetHitUnit())
-                        return;
-
-                    if (GetCaster() == GetHitUnit())
                         return;
 
                     if (Player* target = GetHitUnit()->ToPlayer())
@@ -1349,6 +1412,7 @@ class spell_dru_symbiosis : public SpellScriptLoader
             void Register()
             {
                 OnEffectHitTarget += SpellEffectFn(spell_dru_symbiosis_SpellScript::HandleScriptEffect, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+                OnCheckCast += SpellCheckCastFn(spell_dru_symbiosis_SpellScript::CheckSymbosis);
             }
         };
 
@@ -1825,7 +1889,7 @@ class spell_dru_bear_hug : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    if (caster->GetShapeshiftForm() == FORM_BEAR)
+                    if (caster->GetShapeshiftForm() != FORM_BEAR)
                         caster->CastSpell(caster, SPELL_DRUID_BEAR_FORM, true);
 
                     amount = caster->CountPctFromMaxHealth(amount);
@@ -1908,8 +1972,10 @@ class spell_dru_lifebloom : public SpellScriptLoader
                     if (_plr->HasAura(SPELL_DRUID_GLYPH_OF_BLOOMING))
                         AddPct(healAmount, 50);
 
-                    GetCaster()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
+                    GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
+
                     _plr->AddSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, 0, time(NULL) + 1);
+
                     return;
                 }
 
@@ -1917,7 +1983,7 @@ class spell_dru_lifebloom : public SpellScriptLoader
                 if (GetCaster()->HasAura(SPELL_DRUID_GLYPH_OF_BLOOMING))
                     AddPct(healAmount, 50);
 
-                GetCaster()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
+                GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
                 GetCaster()->ToPlayer()->AddSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, 0, time(NULL) + 1);
             }
 
@@ -1936,9 +2002,10 @@ class spell_dru_lifebloom : public SpellScriptLoader
                             healAmount = target->SpellHealingBonusTaken(caster, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
 
                             target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULL, GetCasterGUID());
+
                             return;
                         }
-                        target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULL, GetCasterGUID());
+						target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULL, GetCasterGUID());
                     }
                 }
             }
@@ -2092,7 +2159,6 @@ class spell_dru_mark_of_the_wild : public SpellScriptLoader
             return new spell_dru_mark_of_the_wild_SpellScript();
         }
 };
-
 // Nature's Cure - 88423 and Remove Corruption - 2782
 class spell_dru_natures_cure : public SpellScriptLoader
 {
@@ -2109,8 +2175,10 @@ class spell_dru_natures_cure : public SpellScriptLoader
                 {
                     if (Unit* target = GetExplTargetUnit())
                     {
+                        DispelChargesList dispelList[MAX_SPELL_EFFECTS];
+
                         // Create dispel mask by dispel type
-                        for (int8 i = 0; i < MAX_SPELL_EFFECTS; i++)
+                        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                         {
                             uint32 dispel_type = GetSpellInfo()->Effects[i].MiscValue;
                             uint32 dispelMask  = GetSpellInfo()->GetDispelMask(DispelType(dispel_type));
@@ -2118,17 +2186,28 @@ class spell_dru_natures_cure : public SpellScriptLoader
                             // Nature's Cure can dispell all Magic, Curse and poison
                             if (GetSpellInfo()->Id == 88423)
                                 dispelMask = ((1<<DISPEL_MAGIC) | (1<<DISPEL_CURSE) | (1<<DISPEL_POISON));
-                            else if (GetSpellInfo()->Id == 2782)
-                                dispelMask = ((1<<DISPEL_POISON) | (1<<DISPEL_CURSE));
 
-                            DispelChargesList dispelList;
-                            target->GetDispellableAuraList(caster, dispelMask, dispelList);
+                            // Remove Corruption can dispell all curse and poison
+                            if (GetSpellInfo()->Id == 2782)
+                                dispelMask = ((1<<DISPEL_CURSE) | (1<<DISPEL_POISON));
 
-                            if (dispelList.empty())
-                                return SPELL_FAILED_NOTHING_TO_DISPEL;
-
-                            return SPELL_CAST_OK;
+                            target->GetDispellableAuraList(caster, dispelMask, dispelList[i]);
                         }
+
+                        bool empty = true;
+                        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                        {
+                            if (dispelList[i].empty())
+                                continue;
+
+                            empty = false;
+                            break;
+                        }
+
+                        if (empty)
+                            return SPELL_FAILED_NOTHING_TO_DISPEL;
+
+                        return SPELL_CAST_OK;
                     }
                 }
 
@@ -2328,6 +2407,234 @@ class spell_dru_faerie_swarm : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_dru_faerie_swarm_SpellScript();
+        }
+};
+
+// Wild Mushroom (Heal effect with growing) - 102792
+class spell_dru_wild_mushroom_heal : public SpellScriptLoader
+{
+    public:
+        spell_dru_wild_mushroom_heal() : SpellScriptLoader("spell_dru_wild_mushroom_heal") { }
+
+        class spell_dru_wild_mushroom_heal_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_wild_mushroom_heal_SpellScript);
+
+            uint8 count;
+
+            bool Load()
+            {
+                count = 0;
+                return true;
+            }
+
+            void HandleTargets(std::list<WorldObject*>& targets)
+            {
+				Unit* caster = GetCaster();
+				if (targets.size() > 0 && caster)
+				{
+					std::list<WorldObject*> healList = targets;
+					for (std::list<WorldObject*>::iterator i = healList.begin(); i != healList.end(); ++i)
+					{
+						Unit* target = (*i)->ToUnit();
+						if (target && target == caster)
+							targets.remove((*i));
+					}
+				}
+				count = targets.size();
+            }
+
+            void HandleHeal()
+            {
+                if (!count)
+                    return;
+
+                if (Unit* mushroom = GetCaster())
+                {
+                    if (AuraEffect const* growing = mushroom->GetAuraEffect(SPELL_DRUID_WILD_MUSHROOM_MOD_SCALE, EFFECT_1))
+                    {
+                        int32 bonus = growing->GetAmount() / count;
+                        SetHitHeal(GetHitHeal() + bonus);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dru_wild_mushroom_heal_SpellScript::HandleTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+                OnHit += SpellHitFn(spell_dru_wild_mushroom_heal_SpellScript::HandleHeal);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_wild_mushroom_heal_SpellScript();
+        }
+};
+
+// Wild Mushroom (Growing effect) - 138611
+class spell_dru_wild_mushroom_growing : public SpellScriptLoader
+{
+    public:
+        spell_dru_wild_mushroom_growing() : SpellScriptLoader("spell_dru_wild_mushroom_growing") { }
+
+        class spell_dru_wild_mushroom_growing_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_wild_mushroom_growing_AuraScript);
+
+            uint32 currAmount;
+
+            bool Load()
+            {
+                currAmount = 0;
+                return true;
+            }
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 &amount, bool & /*canBeRecalculated*/)
+            {
+                // Max amount : 200% of caster's health
+                amount = GetUnitOwner()->CountPctFromMaxHealth(amount);
+            }
+
+			void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                Unit* target = eventInfo.GetActor();
+                if (!target)
+                    return;
+
+                uint32 overHeal = eventInfo.GetHealInfo()->GetHeal();
+				uint32 maxAmount = aurEff->GetAmount();
+                currAmount += overHeal;
+                currAmount = std::min(currAmount, maxAmount);
+
+                int32 newPct = float(currAmount) / float(maxAmount) * 100.0f;
+                int32 bp2 = currAmount;
+
+                std::list<Creature*> tempList;
+                std::list<Creature*> mushroomlist;
+
+                target->GetCreatureListWithEntryInGrid(tempList, DRUID_NPC_WILD_MUSHROOM, 500.0f);
+
+                mushroomlist = tempList;
+
+                // Remove other players mushrooms
+                for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+                {
+                    Unit* owner = (*i)->GetOwner();
+                    if (owner && owner == target && (*i)->IsSummon())
+                        continue;
+
+                    mushroomlist.remove((*i));
+                }
+
+                if (mushroomlist.empty() || mushroomlist.size() > 1)
+                    return;
+
+                Creature* mushroom = mushroomlist.back();
+                mushroom->RemoveAura(SPELL_DRUID_WILD_MUSHROOM_MOD_SCALE);
+                target->CastCustomSpell(mushroom, SPELL_DRUID_WILD_MUSHROOM_MOD_SCALE, &newPct, &bp2, NULL, true);
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dru_wild_mushroom_growing_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_DUMMY);
+                OnEffectProc += AuraEffectProcFn(spell_dru_wild_mushroom_growing_AuraScript::OnProc, EFFECT_1, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_wild_mushroom_growing_AuraScript();
+        }
+};
+
+// Wild Mushroom (Restoration) - 145205
+class spell_dru_wild_mushroom_resto : public SpellScriptLoader
+{
+    public:
+        spell_dru_wild_mushroom_resto() : SpellScriptLoader("spell_dru_wild_mushroom_resto") { }
+
+        class spell_dru_wild_mushroom_resto_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_wild_mushroom_resto_SpellScript)
+
+            void HandleSummon(SpellEffIndex effIndex)
+            {
+                if (Player* player = GetCaster()->ToPlayer())
+                {
+                    PreventHitDefaultEffect(effIndex);
+
+                    const SpellInfo* spell = GetSpellInfo();
+                    std::list<Creature*> tempList;
+                    std::list<Creature*> mushroomlist;
+
+                    player->GetCreatureListWithEntryInGrid(tempList, DRUID_NPC_WILD_MUSHROOM, 500.0f);
+
+                    mushroomlist = tempList;
+
+                    // Remove other players mushrooms
+                    for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+                    {
+                        Unit* owner = (*i)->GetOwner();
+                        if (owner && owner == player && (*i)->IsSummon())
+                            continue;
+
+                        mushroomlist.remove((*i));
+                    }
+
+                    // 1 mushrooms max
+                    if ((int32)mushroomlist.size() >= spell->Effects[effIndex].BasePoints)
+                    {
+                        Creature* mushroom = mushroomlist.back();
+
+                        // Recasting Wild Mushroom will move the Mushroom without losing this accumulated healing.
+                        if (WorldLocation* dest = const_cast<WorldLocation*>(GetExplTargetDest()))
+                        {
+                            mushroom->NearTeleportTo(dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ(), mushroom->GetOrientation());
+
+                            if (mushroom->HasSpell(SPELL_DRUID_GLYPH_OF_EFFLORESCENCE))
+                            {
+                                mushroom->RemoveDynObject(SPELL_DRUID_SWIFTMEND);
+                                mushroom->RemoveAura(SPELL_DRUID_SWIFTMEND);
+								// reapply swiftmend
+								mushroom->CastSpell(mushroom, SPELL_DRUID_SWIFTMEND, true);
+                            }
+
+                            return;
+                        }
+                    }
+
+                    Position pos;
+                    GetExplTargetDest()->GetPosition(&pos);
+                    const SummonPropertiesEntry* properties = sSummonPropertiesStore.LookupEntry(spell->Effects[effIndex].MiscValueB);
+                    TempSummon* summon = player->SummonCreature(spell->Effects[effIndex].MiscValue, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, spell->GetDuration());
+                    if (!summon)
+                        return;
+
+                    summon->SetUInt64Value(UNIT_FIELD_SUMMONED_BY, player->GetGUID());
+                    summon->setFaction(player->getFaction());
+					summon->SetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                    summon->SetMaxHealth(5);
+                    summon->SetFullHealth();
+                    summon->CastSpell(summon, DRUID_SPELL_MUSHROOM_BIRTH_VISUAL, true); // Wild Mushroom : Detonate Birth Visual
+                    player->CastSpell(player, SPELL_DRUID_WILD_MUSHROOM_GROWING, true);
+
+                    if (summon->HasSpell(SPELL_DRUID_GLYPH_OF_EFFLORESCENCE))
+                        summon->CastSpell(summon, SPELL_DRUID_SWIFTMEND, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_dru_wild_mushroom_resto_SpellScript::HandleSummon, EFFECT_1, SPELL_EFFECT_SUMMON);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_wild_mushroom_resto_SpellScript();
         }
 };
 
@@ -2603,6 +2910,48 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
         }
 };
 
+// Swiftmend (heal) - 81269
+class spell_dru_swiftmend_heal : public SpellScriptLoader
+{
+    public:
+        spell_dru_swiftmend_heal() : SpellScriptLoader("spell_dru_swiftmend_heal") { }
+
+        class spell_dru_swiftmend_heal_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_swiftmend_heal_SpellScript);
+
+            void CorrectTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                    return;
+
+                std::list<Unit*> unitList;
+
+                for (auto itr : targets)
+                    if (itr->ToUnit())
+                        unitList.push_back(itr->ToUnit());
+
+                targets.clear();
+
+                unitList.sort(Trinity::HealthPctOrderPred());
+                unitList.resize(3);
+
+                for (auto itr : unitList)
+                    targets.push_back(itr);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dru_swiftmend_heal_SpellScript::CorrectTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_swiftmend_heal_SpellScript();
+        }
+};
+
 // Swiftmend - 81262
 class spell_dru_swiftmend : public SpellScriptLoader
 {
@@ -2716,6 +3065,7 @@ class spell_dru_celestial_alignment : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         _player->SetEclipsePower(0);
+                        //_player->RemoveLastEclipsePower();
 
                         _player->CastSpell(_player, SPELL_DRUID_SOLAR_ECLIPSE, true, 0); // Cast Solar Eclipse
                         _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE, true, 0); // Cast Lunar Eclipse
@@ -2747,21 +3097,18 @@ class spell_dru_celestial_alignment : public SpellScriptLoader
 
             void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
-                if (!GetCaster())
-                    return;
-
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
-                    _player->RemoveAura(SPELL_DRUID_SOLAR_ECLIPSE);
-                    _player->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE);
-                    _player->RemoveAura(SPELL_DRUID_NATURES_GRACE);
-                    _player->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE);
+                    caster->RemoveAura(SPELL_DRUID_SOLAR_ECLIPSE);
+                    caster->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE);
+                    caster->RemoveAura(SPELL_DRUID_NATURES_GRACE);
+                    caster->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE);
                 }
             }
 
             void Register()
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_dru_celestial_alignment_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_dru_celestial_alignment_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -2964,7 +3311,7 @@ class spell_dru_lacerate : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
                         if (roll_chance_i(25))
-                            _player->RemoveSpellCooldown(33917);
+                            _player->RemoveSpellCooldown(33917, true);
             }
 
             void Register()
@@ -3291,6 +3638,42 @@ class spell_dru_eclipse : public SpellScriptLoader
         }
 };
 
+// Glyph of Charm Woodland Creature - 57855
+class spell_dru_charm_woodland_creature : public SpellScriptLoader
+{
+public:
+	spell_dru_charm_woodland_creature() : SpellScriptLoader("spell_dru_charm_woodland_creature") { }
+
+	class spell_dru_charm_woodland_creature_AuraScript : public AuraScript
+	{
+		PrepareAuraScript(spell_dru_charm_woodland_creature_AuraScript);
+
+		void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+		{
+			if (Player* _player = GetTarget()->ToPlayer())
+				_player->learnSpell(SPELL_CHARM_WOODLAND_CREATURE, false);
+		}
+
+		void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+		{
+			if (Player* _player = GetTarget()->ToPlayer())
+				if (_player->HasSpell(SPELL_CHARM_WOODLAND_CREATURE))
+					_player->removeSpell(SPELL_CHARM_WOODLAND_CREATURE, false, false);
+		}
+
+		void Register()
+		{
+			OnEffectApply += AuraEffectApplyFn(spell_dru_charm_woodland_creature_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+			OnEffectRemove += AuraEffectRemoveFn(spell_dru_charm_woodland_creature_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+		}
+	};
+
+	AuraScript* GetAuraScript() const
+	{
+		return new spell_dru_charm_woodland_creature_AuraScript();
+	}
+};
+
 class spell_dru_t10_restoration_4p_bonus : public SpellScriptLoader
 {
     public:
@@ -3408,6 +3791,17 @@ class spell_dru_starfall_dummy : public SpellScriptLoader
                 if (caster->HasUnitState(UNIT_STATE_CONTROLLED))
                     return;
 
+                // Check LoS
+                if (!caster->IsWithinLOSInMap(GetHitUnit()))
+                return;
+
+                // Combat Check
+                if (Unit* target = GetHitUnit())
+                {
+                    if (!target->IsInCombat())
+                    return;
+                }
+
                 caster->CastSpell(GetHitUnit(), uint32(GetEffectValue()), true);
             }
 
@@ -3521,8 +3915,588 @@ class spell_dru_survival_instincts : public SpellScriptLoader
         }
 };
 
+// Genesis - 145518
+class spell_dru_genesis : public SpellScriptLoader
+{
+    public:
+        spell_dru_genesis() : SpellScriptLoader("spell_dru_genesis") { }
+
+        class spell_dru_genesis_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_genesis_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+				    //int32 rejuvenationDuration;
+                    std::list<Unit*> memberList;
+                    _player->GetPartyMembers(memberList);
+                    for (auto itr : memberList)
+                        if (itr->IsWithinDistInMap(_player, 40.0f))
+                        {
+                            if (itr->HasAura(SPELL_DRUID_REJUVENATION))
+                            {
+                                itr->RemoveAura(SPELL_DRUID_REJUVENATION);
+                                _player->AddAura(SPELL_DRUID_REJUVENATION,itr);
+                            }
+						    if (Aura* rejuvenation = itr->GetAura(SPELL_DRUID_REJUVENATION, _player->GetGUID()))
+						    {
+						        //rejuvenationDuration = rejuvenation->GetMaxDuration() / 4;
+								rejuvenation->SetDuration(1500);
+                                if (AuraEffect* rejuvenationEffect = itr->GetAuraEffect(SPELL_DRUID_REJUVENATION, EFFECT_0))
+                                    rejuvenationEffect->SetAmplitude(500);
+						    }
+                        }
+                }      
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_dru_genesis_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_genesis_SpellScript();
+        }
+};
+
+// Ysera's Gift - 145108
+class spell_dru_yseras_gift : public SpellScriptLoader
+{
+    public:
+        spell_dru_yseras_gift() : SpellScriptLoader("spell_dru_yseras_gift") { }
+
+		class spell_dru_yseras_gift_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_yseras_gift_AuraScript);
+
+            uint32 update;
+            int32 basepoints;
+
+            void OnUpdate(uint32 diff, AuraEffect* aurEff)
+            {
+                update += diff;
+
+                if (update >= 5000)
+                {
+                    if (GetCaster())
+                        if (Player* _player = GetCaster()->ToPlayer())
+                        {
+                            if (_player->GetHealth() != _player->GetMaxHealth())
+                            {
+                                basepoints = _player->CountPctFromMaxHealth(5);
+                                _player->CastCustomSpell(_player, SPELL_DRUID_YSERAS_GIFT, &basepoints, NULL, NULL, true);
+                            }
+                            else
+                            {
+                                std::list<Unit*> tempList;
+                                std::list<Unit*> alliesList;
+                                _player->GetAttackableUnitListInRange(tempList, 100.0f);
+
+                                for (auto itr : tempList)
+                                {
+                                    //if (!_player->IsWithinLOSInMap(itr))
+                                    //    continue;
+
+                                    if (itr->GetTypeId() != TYPEID_PLAYER)
+                                        continue;
+
+                                    if (!itr->IsInRaidWith(_player) || !itr->IsInPartyWith(_player))
+                                        continue;
+
+                                    if (itr->IsHostileTo(_player))
+                                        continue;
+
+                                    if (itr->GetGUID() == _player->GetGUID())
+                                        continue;
+
+                                    if (itr->GetHealth() == itr->GetMaxHealth())
+                                        continue;
+
+                                    alliesList.push_back(itr);
+                                }
+
+                                if (!alliesList.empty())
+                                {
+                                    alliesList.sort(Trinity::HealthPctOrderPred());
+
+                                    Unit* healTarget = alliesList.front();
+                                    basepoints = _player->CountPctFromMaxHealth(5);
+                                    _player->CastCustomSpell(healTarget, SPELL_DRUID_YSERAS_GIFT, &basepoints, NULL, NULL, true);
+                                    // to prevent a bug with combat after heal
+                                    if (_player->IsInCombat())
+                                        _player->CombatStop();
+                                }
+                            }
+                        }
+
+                    update = 0;
+                }
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_dru_yseras_gift_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_yseras_gift_AuraScript();
+        }
+};
+
+// Charm Woodland Creature - 127757
+// Glyph of Charm Woodland Creature - 57855
+class spell_druid_glyph_of_charm_woodland_creature : public SpellScriptLoader
+{
+    public:
+        spell_druid_glyph_of_charm_woodland_creature() : SpellScriptLoader("spell_druid_glyph_of_charm_woodland_creature") { }
+
+        class spell_druid_glyph_of_charm_woodland_creature_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_druid_glyph_of_charm_woodland_creature_AuraScript);
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    _player->learnSpell(SPELL_CHARM_WOODLAND_CREATURE, false);
+            }
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    if (_player->HasSpell(SPELL_CHARM_WOODLAND_CREATURE))
+                        _player->removeSpell(SPELL_CHARM_WOODLAND_CREATURE, false, false);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_druid_glyph_of_charm_woodland_creature_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_druid_glyph_of_charm_woodland_creature_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_druid_glyph_of_charm_woodland_creature_AuraScript();
+        }
+};
+
+// Heart of the wild - 108288
+class spell_dru_heart_wild : public SpellScriptLoader
+{
+    public:
+        spell_dru_heart_wild() : SpellScriptLoader("spell_dru_heart_wild") { }
+
+        class spell_dru_heart_wild_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_heart_wild_AuraScript);
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (GetTarget()->ToPlayer())
+                    return;
+
+                if (GetTarget()->ToPlayer()->GetActiveSpec() == CHAR_SPECIALIZATION_DRUID_FERAL)
+                    GetTarget()->CastSpell(GetTarget(),123737,true);
+                else if (GetTarget()->ToPlayer()->GetActiveSpec() == CHAR_SPECIALIZATION_DRUID_GUARDIAN)
+                    GetTarget()->CastSpell(GetTarget(),123738,true);
+                else if (GetTarget()->ToPlayer()->GetActiveSpec() == CHAR_SPECIALIZATION_DRUID_BALANCE)
+                    GetTarget()->CastSpell(GetTarget(),108294,true);
+                else if (GetTarget()->ToPlayer()->GetActiveSpec() == CHAR_SPECIALIZATION_DRUID_RESTORATION)
+                    GetTarget()->CastSpell(GetTarget(),108291,true);
+
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_dru_heart_wild_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_heart_wild_AuraScript();
+        }
+};
+
+// Called by Healing Touch - 5185
+// Dream of Cenarius - 108733
+class spell_dru_dream_of_cenarius : public SpellScriptLoader
+{
+    public:
+        spell_dru_dream_of_cenarius() : SpellScriptLoader("spell_dru_dream_of_cenarius") { }
+
+        class spell_dru_dream_of_cenarius_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_dream_of_cenarius_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* caster = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (caster->HasAura(SPELL_DRUID_DREAM_OF_CENARIUS))
+                        {
+                            // Increases healing from Healing Touch by 20% for all specs except Restoration.
+                            if (caster->GetActiveSpec() != CHAR_SPECIALIZATION_DRUID_RESTORATION)
+                            {
+                                int32 currentHeal = GetHitHeal();
+                                currentHeal = int32(currentHeal * 1.2f);
+                                SetHitHeal(currentHeal);
+
+                                switch (caster->GetSpecializationId(caster->GetActiveSpec()))
+                                {
+                                    case CHAR_SPECIALIZATION_DRUID_BALANCE:
+                                        caster->AddAura(SPELL_DRUID_DREAM_OF_CENARIUS_BALANCE, caster);
+                                        break;
+                                    case CHAR_SPECIALIZATION_DRUID_FERAL:
+                                        caster->AddAura(SPELL_DRUID_DREAM_OF_CENARIUS_CAT, caster);
+                                        caster->AddAura(SPELL_DRUID_DREAM_OF_CENARIUS_CAT, caster);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_dream_of_cenarius_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_dream_of_cenarius_SpellScript();
+        }
+};
+
+// Called by Wrath - 5176
+// Dream of Cenarius - 108733
+class spell_dru_dream_of_cenarius_restor : public SpellScriptLoader
+{
+    public:
+        spell_dru_dream_of_cenarius_restor() : SpellScriptLoader("spell_dru_dream_of_cenarius_restor") { }
+
+        class spell_dru_dream_of_cenarius_restor_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_dream_of_cenarius_restor_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* caster = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (caster->GetSpecializationId(caster->GetActiveSpec()) == CHAR_SPECIALIZATION_DRUID_RESTORATION && caster->HasAura(SPELL_DRUID_DREAM_OF_CENARIUS))
+                        {
+                            int32 hitDamage = GetHitDamage();
+                            caster->CastCustomSpell(target, SPELL_DRUID_DREAM_OF_CENARIUS_RESTOR, &hitDamage, NULL, NULL, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_dream_of_cenarius_restor_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_dream_of_cenarius_restor_SpellScript();
+        }
+};
+
+// Force of Nature - 106737
+// Cast the form appropriate summon spell
+class spell_dru_force_of_nature : public SpellScriptLoader
+{
+    enum ForceOfNatureSpells
+    {
+        FERAL        = 102703,
+        GUARDIAN    = 102706,
+        BALANCE        = 33831,
+        RESTORATION    = 102693
+    };
+
+public:
+    spell_dru_force_of_nature() : SpellScriptLoader("spell_dru_force_of_nature") { }
+
+    class spell_dru_force_of_nature_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_dru_force_of_nature_SpellScript);
+
+        void HandleOnCast()
+        {
+            if (Player* player = GetCaster()->ToPlayer())
+            {
+                const WorldLocation* loc = GetExplTargetDest();
+
+                switch (player->GetShapeshiftForm())
+                {
+                    case FORM_CAT:
+                        GetCaster()->CastSpell(loc->GetPositionX(), loc->GetPositionY(), loc->GetPositionZ(), FERAL, true);
+                        break;
+                    case FORM_BEAR:
+                        GetCaster()->CastSpell(loc->GetPositionX(), loc->GetPositionY(), loc->GetPositionZ(), GUARDIAN, true);
+                        break;
+                    case FORM_MOONKIN:
+                        GetCaster()->CastSpell(loc->GetPositionX(), loc->GetPositionY(), loc->GetPositionZ(), BALANCE, true);
+                        break;
+                    default:
+                        GetCaster()->CastSpell(loc->GetPositionX(), loc->GetPositionY(), loc->GetPositionZ(), RESTORATION, true);
+                        break;
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnCast += SpellCastFn(spell_dru_force_of_nature_SpellScript::HandleOnCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_dru_force_of_nature_SpellScript();
+    }
+};
+
+// Force of Nature - 106737
+// Called by Treant Restoration Spell (Healing Touch) - 113828
+class spell_dru_pet_force_of_nature_heal : public SpellScriptLoader
+{
+public:
+    spell_dru_pet_force_of_nature_heal() : SpellScriptLoader("spell_dru_pet_force_of_nature_heal") { }
+
+    class spell_dru_pet_force_of_nature_heal_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_dru_pet_force_of_nature_heal_SpellScript);
+
+        static bool compareHealth(const WorldObject* first, const WorldObject* second)
+        {
+            return first->ToUnit()->GetHealthPct() < second->ToUnit()->GetHealthPct();
+        }
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            struct is_not_valid_heal_target {
+
+                Unit* caster;
+
+                bool operator() (const WorldObject* target)
+                {
+                    if (!(target->ToUnit()))
+                        return true;
+
+                    const Unit* uTarget = target->ToUnit();
+
+                    if (uTarget->IsTotem())
+                        return true;
+                    if (!(caster->IsFriendlyTo(uTarget)))
+                        return true;
+                    if (!(caster->IsWithinLOSInMap(uTarget)))
+                        return true;
+                    if (!(caster->IsInRange(uTarget, 0.0f, 39.0f, true)))
+                        return true;
+                    if (!(uTarget->GetHealth()))
+                        return true;
+                    if (!(uTarget->GetMaxHealth()))
+                        return true;
+
+                    return false;
+                }
+            };
+
+            is_not_valid_heal_target target_check;
+            target_check.caster = GetCaster();
+            targets.remove_if(target_check);
+
+            if (targets.size() == 0)
+                return;
+
+            targets.sort(compareHealth);
+
+            targets.resize(1);
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dru_pet_force_of_nature_heal_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_dru_pet_force_of_nature_heal_SpellScript();
+    }
+};
+
+// Force of Nature (106737) treant spells, for calculation
+// Called by Treant Restoration Spell (Healing Touch) - 113828, Treant Balance Spell (Wrath) - 113769
+class spell_dru_treants_spells_calculation : public SpellScriptLoader
+{
+    public:
+        spell_dru_treants_spells_calculation() : SpellScriptLoader("spell_dru_treants_spells_calculation") { }
+
+        class spell_dru_treants_spells_calculation_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_treants_spells_calculation_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (!GetCaster())
+                    return;
+
+                Unit* owner = GetCaster()->GetOwner();
+                if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                Player* player = owner->ToPlayer();
+
+                // Healing Touch
+                if (GetSpellInfo()->Id == 113828)
+                {
+                    int32 heal = GetHitHeal();
+                    int32 spelldamage = int32(player->GetStat(STAT_INTELLECT)) - 10;
+                    // Heals a nearby injured ally for 3201 to 3779 (+ 32.3% of Spell power) every 2.5 sec
+                    spelldamage = int32(spelldamage * 0.323f);
+                    heal += spelldamage;
+                    SetHitHeal(heal);
+
+                    // Send information to combat log if treant heals other target, not druid
+                    if (GetHitUnit()->GetGUID() != player->GetGUID())
+                        player->SendSpellNonMeleeDamageLog(GetHitUnit(), GetSpellInfo()->Id, heal, GetSpellInfo()->GetSchoolMask(), 0, 0, false, 0, false);
+                }
+                // Wrath
+                else if (GetSpellInfo()->Id == 113769)
+                {
+                    int32 damage = GetHitDamage();
+                    int32 spelldamage = int32(player->GetStat(STAT_INTELLECT)) - 10;
+                    // Casts Wrath for 1930 to 2175 (+ 37.5% of Spell power) Nature damage every 2 sec
+                    spelldamage = int32(spelldamage * 0.375f);
+                    damage += spelldamage;
+                    SetHitDamage(damage);
+
+                    // Send information to combat log
+                    player->SendSpellNonMeleeDamageLog(GetHitUnit(), GetSpellInfo()->Id, damage, GetSpellInfo()->GetSchoolMask(), 0, 0, false, 0, false);
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_treants_spells_calculation_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_treants_spells_calculation_SpellScript();
+        }
+};
+
+// Called by Natures Grace - 16886
+class spell_druid_natures_grace : public SpellScriptLoader
+{
+    public:
+        spell_druid_natures_grace() : SpellScriptLoader("spell_druid_natures_grace") { }
+
+        class spell_druid_natures_grace_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_druid_natures_grace_AuraScript);
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                {
+                    if (_player->HasAura(SPELL_DRUID_SOLAR_ECLIPSE) && _player->HasAura(SPELL_DRUID_LUNAR_ECLIPSE))
+                    {
+                        _player->RemoveAura(SPELL_DRUID_SOLAR_ECLIPSE);
+                        _player->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE);
+                        _player->SetEclipsePower(0);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_druid_natures_grace_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_druid_natures_grace_AuraScript();
+        }
+};
+
+// Lifebloom - 33763
+// Glyph of Lifebloom - 114228
+class spell_dru_glyph_of_lifebloom : public SpellScriptLoader
+{
+public: spell_dru_glyph_of_lifebloom() : SpellScriptLoader("spell_dru_glyph_of_lifebloom") { }
+
+        class spell_dru_glyph_of_lifebloom_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_glyph_of_lifebloom_SpellScript);
+
+            void HandleOnCast()
+            {
+                // Sanity checks
+                // Make sure caster exists and has the effect of the glyph
+                Unit* caster = GetCaster();
+                if (!caster || !caster->HasAura(SPELL_DRUID_GLYPH_OF_LIFEBLOOM))
+                    return;
+
+                if (Unit* target = GetExplTargetUnit())
+                {
+                    // Identify friendlies within a 20 yard radius
+                    std::list<Unit*> nearbyFriendlies;
+                    float radius = 20.0f;
+
+                    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(caster, caster, radius);
+                    Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(caster, nearbyFriendlies, u_check);
+                    caster->VisitNearbyObject(radius, searcher);
+
+                    // Iterate over nearby friendlies and identify any with a Lifebloom stack from caster
+                    // If so, transfer the stack to the new target
+                    for (std::list<Unit*>::const_iterator it = nearbyFriendlies.begin(); it != nearbyFriendlies.end(); ++it)
+                        if (Aura* lifebloom = (*it)->GetAura(SPELL_DRUID_LIFEBLOOM, caster->GetGUID()))
+                            if (lifebloom->GetDuration() >= 2000)
+                            {
+                                // Successfully found a transferable stack
+                                caster->SetAuraStack(SPELL_DRUID_LIFEBLOOM, target, lifebloom->GetStackAmount());
+                                break;
+                            }
+                }
+            }
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_dru_glyph_of_lifebloom_SpellScript::HandleOnCast);
+            }
+
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_glyph_of_lifebloom_SpellScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_tooth_and_claw_absorb();
     new spell_dru_glyph_of_the_treant();
     new spell_dru_incarnation_chosen_of_elune();
     new spell_dru_incarnation_skins();
@@ -3566,9 +4540,13 @@ void AddSC_druid_spell_scripts()
     new spell_dru_cat_form();
     new spell_dru_skull_bash();
     new spell_dru_faerie_swarm();
+    new spell_dru_wild_mushroom_heal();
+    new spell_dru_wild_mushroom_growing();
+    new spell_dru_wild_mushroom_resto();
     new spell_dru_wild_mushroom_bloom();
     new spell_dru_wild_mushroom_detonate();
     new spell_dru_wild_mushroom();
+    new spell_dru_swiftmend_heal();
     new spell_dru_swiftmend();
     new spell_dru_astral_communion();
     new spell_dru_shooting_stars();
@@ -3588,4 +4566,15 @@ void AddSC_druid_spell_scripts()
     new spell_dru_starfall_dummy();
     new spell_dru_savage_roar();
     new spell_dru_survival_instincts();
+    new spell_dru_glyph_of_lifebloom();
+    new spell_dru_genesis();
+    new spell_dru_yseras_gift();
+    new spell_druid_glyph_of_charm_woodland_creature();
+    new spell_dru_heart_wild();
+    new spell_dru_dream_of_cenarius();
+    new spell_dru_dream_of_cenarius_restor();
+    new spell_dru_force_of_nature();
+    new spell_dru_pet_force_of_nature_heal();
+    new spell_dru_treants_spells_calculation();
+    new spell_druid_natures_grace();
 }

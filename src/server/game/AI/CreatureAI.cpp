@@ -42,6 +42,11 @@ void CreatureAI::Talk(uint8 id, WorldObject const* whisperTarget /*= NULL*/)
     sCreatureTextMgr->SendChat(me, id, whisperTarget);
 }
 
+/*void CreatureAI::Talk(uint8 id, uint64 WhisperGuid)
+{
+	sCreatureTextMgr->SendChat(me, id, WhisperGuid);
+*/
+
 void CreatureAI::DoZoneInCombat(Creature* creature /*= NULL*/, float maxRangeToNearestTarget /* = 50.0f*/)
 {
     if (!creature)

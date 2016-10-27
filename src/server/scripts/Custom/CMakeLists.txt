@@ -13,10 +13,15 @@
 # You should have received a copy of the GNU General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
+#file(GLOB_RECURSE scripts_Custom Custom/*.cpp Custom/*.h)
+#source_group(Custom FILES ${scripts_Custom})
+
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
-  Custom/emo_stone.cpp
-  Custom/emo_teleporter.cpp
-)
+# This scripts are not yet added. Need sql for each one of them
+	# Custom/Example_Script.cpp
+	
 
+   
+)
 message("  -> Prepared: Custom")

@@ -123,7 +123,7 @@ struct GameObjectTemplate
         {
             uint32 lockId;                                  //0 -> Lock.dbc
             uint32 level;                                   //1
-            uint32 radius;                                  //2 radius for trap activation
+            uint32 diameter;                                //2 radius for trap activation
             uint32 spellId;                                 //3
             uint32 type;                                    //4 0 trap with no despawn after cast. 1 trap despawns after cast. 2 bomb casts on spawn.
             uint32 cooldown;                                //5 time in secs
@@ -600,24 +600,27 @@ enum GOState
 // from `gameobject`
 struct GameObjectData
 {
-    explicit GameObjectData() : dbData(true) { }
-    uint32 id;                                              // entry in gamobject_template
-    uint16 mapid;
-    uint32 phaseMask;
-    float posX;
-    float posY;
-    float posZ;
-    float orientation;
-    float rotation0;
-    float rotation1;
-    float rotation2;
-    float rotation3;
-    int32  spawntimesecs;
-    uint32 animprogress;
-    GOState go_state;
-    uint32 spawnMask;
-    uint8 artKit;
-    bool dbData;
+	explicit GameObjectData() : dbData(true) {}
+	uint32 id;                                              // entry in gamobject_template
+	uint16 mapid;
+	uint16 zoneId;
+	uint16 areaId;
+	uint16 phaseMask;
+	float posX;
+	float posY;
+	float posZ;
+	float orientation;
+	float rotation0;
+	float rotation1;
+	float rotation2;
+	float rotation3;
+	int32  spawntimesecs;
+	uint32 animprogress;
+	GOState go_state;
+	uint32 spawnMask;
+	uint8 artKit;
+	bool isActive;
+	bool dbData;
 };
 
 // For containers:  [GO_NOT_READY]->GO_READY (close)->GO_ACTIVATED (open) ->GO_JUST_DEACTIVATED->GO_READY        -> ...
@@ -847,12 +850,14 @@ class GameObject : public WorldObject, public GridObject<GameObject>, public Map
         time_t      m_respawnTime;                          // (secs) time of next respawn (or despawn if GO have owner()),
         uint32      m_respawnDelayTime;                     // (secs) if 0 then current GO state no dependent from timer
         LootState   m_lootState;
+		uint64      m_lootStateUnitGUID;                    // GUID of the unit passed with SetLootState(LootState, Unit*)
         bool        m_spawnedByDefault;
+        uint32      m_armTime;                              // delay time store for traps arm time
         time_t      m_cooldownTime;                         // used as internal reaction delay time store (not state change reaction).
                                                             // For traps this: spell casting cooldown, for doors/buttons: reset time.
         std::list<uint32> m_SkillupList;
 
-        Player* m_ritualOwner;                              // used for GAMEOBJECT_TYPE_SUMMONING_RITUAL where GO is not summoned (no owner)
+        uint64 m_ritualOwnerGUID;                              // used for GAMEOBJECT_TYPE_SUMMONING_RITUAL where GO is not summoned (no owner)
         std::set<uint64> m_unique_users;
         uint32 m_usetimes;
 

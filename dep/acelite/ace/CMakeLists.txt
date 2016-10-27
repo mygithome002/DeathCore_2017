@@ -2,7 +2,7 @@
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
-# Free Software Foundation; either version 3 of the License, or (at your
+# Free Software Foundation; either version 2 of the License, or (at your
 # option) any later version.
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
@@ -324,11 +324,6 @@ set(ace_STAT_SRCS
   XTI_ATM_Mcast.cpp
 )
 
-if (USE_COREPCH)
-  set(ace_PCH_HDR PrecompiledHeaders/WinAcePCH.h)
-  set(ace_PCH_SRC PrecompiledHeaders/WinAcePCH.cpp)
-endif()
-
 include_directories(
   ${CMAKE_SOURCE_DIR}/dep/acelite
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
@@ -347,11 +342,6 @@ add_library(ace SHARED
 
 if (MINGW) # GCC ignores "#prama comment"
   target_link_libraries(ace ws2_32 iphlpapi netapi32 mswsock)
-endif()
-
-# Generate precompiled header
-if( USE_COREPCH )
-  add_cxx_pch(ace ${ace_PCH_HDR} ${ace_PCH_SRC})
 endif()
 
 install(TARGETS ace RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")

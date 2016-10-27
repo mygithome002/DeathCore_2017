@@ -111,6 +111,7 @@ class Pet : public Guardian
 
         PetSpellMap     m_spells;
         AutoSpellList   m_autospells;
+		bool            m_Stampeded;
 
         void InitPetCreateSpells();
 

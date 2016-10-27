@@ -97,9 +97,10 @@ class ScriptRegistry
                     else
                     {
                         // If the script is already assigned -> delete it!
-                        TC_LOG_ERROR("scripts", "[POSSIBLE CRASH] Script '%s' already assigned with the same script name, so the script can't work.", script->GetName().c_str());
+                        TC_LOG_ERROR("scripts", "Script '%s' already assigned with the same script name, so the script can't work.",
+                            script->GetName().c_str());
 
-                        //ASSERT(false); // Error that should be fixed ASAP.
+                        ASSERT(false); // Error that should be fixed ASAP.
                     }
                 }
                 else
@@ -689,24 +690,6 @@ bool ScriptMgr::OnItemExpire(Player* player, ItemTemplate const* proto)
     return tmpscript->OnExpire(player, proto);
 }
 
-void ScriptMgr::OnGossipSelect(Player* player, Item* item, uint32 sender, uint32 action)
-{
-    ASSERT(player);
-    ASSERT(item);
-
-    GET_SCRIPT(ItemScript, item->GetScriptId(), tmpscript);
-    tmpscript->OnGossipSelect(player, item, sender, action);
-}
-
-void ScriptMgr::OnGossipSelectCode(Player* player, Item* item, uint32 sender, uint32 action, const char* code)
-{
-    ASSERT(player);
-    ASSERT(item);
-
-    GET_SCRIPT(ItemScript, item->GetScriptId(), tmpscript);
-    tmpscript->OnGossipSelectCode(player, item, sender, action, code);
-}
-
 bool ScriptMgr::OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effIndex, Creature* target)
 {
     ASSERT(caster);
@@ -1284,16 +1267,6 @@ void ScriptMgr::OnPlayerBindToInstance(Player* player, Difficulty difficulty, ui
 void ScriptMgr::OnPlayerUpdateZone(Player* player, uint32 newZone, uint32 newArea)
 {
     FOREACH_SCRIPT(PlayerScript)->OnUpdateZone(player, newZone, newArea);
-}
-
-void ScriptMgr::OnGossipSelect(Player* player, uint32 menu_id, uint32 sender, uint32 action)
-{
-    FOREACH_SCRIPT(PlayerScript)->OnGossipSelect(player, menu_id, sender, action);
-}
-
-void ScriptMgr::OnGossipSelectCode(Player* player, uint32 menu_id, uint32 sender, uint32 action, const char* code)
-{
-    FOREACH_SCRIPT(PlayerScript)->OnGossipSelectCode(player, menu_id, sender, action, code);
 }
 
 // Guild

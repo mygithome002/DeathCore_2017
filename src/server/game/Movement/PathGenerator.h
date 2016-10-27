@@ -71,6 +71,8 @@ class PathGenerator
 
         PathType GetPathType() const { return _type; }
 
+        void ReducePathLenghtByDist(float dist);
+
     private:
 
         dtPolyRef _pathPolyRefs[MAX_PATH_LENGTH];   // array of detour polygon references

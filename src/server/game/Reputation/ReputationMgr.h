@@ -43,16 +43,16 @@ enum FactionFlags
     FACTION_FLAG_RIVAL              = 0x40,                 // flag for the two competing outland factions
     FACTION_FLAG_SPECIAL            = 0x80                  // horde and alliance home cities and their northrend allies have this flag
 };
-
+typedef uint8 FactionIndex;
 typedef uint32 RepListID;
 struct FactionState
 {
-    uint32 ID;
-    RepListID ReputationListID;
-    int32  Standing;
-    uint8 Flags;
-    bool needSend;
-    bool needSave;
+	uint32 ID;
+	RepListID ReputationListID;
+	int32  Standing;
+	uint8 Flags;
+	bool needSend;
+	bool needSave;
 };
 
 typedef std::map<RepListID, FactionState> FactionStateList;
@@ -125,7 +125,9 @@ class ReputationMgr
         }
 
         void SetVisible(FactionTemplateEntry const* factionTemplateEntry);
-        void SetVisible(FactionEntry const* factionEntry);
+		void SetVisible(FactionEntry const* factionEntry);
+		void SetAtWar(FactionIndex FactionIndexID);
+		void SetNotAtWar(FactionIndex FactionIndexID);
         void SetAtWar(RepListID repListID, bool on);
         void SetInactive(RepListID repListID, bool on);
 

@@ -81,31 +81,39 @@ void DynamicObject::RemoveFromWorld()
     }
 }
 
-bool DynamicObject::CreateDynamicObject(uint32 guidlow, Unit* caster, SpellInfo const* spell, Position const& pos, float radius, DynamicObjectType type)
+bool DynamicObject::CreateDynamicObject(uint32 guidlow, Unit* caster, uint32 spellId, Position const& pos, float radius, DynamicObjectType type)
 {
     SetMap(caster->GetMap());
     Relocate(pos);
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("misc", "DynamicObject (spell %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)", spell->Id, GetPositionX(), GetPositionY());
+        TC_LOG_ERROR("misc", "DynamicObject (spell %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)", spellId, GetPositionX(), GetPositionY());
         return false;
     }
 
     WorldObject::_Create(guidlow, HIGHGUID_DYNAMICOBJECT, caster->GetPhaseMask());
+	
+	SetEntry(spellId);
+    SetObjectScale(1.0f);
+	SetUInt64Value(DYNAMICOBJECT_FIELD_CASTER, caster->GetGUID());
 
-    SetEntry(spell->Id);
-    SetObjectScale(1);
-    SetUInt64Value(DYNAMICOBJECT_FIELD_CASTER, caster->GetGUID());
-    SetUInt32Value(DYNAMICOBJECT_FIELD_SPELL_ID, spell->Id);
-    SetFloatValue(DYNAMICOBJECT_FIELD_RADIUS, radius);
-    SetUInt32Value(DYNAMICOBJECT_FIELD_CAST_TIME, getMSTime());
+    // The lower word of DYNAMICOBJECT_FIELD_TYPE_AND_VISUAL_ID must be 0x0001. This value means that the visual radius will be overriden
+    // by client for most of the "ground patch" visual effect spells and a few "skyfall" ones like Hurricane.
+    // If any other value is used, the client will _always_ use the radius provided in DYNAMICOBJECT_RADIUS, but
+    // precompensation is necessary (eg radius *= 2) for many spells. Anyway, blizz sends 0x0001 for all the spells
+    // I saw sniffed...
 
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell->Id);
+    // Blizz set visual spell Id in 3 first byte of DYNAMICOBJECT_FIELD_TYPE_AND_VISUAL_ID after 5.X
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (spellInfo)
     {
         uint32 visual = spellInfo->SpellVisual[0] ? spellInfo->SpellVisual[0] : spellInfo->SpellVisual[1];
         SetUInt32Value(DYNAMICOBJECT_FIELD_TYPE_AND_VISUAL_ID, 0x10000000 | visual);
     }
+
+	SetUInt32Value(DYNAMICOBJECT_FIELD_SPELL_ID, spellId);
+	SetFloatValue(DYNAMICOBJECT_FIELD_RADIUS, radius);
+	SetUInt32Value(DYNAMICOBJECT_FIELD_CAST_TIME, getMSTime());
 
     if (IsWorldObject())
         setActive(true);    //must before add to map to be put in world container

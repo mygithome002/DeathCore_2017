@@ -1,159 +1,127 @@
+/*
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "shadopan_monastery.h"
 
-enum Texts
+enum eSpells
 {
-    SAY_AGGRO       = 0,
-    SAY_EARTHQUAKE  = 1,
-    SAY_OVERRUN     = 2,
-    SAY_SLAY        = 3,
-    SAY_DEATH       = 4
+	SPELL_SMOKE_BLADES = 106826,
+	SPELL_SHA_SPIKE = 106871,
+	SPELL_DISORIENTING_SMASH = 106872,
+	SPELL_PARTING_SMOKE = 127576,
+	SPELL_ENRAGE = 130196,
+
+	SPELL_ICE_TRAP = 110610,
+	SPELL_EXPLOSION = 106966,
 };
 
-enum Spells
+enum eEvents
 {
-    SPELL_EARTHQUAKE        = 153616,
-    SPELL_SUNDER_ARMOR      = 153726,
-    SPELL_CHAIN_LIGHTNING   = 153764,
-    SPELL_OVERRUN           = 154221,
-    SPELL_ENRAGE            = 157173,
-    SPELL_MARK_DEATH        = 153234,
-    SPELL_AURA_DEATH        = 153616
-};
-
-enum Events
-{
-    EVENT_ENRAGE    = 1,
-    EVENT_ARMOR     = 2,
-    EVENT_CHAIN     = 3,
-    EVENT_QUAKE     = 4,
-    EVENT_OVERRUN   = 5
+	// Gu
+	EVENT_SMOKE_BLADES = 1,
+	EVENT_SHA_SPIKE = 2,
+	EVENT_DISORIENTING_SMASH = 3,
 };
 
 class boss_sha_of_violence : public CreatureScript
 {
-    public:
-        boss_sha_of_violence() : CreatureScript("boss_sha_of_violence") { }
+public:
+	boss_sha_of_violence() : CreatureScript("boss_sha_of_violence") {}
 
-        struct boss_sha_of_violenceAI : public ScriptedAI
-        {
-            boss_sha_of_violenceAI(Creature* creature) : ScriptedAI(creature)
-            {
-                Initialize();
-            }
+	struct boss_sha_of_violenceAI : public BossAI
+	{
+		boss_sha_of_violenceAI(Creature* creature) : BossAI(creature, DATA_SHA_VIOLENCE)
+		{
+			pInstance = creature->GetInstanceScript();
+		}
 
-            void Initialize()
-            {
-                _inEnrage = false;
-            }
+		InstanceScript* pInstance;
+		bool enrageDone;
 
-            void Reset() override
-            {
-                _events.Reset();
-                _events.ScheduleEvent(EVENT_ENRAGE, 0);
-                _events.ScheduleEvent(EVENT_ARMOR, urand(5000, 13000));
-                _events.ScheduleEvent(EVENT_CHAIN, urand(10000, 30000));
-                _events.ScheduleEvent(EVENT_QUAKE, urand(25000, 35000));
-                _events.ScheduleEvent(EVENT_OVERRUN, urand(30000, 45000));
-                Initialize();
-            }
+		void Reset()
+		{
+			_Reset();
+			enrageDone = false;
 
-            void KilledUnit(Unit* victim) override
-            {
-                victim->CastSpell(victim, SPELL_MARK_DEATH, 0);
+			events.ScheduleEvent(EVENT_SMOKE_BLADES, urand(25000, 35000));
+			events.ScheduleEvent(EVENT_SHA_SPIKE, urand(10000, 20000));
+			events.ScheduleEvent(EVENT_DISORIENTING_SMASH, urand(20000, 30000));
+		}
 
-                if (urand(0, 4))
-                    return;
+		void JustReachedHome()
+		{
+			pInstance->SetBossState(DATA_SHA_VIOLENCE, FAIL);
+			summons.DespawnAll();
+		}
 
-                Talk(SAY_SLAY);
-            }
+		void JustSummoned(Creature* summon)
+		{
+			summons.Summon(summon);
+			summon->CastSpell(summon, SPELL_ICE_TRAP, true);
+		}
 
-            void JustDied(Unit* /*killer*/) override
-            {
-                Talk(SAY_DEATH);
-            }
+		void DamageTaken(Unit* attacker, uint32& damage)
+		{
+			if (!enrageDone && me->HealthBelowPctDamaged(20, damage))
+				me->CastSpell(me, SPELL_ENRAGE, true);
+		}
 
-            void EnterCombat(Unit* /*who*/) override
-            {
-                Talk(SAY_AGGRO);
-            }
+		void UpdateAI(uint32 diff)
+		{
+			if (!UpdateVictim())
+				return;
 
-            void MoveInLineOfSight(Unit* who) override
+			events.Update(diff);
 
-            {
-                if (who && who->GetTypeId() == TYPEID_PLAYER && me->IsValidAttackTarget(who))
-                    if (who->HasAura(SPELL_MARK_DEATH))
-                        who->CastSpell(who, SPELL_AURA_DEATH, 1);
-            }
+			switch (events.ExecuteEvent())
+			{
+			case EVENT_SMOKE_BLADES:
+				me->CastSpell(me, SPELL_SMOKE_BLADES, false);
+				events.ScheduleEvent(EVENT_SMOKE_BLADES, urand(25000, 35000));
+				break;
+			case EVENT_SHA_SPIKE:
+				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
+					me->CastSpell(target, SPELL_SHA_SPIKE, false);
 
-            void UpdateAI(uint32 diff) override
-            {
-                if (!UpdateVictim())
-                    return;
+				events.ScheduleEvent(EVENT_SHA_SPIKE, urand(10000, 20000));
+				break;
+			case EVENT_DISORIENTING_SMASH:
+				if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
+					me->CastSpell(target, SPELL_DISORIENTING_SMASH, false);
 
-                _events.Update(diff);
+				events.ScheduleEvent(EVENT_DISORIENTING_SMASH, urand(20000, 30000));
+				break;
+			default:
+				break;
+			}
 
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
+			DoMeleeAttackIfReady();
+		}
+	};
 
-                while (uint32 eventId = _events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                        case EVENT_ENRAGE:
-                            if (!HealthAbovePct(20))
-                            {
-                                DoCast(me, SPELL_ENRAGE);
-                                _events.ScheduleEvent(EVENT_ENRAGE, 6000);
-                                _inEnrage = true;
-                            }
-                            break;
-                        case EVENT_OVERRUN:
-                            Talk(SAY_OVERRUN);
-                            DoCastVictim(SPELL_OVERRUN);
-                            _events.ScheduleEvent(EVENT_OVERRUN, urand(25000, 40000));
-                            break;
-                        case EVENT_QUAKE:
-                            if (urand(0, 1))
-                                return;
-
-                            Talk(SAY_EARTHQUAKE);
-
-                            //remove enrage before casting earthquake because enrage + earthquake = 16000dmg over 8sec and all dead
-                            if (_inEnrage)
-                                me->RemoveAurasDueToSpell(SPELL_ENRAGE);
-
-                            DoCast(me, SPELL_EARTHQUAKE);
-                            _events.ScheduleEvent(EVENT_QUAKE, urand(30000, 55000));
-                            break;
-                        case EVENT_CHAIN:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                                DoCast(target, SPELL_CHAIN_LIGHTNING);
-                            _events.ScheduleEvent(EVENT_CHAIN, urand(7000, 27000));
-                            break;
-                        case EVENT_ARMOR:
-                            DoCastVictim(SPELL_SUNDER_ARMOR);
-                            _events.ScheduleEvent(EVENT_ARMOR, urand(10000, 25000));
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                DoMeleeAttackIfReady();
-            }
-
-            private:
-                EventMap _events;
-                bool _inEnrage;
-        };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new boss_sha_of_violenceAI(creature);
-        }
+	CreatureAI* GetAI(Creature* creature) const
+	{
+		return new boss_sha_of_violenceAI(creature);
+	}
 };
 
 void AddSC_boss_sha_of_violence()
 {
-    new boss_sha_of_violence();
+	new boss_sha_of_violence();
 }

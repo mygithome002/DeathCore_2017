@@ -86,13 +86,21 @@ class MotionMaster //: private std::stack<MovementGenerator *>
 
         void pop()
         {
+            if (empty())
+                return;
+
             Impl[_top] = NULL;
-            while (!top())
+            while (!empty() && !top())
                 --_top;
         }
         void push(_Ty _Val) { ++_top; Impl[_top] = _Val; }
 
-        bool needInitTop() const { return _needInit[_top]; }
+        bool needInitTop() const 
+        { 
+            if (empty())
+                return false;
+            return _needInit[_top]; 
+        }
         void InitTop();
     public:
 
@@ -111,8 +119,16 @@ class MotionMaster //: private std::stack<MovementGenerator *>
 
         bool empty() const { return (_top < 0); }
         int size() const { return _top + 1; }
-        _Ty top() const { return Impl[_top]; }
-        _Ty GetMotionSlot(int slot) const { return Impl[slot]; }
+        _Ty top() const 
+        { 
+            ASSERT(!empty());
+            return Impl[_top]; 
+        }
+        _Ty GetMotionSlot(int slot) const 
+        { 
+            ASSERT(slot >= 0);
+            return Impl[slot]; 
+        }
 
         void DirectDelete(_Ty curr);
         void DelayedDelete(_Ty curr);
@@ -151,7 +167,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MoveFollow(Unit* target, float dist, float angle, MovementSlot slot = MOTION_SLOT_ACTIVE);
         void MoveChase(Unit* target, float dist = 0.0f, float angle = 0.0f);
         void MoveConfused();
-        void MoveFleeing(Unit* enemy, uint32 time = 0);
+        void MoveFleeing(Unit* enemy, bool inPlace = false, uint32 time = 0);
         void MovePoint(uint32 id, Position const& pos, bool generatePath = true)
             { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ, generatePath); }
         void MovePoint(uint32 id, float x, float y, float z, bool generatePath = true);
@@ -161,13 +177,17 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MoveTakeoff(uint32 id, Position const& pos);
 
         void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, bool generatePath = false);
-        void MoveCharge(PathGenerator const& path);
+        void MoveCharge(PathGenerator const& path, float speed = SPEED_CHARGE);
         void MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ);
         void MoveJumpTo(float angle, float speedXY, float speedZ);
+		void MoveKnockTo(float x, float y, float z, float speedXY, float speedZ, uint32 id);
+
         void MoveJump(Position const& pos, float speedXY, float speedZ, uint32 id = EVENT_JUMP)
             { MoveJump(pos.m_positionX, pos.m_positionY, pos.m_positionZ, speedXY, speedZ, id); };
         void MoveJump(float x, float y, float z, float speedXY, float speedZ, uint32 id = EVENT_JUMP);
-        void CustomJump(float x, float y, float z, float speedXY, float speedZ, uint32 id = 0);
+        void CustomJump(float x, float y, float z, float speedXY, float speedZ, uint32 id = EVENT_JUMP);
+        void MoveCirclePath(float x, float y, float z, float radius, bool clockwise, uint8 stepCount);
+		void ForceMoveJump(float x, float y, float z, float speedXY, float speedZ, float max_height, uint32 id = EVENT_JUMP);
         void MoveFall(uint32 id = 0);
 
         void MoveSeekAssistance(float x, float y, float z);

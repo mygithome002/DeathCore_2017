@@ -23,6 +23,7 @@
 #include "CreatureAIImpl.h"
 #include "InstanceScript.h"
 
+#define CAST_PLR(a)     (dynamic_cast<Player*>(a))
 #define CAST_AI(a, b)   (dynamic_cast<a*>(b))
 
 class InstanceScript;
@@ -77,11 +78,11 @@ public:
     {
         return storage_.size();
     }
-
-    void Summon(Creature const* summon) { storage_.push_back(summon->GetGUID()); }
-    void Despawn(Creature const* summon) { storage_.remove(summon->GetGUID()); }
-    void DespawnEntry(uint32 entry);
-    void DespawnAll();
+	public: 
+		void Summon(Creature const* summon) { storage_.push_back(summon->GetGUID()); }
+		void Despawn(Creature const* summon) { storage_.remove(summon->GetGUID()); }
+		void DespawnEntry(uint32 entry);
+		void DespawnAll();
 
     template <typename T>
     void DespawnIf(T const &predicate)
@@ -351,6 +352,18 @@ struct ScriptedAI : public CreatureAI
         uint32 _evadeCheckCooldown;
         bool _isCombatMovementAllowed;
         bool _isHeroic;
+
+	protected:
+		EventMap events;
+};
+
+struct Scripted_NoMovementAI : public ScriptedAI
+{
+	Scripted_NoMovementAI(Creature* creature) : ScriptedAI(creature) {}
+	virtual ~Scripted_NoMovementAI() {}
+
+	//Called at each attack of me by any victim
+	void AttackStart(Unit* target);
 };
 
 class BossAI : public ScriptedAI
@@ -442,4 +455,5 @@ void GetCreatureListWithEntryInGrid(std::list<Creature*>& list, WorldObject* sou
 void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& list, WorldObject* source, uint32 entry, float maxSearchRange);
 void GetPlayerListInGrid(std::list<Player*>& list, WorldObject* source, float maxSearchRange);
 void GetPositionWithDistInOrientation(Unit* pUnit, float dist, float orientation, float& x, float& y);
+
 #endif // SCRIPTEDCREATURE_H_

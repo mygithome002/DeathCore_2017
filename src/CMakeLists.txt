@@ -14,7 +14,11 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
 add_subdirectory(genrev)
-add_subdirectory(server)
+add_subdirectory(common)
+
+if(SERVERS)
+  add_subdirectory(server)
+endif(SERVERS)
 
 if(TOOLS)
   add_definitions(-std=c++11)

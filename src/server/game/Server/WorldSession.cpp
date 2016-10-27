@@ -124,6 +124,7 @@ WorldSession::WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8
     isRecruiter(isARecruiter),
     m_hasBoost(hasBoost),
     timeLastWhoCommand(0),
+	m_currentVendorEntry(0),
     _RBACData(NULL)
 {
     if (sock)
@@ -212,12 +213,12 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
 
     if (packet->GetOpcode() == NULL_OPCODE)
     {
-        TC_LOG_ERROR("network.opcode", "Prevented sending of NULL_OPCODE to %s", GetPlayerInfo().c_str());
+		TC_LOG_DEBUG("network.opcode", "Prevented sending of NULL_OPCODE to %s", GetPlayerInfo().c_str());
         return;
     }
     else if (packet->GetOpcode() == UNKNOWN_OPCODE)
     {
-        TC_LOG_ERROR("network.opcode", "Prevented sending of UNKNOWN_OPCODE to %s", GetPlayerInfo().c_str());
+		TC_LOG_DEBUG("network.opcode", "Prevented sending of UNKNOWN_OPCODE to %s", GetPlayerInfo().c_str());
         return;
     }
 
@@ -226,7 +227,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
         OpcodeHandler const* handler = serverOpcodeTable[packet->GetOpcode()];
         if (!handler || handler->Status == STATUS_UNHANDLED)
         {
-            TC_LOG_ERROR("network.opcode", "Prevented sending disabled opcode %s to %s", GetOpcodeNameForLogging(packet->GetOpcode(), true).c_str(), GetPlayerInfo().c_str());
+            TC_LOG_DEBUG("network.opcode", "Prevented sending disabled opcode %s to %s", GetOpcodeNameForLogging(packet->GetOpcode(), true).c_str(), GetPlayerInfo().c_str());
             return;
         }
     }
@@ -539,6 +540,10 @@ void WorldSession::LogoutPlayer(bool save)
 
         ///- Clear whisper whitelist
         _player->ClearWhisperWhiteList();
+
+		// Demonic Gateway
+        if (_player->HasAura(113901) && _player->getClass() == CLASS_WARLOCK)
+        _player->RemoveAura(113901);
 
         ///- empty buyback items and save the player in the database
         // some save parts only correctly work in case player present in map/player_lists (pets, etc)
@@ -1056,17 +1061,7 @@ void WorldSession::HandleAddonRegisteredPrefixesOpcode(WorldPacket& recvPacket)
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_ADDON_REGISTERED_PREFIXES");
 
-    // This is always sent after CMSG_UNREGISTER_ALL_ADDON_PREFIXES
-
     uint32 count = recvPacket.ReadBits(24);
-
-    if (count > REGISTERED_ADDON_PREFIX_SOFTCAP)
-    {
-        // if we have hit the softcap (64) nothing should be filtered
-        _filterAddonMessages = false;
-        recvPacket.rfinish();
-        return;
-    }
 
     std::vector<uint8> lengths(count);
     for (uint32 i = 0; i < count; ++i)
@@ -1121,12 +1116,14 @@ void WorldSession::ProcessQueryCallbacks()
     }
 
     //! HandlePlayerLoginOpcode
-    if (_charLoginCallback.ready())
+    if (_charLoginCallback.ready() && _accountSpellCallback.ready())
     {
         SQLQueryHolder* param;
         _charLoginCallback.get(param);
-        HandlePlayerLogin((LoginQueryHolder*)param);
+        _accountSpellCallback.get(result);
+        HandlePlayerLogin((LoginQueryHolder*)param, result);
         _charLoginCallback.cancel();
+        _accountSpellCallback.cancel();
     }
 
     //! HandleAddFriendOpcode
@@ -1160,7 +1157,7 @@ void WorldSession::ProcessQueryCallbacks()
     {
         uint64 param = _sendStabledPetCallback.GetParam();
         _sendStabledPetCallback.GetResult(result);
-        SendStablePetCallback(result, param);
+        SendPetStableListCallback(result, param);
         _sendStabledPetCallback.FreeResult();
     }
 

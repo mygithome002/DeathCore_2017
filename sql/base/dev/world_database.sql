@@ -324,7 +324,7 @@ PRIMARY KEY (`guid`)
 ENGINE=MyISAM
 DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
 COMMENT='Creature System'
-AUTO_INCREMENT=418837
+AUTO_INCREMENT=999486
 
 ;
 
@@ -4289,7 +4289,7 @@ CREATE INDEX `idx_id` ON `creature`(`id`) USING BTREE ;
 -- ----------------------------
 -- Auto increment value for `creature`
 -- ----------------------------
-ALTER TABLE `creature` AUTO_INCREMENT=418837;
+ALTER TABLE `creature` AUTO_INCREMENT=999486;
 
 -- ----------------------------
 -- Indexes structure for table creature_template

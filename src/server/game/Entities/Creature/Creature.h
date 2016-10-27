@@ -64,33 +64,6 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_SKILLGAIN | CREATURE_FLAG_EXTRA_TAUNT_DIMINISH | CREATURE_FLAG_EXTRA_ALL_DIMINISH | \
     CREATURE_FLAG_EXTRA_GUARD | CREATURE_FLAG_EXTRA_IGNORE_PATHFINDING)
 
-// Creature Pet entries
-// Warlock
-#define ENTRY_INFERNAL 89
-#define ENTRY_IMP 416
-#define ENTRY_VOIDWALKER 1860
-#define ENTRY_SUCCUBUS 1863
-#define ENTRY_FELHUNTER 417
-#define ENTRY_FELGUARD 17252
-#define ENTRY_FEL_IMP 58959
-#define ENTRY_VOIDLORD 58960
-#define ENTRY_SHIVARRA 58963
-#define ENTRY_OBSERVER 58964
-#define ENTRY_WRATHGUARD 58965
-// Mage
-#define ENTRY_WATER_ELEMENTAL 510
-// Druid
-#define ENTRY_TREANT_GUARDIAN 54985
-#define ENTRY_TREANT_FERAL 54984
-#define ENTRY_TREANT_RESTO 54983
-#define ENTRY_TREANT_BALANCE 1964
-// Shaman
-#define ENTRY_FIRE_ELEMENTAL 15438
-// Death Knight
-#define ENTRY_GHOUL 26125
-#define ENTRY_BLOODWORM 28017
-#define ENTRY_GARGOYLE 27829
-
 #define MAX_KILL_CREDIT 2
 #define CREATURE_REGEN_INTERVAL 2 * IN_MILLISECONDS
 
@@ -271,10 +244,12 @@ typedef UNORDERED_MAP<uint32, EquipmentInfoContainerInternal> EquipmentInfoConta
 // from `creature` table
 struct CreatureData
 {
-    CreatureData() : dbData(true) { }
+    explicit CreatureData() : dbData(true) {}
     uint32 id;                                              // entry in creature_template
     uint16 mapid;
-    uint32 phaseMask;
+    uint16 zoneId;
+    uint16 areaId;
+    uint16 phaseMask;
     uint32 displayid;
     int8 equipmentId;
     float posX;
@@ -288,9 +263,10 @@ struct CreatureData
     uint32 curmana;
     uint8 movementType;
     uint32 spawnMask;
-    uint64 npcflag;
+    uint32 npcflag;
     uint32 unit_flags;                                      // enum UnitFlags mask values
     uint32 dynamicflags;
+    bool isActive;
     bool dbData;
 };
 
@@ -439,7 +415,7 @@ typedef std::map<uint32, time_t> CreatureSpellCooldowns;
 // max different by z coordinate for creature aggro reaction
 #define CREATURE_Z_ATTACK_RANGE 3
 
-#define MAX_VENDOR_ITEMS 150                                // Limitation in 4.x.x item count in SMSG_LIST_INVENTORY
+#define MAX_VENDOR_ITEMS 550                                // Limitation in 4.3.4 item count in SMSG_LIST_INVENTORY
 
 class Creature : public Unit, public GridObject<Creature>, public MapObject
 {
@@ -453,6 +429,9 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
 
         void SetObjectScale(float scale);
         void SetDisplayId(uint32 modelId);
+
+		void SetSeerGUID(uint64 guid) { uiSeerGUID = guid; }
+		uint64 GetSeerGUID() const { return uiSeerGUID; }
 
         void DisappearAndDie();
 
@@ -675,7 +654,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
 
         static float _GetDamageMod(int32 Rank);
 
-        float m_SightDistance, m_CombatDistance;
+		float m_SightDistance, m_CombatDistance, _ReactDistance;
 
         bool m_isTempWorldObject; //true when possessed
 
@@ -733,6 +712,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
 
         bool IsInvisibleDueToDespawn() const;
         bool CanAlwaysSee(WorldObject const* obj) const;
+		uint64 uiSeerGUID;
+
     private:
         void ForcedDespawn(uint32 timeMSToDespawn = 0);
 

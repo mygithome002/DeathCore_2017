@@ -815,6 +815,7 @@ public:
     void HandleSetMemberRank(WorldSession* session, uint64 guid, uint64 setterGuid, uint32 rank);
     void HandleAddNewRank(WorldSession* session, std::string const& name);
     void HandleRemoveRank(WorldSession* session, uint8 rankId);
+	void HandleUpdateRank(WorldSession* session, uint32 GuildID, bool RankId);
     void HandleSwitchRank(uint8 rankId, bool up);
     void HandleMemberDepositMoney(WorldSession* session, uint64 amount, bool cashFlow = false);
     bool HandleMemberWithdrawMoney(WorldSession* session, uint64 amount, bool repair = false);

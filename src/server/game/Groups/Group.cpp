@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include "Common.h"
 #include "Opcodes.h"
 #include "WorldPacket.h"
@@ -460,7 +459,7 @@ bool Group::AddMember(Player* player)
             if (player->GetRaidDifficulty() != GetRaidDifficulty())
             {
                 player->SetRaidDifficulty(GetRaidDifficulty());
-                player->SendRaidDifficulty();
+                player->SendRaidDifficulty(true);
             }
         }
     }
@@ -1734,7 +1733,7 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
 
         Player* member = ObjectAccessor::FindPlayer(memberGuid);
 
-        uint8 onlineState = member ? MEMBER_STATUS_ONLINE : MEMBER_STATUS_OFFLINE;
+        uint8 onlineState = (member && !member->GetSession()->PlayerLogout()) ? MEMBER_STATUS_ONLINE : MEMBER_STATUS_OFFLINE;
         onlineState = onlineState | ((isBGGroup() || isBFGroup()) ? MEMBER_STATUS_PVP : 0);
 
         data.WriteGuidMask(memberGuid, 1, 2, 5, 6);
@@ -1778,8 +1777,8 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
 
     //if (hasInstanceDifficulty)
     {
-        data << uint32(m_dungeonDifficulty);               // raid Difficulty
-        data << uint32(m_raidDifficulty);                  // dungeon Difficulty
+        data << uint32(m_dungeonDifficulty);               // dungeon Difficulty
+        data << uint32(m_raidDifficulty);                  // raid Difficulty
     }
 
     data.append(memberData);
@@ -2229,7 +2228,7 @@ GroupRatedStats Group::GetRatedStats(RatedType ratedType)
         ASSERT(rinfo && "RatedInfo must be initialized");
 
         const StatsBySlot* stats = rinfo->GetStatsBySlot(ratedType);
-        ASSERT(stats && "Stats must be initialized");
+        //ASSERT(stats && "Stats must be initialized");
 
         matchMakerRating += rinfo->GetMatchMakerRating();
         rating += stats->PersonalRating;
@@ -2304,7 +2303,7 @@ void Group::SetRaidDifficulty(Difficulty difficulty)
             continue;
 
         player->SetRaidDifficulty(difficulty);
-        player->SendRaidDifficulty();
+        player->SendRaidDifficulty(true);
     }
 }
 

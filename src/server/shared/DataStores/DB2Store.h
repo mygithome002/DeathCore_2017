@@ -19,6 +19,7 @@
 #define DB2STORE_H
 
 #include "DB2FileLoader.h"
+#include "DBStorageIterator.h"
 #include "Common.h"
 #include "ByteBuffer.h"
 #include <vector>
@@ -105,6 +106,8 @@ class DB2Storage : public DB2StorageBase
     typedef bool(*EntryChecker)(DB2Storage<T> const&, uint32);
     typedef void(*PacketWriter)(DB2Storage<T> const&, uint32, uint32, ByteBuffer&);
 public:
+	typedef DBStorageIterator<T> iterator;
+
     DB2Storage(char const* f, EntryChecker checkEntry = NULL, PacketWriter writePacket = NULL) :
         nCount(0), fieldCount(0), fmt(f), m_dataTable(NULL)
     {
@@ -212,6 +215,9 @@ public:
 
         nCount = 0;
     }
+
+	iterator begin() { return iterator(indexTable.AsT, nCount); }
+	iterator end() { return iterator(indexTable.AsT, nCount, nCount); }
 
     EntryChecker CheckEntry;
     PacketWriter WritePacket;

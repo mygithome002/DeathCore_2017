@@ -54,22 +54,12 @@ void Totem::Update(uint32 time)
 void Totem::InitStats(uint32 duration)
 {
     // client requires SMSG_TOTEM_CREATED to be sent before adding to world and before removing old totem
-    if (GetOwner()->GetTypeId() == TYPEID_PLAYER
-            && m_Properties->Slot >= SUMMON_SLOT_TOTEM
-            && m_Properties->Slot < MAX_TOTEM_SLOT)
+    if (GetOwner()->GetTypeId() == TYPEID_PLAYER && m_Properties->Slot >= SUMMON_SLOT_TOTEM && m_Properties->Slot < MAX_TOTEM_SLOT)
     {
-        WorldPacket data(SMSG_TOTEM_CREATED, 1 + 4 + 4);
-
-        ObjectGuid guid;
-
-        data.WriteGuidMask(guid, 6, 1, 2, 5, 3, 4, 7, 0);
-        data << uint32(duration);
-        data << uint32(GetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL));
-        data.WriteGuidBytes(guid, 3, 4, 5, 6, 0, 2);
-        data << uint8(m_Properties->Slot - 1);
-        data.WriteGuidBytes(guid, 1, 7);
-       
-        GetOwner()->ToPlayer()->SendDirectMessage(&data);
+        ObjectGuid TotemGUID = GetGUID();
+        uint32 SpellID = GetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL);
+        uint8 Slot = uint8(m_Properties->Slot - 1);
+        GetOwner()->ToPlayer()->GetSession()->SendTotemCreated(TotemGUID, duration, SpellID, Slot);
 
         // set display id depending on caster's race
         SetDisplayId(GetOwner()->GetModelForTotem(PlayerTotemType(m_Properties->Id)));

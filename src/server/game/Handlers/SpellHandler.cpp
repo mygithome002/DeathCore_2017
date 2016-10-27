@@ -82,8 +82,6 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     Position srcPos;
     Position destPos;
     std::string targetString;
-    uint8 archTypes[4];
-    SpellCastTargets targets;
 
     // Movement data
     MovementInfo movementInfo;
@@ -125,7 +123,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     uint8 researchDataCount = recvPacket.ReadBits(2);
 
     for (uint8 i = 0; i < researchDataCount; ++i)
-        archTypes[i] = recvPacket.ReadBits(2);
+        recvPacket.ReadBits(2);
 
     if (hasMovement)
     {
@@ -176,9 +174,9 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     if (hasTargetString)
         targetStringLength = recvPacket.ReadBits(7);
 
-    recvPacket.ReadGuidMask(targetGuid, 1, 0, 5, 3, 6, 4, 7, 2);
+    recvPacket.ReadGuidMask(itemTargetGuid, 1, 0, 5, 3, 6, 4, 7, 2);
 
-    recvPacket.ReadGuidMask(itemTargetGuid, 4, 5, 0, 1, 3, 7, 6, 2);
+    recvPacket.ReadGuidMask(targetGuid, 4, 5, 0, 1, 3, 7, 6, 2);
 
     if (hasCastFlags)
         castFlags = recvPacket.ReadBits(5);
@@ -188,27 +186,10 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
     recvPacket.ReadGuidBytes(itemGuid, 0, 5, 6, 3, 4, 2, 1);
 
-    if (researchDataCount > 0)
+    for (uint8 i = 0; i < researchDataCount; ++i)
     {
-        uint32 entry, usedCount;
-        for (uint8 i = 0; i < researchDataCount; i++)
-        {
-            switch (archTypes[i])
-            {
-                case 0: // Fragments
-                    recvPacket >> usedCount;    // Currency count
-                    recvPacket >> entry;        // Currency id
-                    //targets.AddFragments(entry, usedCount); // @TODO
-                    break;
-                case 1: // Keystones
-                    recvPacket >> usedCount;    // Item count
-                    recvPacket >> entry;        // Item id
-                    //targets.AddKeyStone(entry, usedCount); // @TODO
-                    break;
-                default:
-                    break;
-            }
-        }
+        recvPacket.read_skip<uint32>();
+        recvPacket.read_skip<uint32>();
     }
 
     recvPacket.ReadByteSeq(itemGuid[7]);
@@ -304,7 +285,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             destPos.Relocate(caster);
     }
 
-    recvPacket.ReadGuidBytes(itemTargetGuid, 6, 7, 2, 0, 3, 4, 1, 5);
+    recvPacket.ReadGuidBytes(targetGuid, 6, 7, 2, 0, 3, 4, 1, 5);
 
     if (hasSrcLocation)
     {
@@ -332,7 +313,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     if (hasSpellId)
         recvPacket >> spellId;
 
-    recvPacket.ReadGuidBytes(targetGuid, 1, 4, 3, 6, 2, 0, 7, 5);
+    recvPacket.ReadGuidBytes(itemTargetGuid, 1, 4, 3, 6, 2, 0, 7, 5);
 
     if (hasTargetString)
         targetString = recvPacket.ReadString(targetStringLength);
@@ -430,57 +411,15 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         }
     }
 
-    SpellDestination src;
-    SpellDestination dst;
+    SpellCastTargets targets(caster, targetMask, targetGuid, itemTargetGuid, srcTransportGuid, destTransportGuid, srcPos, destPos, elevation, missileSpeed, targetString);
 
-    if (hasDestLocation)
-    {
-        src._transportGUID = destTransportGuid;
-        if (src._transportGUID)
-            src._transportOffset.Relocate(srcPos);
-        else
-            src._position.Relocate(srcPos);
-    }
-    else
-    {
-        src._transportGUID = mover->GetTransGUID();
-        if (src._transportGUID)
-            src._transportOffset.Relocate(mover->GetTransOffsetX(), mover->GetTransOffsetY(), mover->GetTransOffsetZ(), mover->GetTransOffsetO());
-        else
-            src._position.Relocate(mover);
-    }
-    if (hasDestLocation)
-    {
-        dst._transportGUID = destTransportGuid;
-        if (dst._transportGUID)
-            dst._transportOffset.Relocate(destPos);
-        else
-            dst._position.Relocate(destPos);
-    }
-    else
-    {
-        dst._transportGUID = mover->GetTransGUID();
-        if (dst._transportGUID)
-            dst._transportOffset.Relocate(mover->GetTransOffsetX(), mover->GetTransOffsetY(), mover->GetTransOffsetZ(), mover->GetTransOffsetO());
-        else
-            dst._position.Relocate(mover);
-    }
-
-    targets.SetUnitTargetGUID(targetGuid);
-    if (Item* pItem = _player->GetItemByGuid(itemTargetGuid))
-    {
-        targets.SetItemTargetGUID(itemTargetGuid);
-        targets.SetItemTarget(pItem);
-    }
-    targets.SetSrc(src);
-    targets.SetDst(dst);
-    targets.Update(mover);
     // Note: If script stop casting it must send appropriate data to client to prevent stuck item in gray state.
     if (!sScriptMgr->OnItemUse(pUser, pItem, targets))
     {
-        // no script or script not process request by self
+        // TODO: this method does not work well, this provokes unfunctional item's spells
         pUser->CastItemUseSpell(pItem, targets, castCount, glyphIndex);
     }
+	
 }
 
 void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
@@ -652,7 +591,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     Position srcPos;
     Position destPos;
     std::string targetString;
-    SpellCastTargets targets;
 
     // Movement data
     MovementInfo movementInfo;
@@ -696,6 +634,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     {
         recvPacket.ReadGuidMask(destTransportGuid, 1, 3, 5, 0, 2, 6, 7, 4);
     }
+
 
     if (hasMovement)
     {
@@ -842,14 +781,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     recvPacket.ReadGuidBytes(itemTargetGuid, 4, 2, 1, 5, 7, 3, 6, 0);
 
-    // Set m_itemTargetGUID = itemGUID taken from this packet (CMSG_CAST_SPELL)
-    // It will be used by Spell::CheckItems
-    if (Item* pItem = _player->GetItemByGuid(itemTargetGuid))
-    {
-        targets.SetItemTargetGUID(itemTargetGuid);
-        targets.SetItemTarget(pItem);
-    }
-
     if (hasDestLocation)
     {
         float x, y, z;
@@ -955,9 +886,9 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 return false;
         }
     };
-
+        
     if (caster->GetTypeId() == TYPEID_PLAYER && !caster->ToPlayer()->HasActiveSpell(spellId) && !IsExcludedSpell())
-    {
+    {       
         // not have spell in spellbook
         recvPacket.rfinish(); // prevent spam at ignore packet
         return;
@@ -1000,41 +931,8 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    SpellDestination src;
-    SpellDestination dst;
-
-    if (hasDestLocation)
-    {
-        src._transportGUID = destTransportGuid;
-        if (src._transportGUID)
-            src._transportOffset.Relocate(srcPos);
-        else
-            src._position.Relocate(srcPos);
-    }
-    else
-    {
-        src._transportGUID = mover->GetTransGUID();
-        if (src._transportGUID)
-            src._transportOffset.Relocate(mover->GetTransOffsetX(), mover->GetTransOffsetY(), mover->GetTransOffsetZ(), mover->GetTransOffsetO());
-        else
-            src._position.Relocate(mover);
-    }
-    if (hasDestLocation)
-    {
-        dst._transportGUID = destTransportGuid;
-        if (dst._transportGUID)
-            dst._transportOffset.Relocate(destPos);
-        else
-            dst._position.Relocate(destPos);
-    }
-    else
-    {
-        dst._transportGUID = mover->GetTransGUID();
-        if (dst._transportGUID)
-            dst._transportOffset.Relocate(mover->GetTransOffsetX(), mover->GetTransOffsetY(), mover->GetTransOffsetZ(), mover->GetTransOffsetO());
-        else
-            dst._position.Relocate(mover);
-    }
+    // client provided targets
+    SpellCastTargets targets(caster, targetMask, targetGuid, itemTargetGuid, srcTransportGuid, destTransportGuid, srcPos, destPos, elevation, missileSpeed, targetString);
 
     // auto-selection buff level base at target level (in spellInfo)
     if (targets.GetUnitTarget())
@@ -1046,7 +944,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellInfo = actualSpellInfo;
     }
 
-    // override spell Id, client send base spell and not the overrided id
+    // Override spell Id, client send base spell and not the overrided id
     if (!spellInfo->OverrideSpellList.empty())
     {
         for (auto itr : spellInfo->OverrideSpellList)
@@ -1063,17 +961,167 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             }
         }
     }
+	
+	// Custom MoP Script
+	// Power Word : Solace - 129250 and Power Word : Insanity - 129249
+	if (spellInfo->Id == 129250 && _player->GetShapeshiftForm() == FORM_SHADOW)
+	{
+		SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(129249);
+		if (newSpellInfo)
+		{
+			spellInfo = newSpellInfo;
+			spellId = newSpellInfo->Id;
+		}
+	}
+	// Alter Time - 108978 and Alter Time (overrided) - 127140
+	else if (spellInfo->Id == 108978 && _player->HasAura(110909))
+	{
+		SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(127140);
+		if (newSpellInfo)
+		{
+			spellInfo = newSpellInfo;
+			spellId = newSpellInfo->Id;
+		}
+	}
+	// Fix Dark Soul for Destruction warlocks
+	else if (spellInfo->Id == 113860 && _player->GetSpecializationId(_player->GetActiveSpec()) == CHAR_SPECIALIZATION_WARLOCK_DESTRUCTION)
+	{
+		SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(113858);
+		if (newSpellInfo)
+		{
+			spellInfo = newSpellInfo;
+			spellId = newSpellInfo->Id;
+		}
+	}
+	// Halo - 120517 and Halo - 120644 (shadow form)
+	else if (spellInfo->Id == 120517 && _player->HasAura(15473))
+	{
+		SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(120644);
+		if (newSpellInfo)
+		{
+			spellInfo = newSpellInfo;
+			spellId = newSpellInfo->Id;
+		}
+	}
+	// Consecration - 116467 and Consecration - 26573
+	else if (spellInfo->Id == 116467)
+	{
+		SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(26573);
+		if (newSpellInfo)
+		{
+			spellInfo = newSpellInfo;
+			spellId = newSpellInfo->Id;
+		}
+	}
+	// Cascade (shadow) - 127632 and Cascade - 121135
+	else if (spellInfo->Id == 121135 && _player->HasAura(15473))
+	{
+		SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(127632);
+		if (newSpellInfo)
+		{
+			spellInfo = newSpellInfo;
+			spellId = newSpellInfo->Id;
+		}
+	}
+	// Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
+	else if (spellInfo->Id == 126892 && _player->HasAura(126896))
+	{
+		SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(126895);
+		if (newSpellInfo)
+		{
+			spellInfo = newSpellInfo;
+			spellId = newSpellInfo->Id;
+		}
+	}
+	// Soul Swap - 86121 and Soul Swap : Exhale - 86213
+	else if (spellInfo->Id == 86121 && _player->HasAura(86211))
+	{
+		SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(86213);
+		if (newSpellInfo)
+		{
+			spellInfo = newSpellInfo;
+			spellId = newSpellInfo->Id;
+			_player->RemoveAura(86211);
+		}
+	}
+	// Mage Bomb - 125430 and  Living Bomb - 44457
+	else if (spellInfo->Id == 125430 && _player->HasSpell(44457))
+	{
+		SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(44457);
+		if (newSpellInfo)
+		{
+			spellInfo = newSpellInfo;
+			spellId = newSpellInfo->Id;
+		}
+	}
+	// Mage Bomb - 125430 and Frost Bomb - 112948
+	else if (spellInfo->Id == 125430 && _player->HasSpell(112948))
+	{
+		SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112948);
+		if (newSpellInfo)
+		{
+			spellInfo = newSpellInfo;
+			spellId = newSpellInfo->Id;
+		}
+	}
+	// Mage Bomb - 125430 and  Nether Tempest - 114923
+	else if (spellInfo->Id == 125430 && _player->HasSpell(114923))
+	{
+		SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(114923);
+		if (newSpellInfo)
+		{
+			spellInfo = newSpellInfo;
+			spellId = newSpellInfo->Id;
+		}
+	}
+	// Evocation - 12051 and  Rune of Power - 116011
+	else if (spellInfo->Id == 12051 && _player->HasSpell(116011))
+	{
+		SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(116011);
+		if (newSpellInfo)
+		{
+			spellInfo = newSpellInfo;
+			spellId = newSpellInfo->Id;
+		}
+	}
+	// Frostbolt - 116 and Frostbolt - 126201 (heal for water elemental)
+	else if (spellInfo->Id == 116 && targets.GetUnitTarget())
+	{
+		if (targets.GetUnitTarget()->GetOwner() && targets.GetUnitTarget()->GetOwner()->GetTypeId() == TYPEID_PLAYER && targets.GetUnitTarget()->GetOwner()->GetGUID() == _player->GetGUID())
+		{
+			SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(126201);
+			if (newSpellInfo)
+			{
+				spellInfo = newSpellInfo;
+				spellId = newSpellInfo->Id;
+			}
+		}
+	}
+	// Surging Mist - 116694 and Surging Mist - 116995
+	// Surging Mist is instantly casted if player is channeling Soothing Mist
+	else if (spellInfo->Id == 116694 && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
+	{
+		recvPacket.rfinish();
+		_player->CastSpell(targets.GetUnitTarget(), 116995, true);
+		_player->EnergizeBySpell(_player, 116995, 1, POWER_CHI);
+		int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
+		_player->ModifyPower(POWER_MANA, -powerCost);
+		return;
+	}
+	// Enveloping Mist - 124682 and Enveloping Mist - 132120
+	// Enveloping Mist is instantly casted if player is channeling Soothing Mist
+	else if (spellInfo->Id == 124682 && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
+	{
+		recvPacket.rfinish();
+		_player->CastSpell(targets.GetUnitTarget(), 132120, true);
+		int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
+		_player->ModifyPower(POWER_CHI, -powerCost);
+		return;
+	}
 
-    TriggerCastFlags triggerCastFlags = TRIGGERED_NONE;
-    if (spellInfo->AttributesEx4 & SPELL_ATTR4_TRIGGERED)
-        triggerCastFlags = TRIGGERED_FULL_MASK; // check if some trigger flags need to be removed
-
-    Spell* spell = new Spell(mover, spellInfo, triggerCastFlags, 0, false);
+    Spell* spell = new Spell(caster, spellInfo, TRIGGERED_NONE, 0, false);
     spell->m_cast_count = castCount;   // set count of casts
     spell->m_glyphIndex = glyphIndex;
-
-    if ((targetMask & TARGET_FLAG_DEST_LOCATION) && hasDestLocation)
-        targets.SetDst(dst._position);
 
     if (targetMask & TARGET_FLAG_GAMEOBJECT)
         if (WorldObject* const obj = ObjectAccessor::GetWorldObject(*caster, targetGuid))
@@ -1100,6 +1148,16 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 recvPacket >> researchData->fragmentCount;        // Currency count
                 break;
             }
+        }
+
+        recvPacket.ReadGuidBytes(itemTargetGuid, 4, 2, 1, 5, 7, 3, 6, 0);
+
+        // Set m_itemTargetGUID = itemGUID taken from this packet (CMSG_CAST_SPELL)
+        // It will be used by Spell::CheckItems
+        if (Item* pItem = _player->GetItemByGuid(itemTargetGuid))
+        {
+            targets.SetItemTargetGUID(itemTargetGuid);
+            targets.SetItemTarget(pItem);
         }
 
         spell->m_researchData = researchData;
@@ -1237,7 +1295,7 @@ void WorldSession::HandleTotemDestroyed(WorldPacket& recvPacket)
     // ignore for remote control state
     if (_player->m_mover != _player)
         return;
-
+    
     uint8 slotId;
     ObjectGuid guid;
 
@@ -1307,12 +1365,28 @@ void WorldSession::HandleSpellClick(WorldPacket& recvData)
 
 void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
 {
-    TC_LOG_DEBUG("network", "WORLD: CMSG_GET_MIRRORIMAGE_DATA");
-    uint32 displayId;
+    TC_LOG_DEBUG("network", "WORLD: CMSG_GET_MIRROR_IMAGE_DATA");
     ObjectGuid guid;
-    recvData >> displayId;
-    recvData.ReadGuidMask(guid, 0, 2, 1, 6, 5, 4, 7, 3);
-    recvData.ReadGuidBytes(guid, 6, 0, 3, 5, 4, 2, 1, 7);
+
+    recvData.read_skip<uint32>(); // DisplayId
+
+    guid[0] = recvData.ReadBit();
+    guid[2] = recvData.ReadBit();
+    guid[1] = recvData.ReadBit();
+    guid[6] = recvData.ReadBit();
+    guid[5] = recvData.ReadBit();
+    guid[4] = recvData.ReadBit();
+    guid[7] = recvData.ReadBit();
+    guid[3] = recvData.ReadBit();
+
+    recvData.ReadByteSeq(guid[6]);
+    recvData.ReadByteSeq(guid[0]);
+    recvData.ReadByteSeq(guid[3]);
+    recvData.ReadByteSeq(guid[5]);
+    recvData.ReadByteSeq(guid[4]);
+    recvData.ReadByteSeq(guid[2]);
+    recvData.ReadByteSeq(guid[1]);
+    recvData.ReadByteSeq(guid[7]);
 
     // Get unit for which data is needed by client
     Unit* unit = ObjectAccessor::GetObjectInWorld(guid, (Unit*)NULL);
@@ -1329,14 +1403,44 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
 
     if (Player* player = creator->ToPlayer())
     {
-		WorldPacket recvData(SMSG_MIRRORIMAGE_DATA, 68);
-        ObjectGuid guild_guid;
+        WorldPacket data(SMSG_MIRROR_IMAGE_COMPONENTED_DATA, 8 + 4 + 8 * 1 + 8 + 11 * 4);
+        Guild* guild = player->GetGuild();
+        ObjectGuid guildGuid = guild ? guild->GetGUID() : 0;
 
-        if (player->GetGuild())
-            guild_guid = player->GetGuild()->GetGUID();
- 
-        uint32 count = 0;
-        // Display items in visible slots
+        data.WriteBit(guid[4]);
+        data.WriteBit(guildGuid[3]);
+        data.WriteBit(guildGuid[6]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guildGuid[7]);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guildGuid[2]);
+        data.WriteBit(guildGuid[1]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guildGuid[4]);
+        data.WriteBit(guildGuid[0]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guildGuid[5]);
+        data.WriteBit(guid[3]);
+        data.WriteBits(11, 22); // item slots count
+        data.WriteBit(guid[6]);
+        data.FlushBits();
+
+        data << uint8(player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 3)); // haircolor
+        data << uint32(creator->GetDisplayId());
+        data << uint8(player->GetByteValue(PLAYER_FIELD_REST_STATE, 0));    // facial hair
+
+        data.WriteByteSeq(guildGuid[6]);
+        data.WriteByteSeq(guildGuid[4]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guildGuid[1]);
+        data.WriteByteSeq(guid[3]);
+        data << uint8(player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 2)); // hair 
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[0]);
+        data << uint8(creator->getRace());
+        data << uint8(player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 0)); // skin
+        data.WriteByteSeq(guildGuid[7]);
 
         static EquipmentSlots const itemSlots[] =
         {
@@ -1349,81 +1453,61 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
             EQUIPMENT_SLOT_FEET,
             EQUIPMENT_SLOT_WRISTS,
             EQUIPMENT_SLOT_HANDS,
-            EQUIPMENT_SLOT_BACK,
             EQUIPMENT_SLOT_TABARD,
+            EQUIPMENT_SLOT_BACK,
             EQUIPMENT_SLOT_END
         };
-        
-        for (EquipmentSlots const* itr = &itemSlots[0]; *itr != EQUIPMENT_SLOT_END; ++itr)
-            count++;
-
-		recvData.WriteBit(guid[4]);
-		recvData.WriteGuidMask(guild_guid, 3, 6);
-		recvData.WriteBit(guid[0]);
-		recvData.WriteBit(guild_guid[7]);
-		recvData.WriteGuidMask(guid, 1, 5);
-		recvData.WriteGuidMask(guild_guid, 2, 1);
-		recvData.WriteBit(guid[7]);
-		recvData.WriteGuidMask(guild_guid, 4, 0);
-		recvData.WriteBit(guid[2]);
-		recvData.WriteBit(guild_guid[5]);
-		recvData.WriteBit(guid[3]);
-		recvData.WriteBits(count, 22); // item count
-		recvData.WriteBit(guid[6]);
-
-        uint8 skin, face, hair, hairColor, facialHair;
-        skin       = player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 0);   // skin
-        face       = player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 1);   // face
-        hair       = player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 2);   // hair
-        hairColor  = player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 3);   // haircolor
-        facialHair = player->GetByteValue(PLAYER_FIELD_REST_STATE, 0); // facialhair
-
-		recvData << uint8(hairColor);
-		recvData << uint32(creator->GetDisplayId());
-		recvData << uint8(facialHair);
-
-		recvData.WriteGuidBytes(guild_guid, 6, 4);
-		recvData.WriteByteSeq(guid[7]);
-		recvData.WriteByteSeq(guild_guid[1]);
-		recvData.WriteByteSeq(guid[3]);
-
-        recvData << uint8(hair);
-        
-		recvData.WriteGuidBytes(guid, 2, 0);
-
-		recvData << uint8(creator->getRace());
-		recvData << uint8(skin);
-
-		recvData.WriteByteSeq(guild_guid[7]);
 
         // Display items in visible slots
         for (EquipmentSlots const* itr = &itemSlots[0]; *itr != EQUIPMENT_SLOT_END; ++itr)
         {
             if (*itr == EQUIPMENT_SLOT_HEAD && player->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM))
-				recvData << uint32(0);
+                data << uint32(0);
             else if (*itr == EQUIPMENT_SLOT_BACK && player->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK))
-				recvData << uint32(0);
+                data << uint32(0);
             else if (Item const* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, *itr))
-				recvData << uint32(item->GetTemplate()->DisplayInfoID);
+                data << uint32(item->GetTemplate()->DisplayInfoID);
             else
-				recvData << uint32(0);
+                data << uint32(0);
         }
+
+        data.WriteByteSeq(guid[4]);
+        data << uint8(creator->getClass());
+        data << uint8(creator->getGender());
+        data << uint8(player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 1)); // face
+        data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guildGuid[3]);
+        data.WriteByteSeq(guildGuid[2]);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guildGuid[0]);
+        data.WriteByteSeq(guildGuid[5]);
+        data.WriteByteSeq(guid[6]);
+
+        SendPacket(&data);
     }
     else
     {
-		recvData.WriteByteSeq(guid[4]);
+        WorldPacket data(SMSG_MIRROR_IMAGE_CREATURE_DATA, 8 + 4);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[2]);
 
-		recvData << uint8(creator->getClass());
-		recvData << uint8(creator->getGender());
-		recvData << uint8(1); // face
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guid[7]);
+        data << uint32(creator->GetDisplayId());
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[1]);
 
-		recvData.WriteByteSeq(guid[5]);
-		recvData.WriteGuidBytes(1, 3, 2); // 1= guild_guid
-		recvData.WriteByteSeq(guid[1]);
-		recvData.WriteGuidBytes(1, 0, 5); // 1= guild_guid
-		recvData.WriteByteSeq(guid[6]);
-
-		SendPacket(&recvData);
+        SendPacket(&data);
     }
 }
 
@@ -1488,4 +1572,33 @@ void WorldSession::HandleRequestCategoryCooldowns(WorldPacket& /*recvPacket*/)
     }
 
     SendPacket(&data);
+}
+
+void WorldSession::SendTotemCreated(ObjectGuid TotemGUID, uint32 Duration, uint32 SpellID, uint8 Slot)
+{
+    WorldPacket data(SMSG_TOTEM_CREATED, 17);
+    data.WriteBit(TotemGUID[6]);
+    data.WriteBit(TotemGUID[1]);
+    data.WriteBit(TotemGUID[2]);
+    data.WriteBit(TotemGUID[5]);
+    data.WriteBit(TotemGUID[3]);
+    data.WriteBit(TotemGUID[4]);
+    data.WriteBit(TotemGUID[7]);
+    data.WriteBit(TotemGUID[0]);
+
+    data << uint32(Duration);
+    data << uint32(SpellID);
+
+    data.WriteByteSeq(TotemGUID[3]);
+    data.WriteByteSeq(TotemGUID[4]);
+    data.WriteByteSeq(TotemGUID[5]);
+    data.WriteByteSeq(TotemGUID[6]);
+    data.WriteByteSeq(TotemGUID[0]);
+    data.WriteByteSeq(TotemGUID[2]);
+
+    data << uint8(Slot);
+
+    data.WriteByteSeq(TotemGUID[1]);
+    data.WriteByteSeq(TotemGUID[7]);
+    _player->SendDirectMessage(&data);
 }

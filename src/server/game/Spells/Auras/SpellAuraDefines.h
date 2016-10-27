@@ -18,7 +18,7 @@
 #ifndef TRINITY_SPELLAURADEFINES_H
 #define TRINITY_SPELLAURADEFINES_H
 
-#define MAX_AURAS 64                                        // client support up to 255, but it will cause problems with group auras updating
+#define MAX_AURAS 128                                        // client support up to 255, but it will cause problems with group auras updating
 
 enum AURA_FLAGS
 {
@@ -327,7 +327,7 @@ enum AuraType
     SPELL_AURA_268                                          = 268,  // old SPELL_AURA_MOD_ATTACK_POWER_OF_STAT_PERCENT. unused 4.3.4
     SPELL_AURA_MOD_IGNORE_TARGET_RESIST                     = 269,
     SPELL_AURA_270                                          = 270,  // old SPELL_AURA_MOD_ABILITY_IGNORE_TARGET_RESIST, unused 4.3.4
-    SPELL_AURA_MOD_DAMAGE_FROM_CASTER                       = 271,
+    SPELL_AURA_MOD_SPELL_DAMAGE_FROM_CASTER                 = 271,
     SPELL_AURA_IGNORE_MELEE_RESET                           = 272,
     SPELL_AURA_X_RAY                                        = 273,
     SPELL_AURA_274                                          = 274,  // old SPELL_AURA_ABILITY_CONSUME_NO_AMMO, unused 4.3.4
@@ -430,19 +430,19 @@ enum AuraType
     // Pandaria
     SPELL_AURA_371                                          = 371,
     SPELL_AURA_372                                          = 372,
-    SPELL_AURA_INCREASE_MIN_SWIM_SPEED                      = 373,  // SPELL_AURA_ALLOW_ONLY_ABILITY2 ??
+    SPELL_AURA_INCREASE_MIN_SWIM_SPEED                      = 373,  // Not sure if increase only swim, but in Roll (Monk), blizz send only update swim speed packet
     SPELL_AURA_MODIFY_FALL_DAMAGE_PCT                       = 374,
     SPELL_AURA_375                                          = 375,
     SPELL_AURA_MOD_CURRENCY_GAIN2                           = 376,
     SPELL_AURA_CAST_WHILE_WALKING2                          = 377,
     SPELL_AURA_378                                          = 378,
-    SPELL_AURA_MOD_POWER_REGEN_PCT_2                                          = 379,
+    SPELL_AURA_MOD_POWER_REGEN_PCT_2                        = 379,
     SPELL_AURA_380                                          = 380,
     SPELL_AURA_381                                          = 381,
     SPELL_AURA_382                                          = 382,
     SPELL_AURA_ALLOW_CAST_WHILE_IN_COOLDOWN                 = 383,
     SPELL_AURA_384                                          = 384,
-    SPELL_AURA_385                                          = 385,
+    SPELL_AURA_STRIKE_SELF                                  = 385,  // Give a chance to misfire attacks and hit self instead
     SPELL_AURA_386                                          = 386,
     SPELL_AURA_387                                          = 387,
     SPELL_AURA_MOD_TAXI_FLIGHT_SPEED                        = 388,
@@ -464,7 +464,7 @@ enum AuraType
     SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT               = 404,
     SPELL_AURA_INCREASE_HASTE_MASTERY_FROM_ITEMS_BY_PCT     = 405,
     SPELL_AURA_406                                          = 406,
-    SPELL_AURA_MOD_FEAR_2                                          = 407,
+    SPELL_AURA_MOD_FEAR_2                                   = 407,
     SPELL_AURA_CONSUME_PROC                                 = 408,
     SPELL_AURA_409                                          = 409,
     SPELL_AURA_410                                          = 410,
@@ -475,8 +475,8 @@ enum AuraType
     SPELL_AURA_415                                          = 415,
     SPELL_AURA_SANCTITY_OF_BATTLE                           = 416,
     SPELL_AURA_417                                          = 417,
-    SPELL_AURA_MOD_MAX_POWER_ABS                                          = 418,
-    SPELL_AURA_MOD_MAX_POWER_PCT                           = 419,
+    SPELL_AURA_MOD_MAX_POWER_ABS                            = 418,
+    SPELL_AURA_MOD_MAX_POWER_PCT                            = 419,
     SPELL_AURA_MOD_PET_XP_PCT                               = 420, // NYI
     SPELL_AURA_421                                          = 421,
     SPELL_AURA_422                                          = 422,

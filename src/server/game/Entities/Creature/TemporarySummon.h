@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+ 
 #ifndef TRINITYCORE_TEMPSUMMON_H
 #define TRINITYCORE_TEMPSUMMON_H
 
@@ -51,6 +52,9 @@ enum EPetEntries
     PET_ENTRY_OBSERVER                              = 58964,
     PET_ENTRY_WRATHGUARD                            = 58965,
     PET_ENTRY_WILD_IMP                              = 55659,
+    PET_ENTRY_ABYSSAL                               = 58997,
+    PET_ENTRY_TERRORGUARD                           = 59000,
+    PET_ENTRY_DOOMGUARD                             = 11859,
 
     // Mage
     PET_ENTRY_WATER_ELEMENTAL                       = 510,
@@ -65,6 +69,7 @@ enum EPetEntries
     // Shaman
     PET_ENTRY_FIRE_ELEMENTAL                        = 15438,
     PET_ENTRY_FERAL_SPIRIT                          = 29264,
+    PET_ENTRY_FERAL_SPIRIT_SYMBIOSIS                = 58488,
     PET_ENTRY_EARTH_ELEMENTAL                       = 15352,
     PET_ENTRY_HEALING_TIDE_TOTEM                    = 59764,
 
@@ -72,12 +77,14 @@ enum EPetEntries
     PET_ENTRY_GHOUL                                 = 26125,
     PET_ENTRY_BLOODWORM                             = 28017,
     PET_ENTRY_GARGOYLE                              = 27829,
+    PET_ENTRY_DEAD_ARMY                             = 24207,
 
     // Priest 
     PET_ENTRY_SHADOWFIEND                           = 19668,
     PET_ENTRY_MINDBENDER                            = 62982,
     PET_ENTRY_MINDBENDER_SHA                        = 67236,
     PET_ENTRY_SHADOWY_APPARITION                    = 61966,
+    PET_ENTRY_PSYFIEND                              = 59190,
 
     // Hunter
     PET_ENTRY_VENOMOUS_SNAKE                        = 19833,
@@ -96,11 +103,14 @@ enum EPetEntries
     PET_ENTRY_DIRE_BEAST_TOWNLONG_STEPPES           = 64619,
     PET_ENTRY_DIRE_BEAST_DREAD_WASTES               = 64620,
 
+    // Rogue
+    PET_ENTRY_DECOY                                 = 62261,
+
     // Paladin
     PET_ENTRY_GUARDIAN_OF_ANCIENT_KINGS             = 46506,
 
     // Monk
-    PET_ENTRY_XUEN_THE_WHITE_TIGER                  = 63508,
+    PET_ENTRY_XUEN_THE_WHITE_TIGER                  = 63508
 };
 
 class TempSummon : public Creature

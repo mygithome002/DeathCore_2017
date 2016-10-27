@@ -33,7 +33,7 @@ class quest_commandscript : public CommandScript
 public:
     quest_commandscript() : CommandScript("quest_commandscript") { }
 
-    ChatCommand* GetCommands() const override
+    ChatCommand* GetCommands() const
     {
         static ChatCommand questCommandTable[] =
         {
@@ -181,6 +181,11 @@ public:
             handler->SetSentErrorMessage(true);
             return false;
         }
+		for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+		{
+			int32 creature = quest->RequiredNpcOrGo[i];
+			uint32 creaturecount = quest->RequiredNpcOrGoCount[i];
+		}
 
         for (QuestObjectiveSet::const_iterator citr = quest->m_questObjectives.begin(); citr != quest->m_questObjectives.end(); citr++)
         {

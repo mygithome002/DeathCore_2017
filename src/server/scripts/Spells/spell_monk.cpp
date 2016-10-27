@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -61,6 +61,7 @@ enum MonkSpells
     SPELL_MONK_FLYING_SERPENT_KICK_AOE          = 123586,
     SPELL_MONK_TIGEREYE_BREW                    = 116740,
     SPELL_MONK_TIGEREYE_BREW_STACKS             = 125195,
+	SPELL_MONK_CHI_BREW							= 115399,
     SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE        = 116709,
     SPELL_MONK_CHI_BURST_DAMAGE                 = 130651,
     SPELL_MONK_CHI_BURST_HEAL                   = 130654,
@@ -82,7 +83,6 @@ enum MonkSpells
     MONK_NPC_JADE_SERPENT_STATUE                = 60849,
     SPELL_MONK_UPLIFT_ALLOWING_CAST             = 123757,
     SPELL_MONK_THUNDER_FOCUS_TEA                = 116680,
-    SPELL_MONK_PATH_OF_BLOSSOM_AREATRIGGER      = 122035,
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_DAMAGE     = 123408,
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_MISSILE    = 118852,
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_ROOT       = 123407,
@@ -109,7 +109,7 @@ enum MonkSpells
     SPELL_MONK_CHI_WAVE_DAMAGE                  = 132467,
     SPELL_MONK_CHI_WAVE_HEALING_BOLT            = 132464,
     SPELL_MONK_CHI_WAVE_TALENT_AURA             = 115098,
-    SPELL_MONK_ITEM_PVP_GLOVES_BONUS            = 124489,
+    SPELL_MONK_ITEM_PVP_GLOVES_BONUS            = 124489
 };
 
 // Fists of Fury (stun effect) - 120086
@@ -292,7 +292,7 @@ class spell_monk_chi_wave_bolt : public SpellScriptLoader
                         if (Unit* newTarget = sObjectAccessor->FindUnit(validTargets.front()))
                         {
                             if (_player->IsValidAttackTarget(newTarget))
-								target->CastSpell(newTarget, SPELL_MONK_CHI_WAVE_DAMAGE, true, NULL, NULL, _player->GetGUID());
+                                target->CastSpell(newTarget, SPELL_MONK_CHI_WAVE_DAMAGE, true, NULL, NULL, _player->GetGUID());
                             else
                             {
                                 std::list<Unit*> alliesList;
@@ -300,9 +300,6 @@ class spell_monk_chi_wave_bolt : public SpellScriptLoader
                                 for (auto itr : validTargets)
                                 {
                                     if (_player->IsValidAttackTarget(sObjectAccessor->FindUnit(itr)))
-                                        continue;
-
-                                    if (!_player->IsValidAssistTarget(sObjectAccessor->FindUnit(itr)))
                                         continue;
 
                                     alliesList.push_back(sObjectAccessor->FindUnit(itr));
@@ -373,10 +370,20 @@ class spell_monk_chi_wave : public SpellScriptLoader
                 }
             }
 
+            SpellCastResult CheckCast()
+            {
+                Player* caster = GetCaster()->ToPlayer();
+                if (Unit* target = GetExplTargetUnit())
+                    if (!caster->IsFriendlyTo(target) && !caster->IsValidAttackTarget(target))
+                        return SPELL_FAILED_BAD_TARGETS;
+                return SPELL_CAST_OK;
+            }
+
             void Register()
             {
                 OnEffectHitTarget += SpellEffectFn(spell_monk_chi_wave_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
                 AfterHit += SpellHitFn(spell_monk_chi_wave_SpellScript::HandleApplyAura);
+                OnCheckCast += SpellCheckCastFn(spell_monk_chi_wave_SpellScript::CheckCast);
             }
         };
 
@@ -413,13 +420,13 @@ class spell_monk_grapple_weapon : public SpellScriptLoader
                                 {
                                     switch (_player->GetSpecializationId(_player->GetActiveSpec()))
                                     {
-										case CHAR_SPECIALIZATION_MONK_BREWMASTER:
+                                        case CHAR_SPECIALIZATION_MONK_BREWMASTER:
                                             _player->CastSpell(_player, SPELL_MONK_GRAPPLE_WEAPON_TANK_UPGRADE, true);
                                             break;
-										case CHAR_SPECIALIZATION_MONK_MISTWEAVER:
+                                        case CHAR_SPECIALIZATION_MONK_MISTWEAVER:
                                             _player->CastSpell(_player, SPELL_MONK_GRAPPLE_WEAPON_HEAL_UPGRADE, true);
                                             break;
-										case CHAR_SPECIALIZATION_MONK_WINDWALKER:
+                                        case CHAR_SPECIALIZATION_MONK_WINDWALKER:
                                             _player->CastSpell(_player, SPELL_MONK_GRAPPLE_WEAPON_DPS_UPGRADE, true);
                                             break;
                                         default:
@@ -434,13 +441,13 @@ class spell_monk_grapple_weapon : public SpellScriptLoader
                             {
                                 switch (_player->GetSpecializationId(_player->GetActiveSpec()))
                                 {
-									case CHAR_SPECIALIZATION_MONK_BREWMASTER:
+                                    case CHAR_SPECIALIZATION_MONK_BREWMASTER:
                                         _player->CastSpell(_player, SPELL_MONK_GRAPPLE_WEAPON_TANK_UPGRADE, true);
                                         break;
-									case CHAR_SPECIALIZATION_MONK_MISTWEAVER:
+                                    case CHAR_SPECIALIZATION_MONK_MISTWEAVER:
                                         _player->CastSpell(_player, SPELL_MONK_GRAPPLE_WEAPON_HEAL_UPGRADE, true);
                                         break;
-									case CHAR_SPECIALIZATION_MONK_WINDWALKER:
+                                    case CHAR_SPECIALIZATION_MONK_WINDWALKER:
                                         _player->CastSpell(_player, SPELL_MONK_GRAPPLE_WEAPON_DPS_UPGRADE, true);
                                         break;
                                     default:
@@ -464,140 +471,6 @@ class spell_monk_grapple_weapon : public SpellScriptLoader
         }
 };
 
-// 119996 - Transcendence Transfert
-class spell_monk_transcendence_transfer : public SpellScriptLoader
-{
-public:
-    spell_monk_transcendence_transfer() : SpellScriptLoader("spell_monk_transcendence_transfer") { }
-
-    class spell_monk_transcendence_transfer_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_monk_transcendence_transfer_SpellScript);
-
-        SpellCastResult CheckCast()
-        {
-            if (GetCaster() && GetCaster()->ToPlayer())
-            {
-                Player* player = GetCaster()->ToPlayer();
-                if (Creature* spirit = player->GetTransSpirit())
-                {
-					float distance = 50.0f; //player->HasAura(123023) ? 50.0f : 40.0f; // glyph of transcendece (temp hackfix the crash)
-
-                    if (player->GetExactDist2d(spirit->GetPositionX(), spirit->GetPositionY()) <= distance)
-                        return SPELL_CAST_OK;
-                    else if (player->GetExactDist2d(spirit->GetPositionX(), spirit->GetPositionY()) >= distance)
-                        return SPELL_FAILED_OUT_OF_RANGE;
-                }
-                else
-                    return SPELL_FAILED_NO_PET;
-            }
-
-            return SPELL_FAILED_DONT_REPORT;
-        }
-
-        void Cast()
-        {
-            if (GetCaster() && GetCaster()->ToPlayer())
-            {
-                Player* player = GetCaster()->ToPlayer();
-
-                if (Creature* spirit = player->GetTransSpirit())
-                {
-                    float distance = player->HasAura(123023) ? 50.0f : 40.0f; // glyph of transcendece
-                    if (player->GetExactDist2d(spirit->GetPositionX(), spirit->GetPositionY()) <= distance)
-                    {
-                        float petX, petY, petZ;
-                        uint32 petMapId;
-                        spirit->GetPosition(petX, petY, petZ);
-                        petMapId = spirit->GetMapId();
-
-                        spirit->DespawnOrUnsummon();
-                        player->TeleportTo(petMapId, petX, petY, petZ, 0.0f);
-                        player->CastSpell(player, 102141);
-                    }
-                }
-            }
-
-        }
-
-        void Register()
-        {
-            OnCast += SpellCastFn(spell_monk_transcendence_transfer_SpellScript::Cast);
-            OnCheckCast += SpellCheckCastFn(spell_monk_transcendence_transfer_SpellScript::CheckCast);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_monk_transcendence_transfer_SpellScript();
-    }
-};
-
-/*######
-## npc_transcendence_spirit -- 54569
-######*/
-
-enum TransSpiritSpells
-{
-    SPELL_INITIALIZE_IMAGES = 102284,
-    SPELL_CLONE_CASTER      = 119051,
-    SPELL_VISUAL_SPIRIT     = 119053,
-    SPELL_MEDITATE          = 124416,
-    SPELL_ROOT_FOR_EVER     = 31366
-};
-
-enum transcendenceActions
-{
-    ACTION_TELEPORT     = 1
-};
-
-// 102141 Transcendence Spawn
-class spell_monk_transcendence : public SpellScriptLoader
-{
-public:
-    spell_monk_transcendence() : SpellScriptLoader("spell_monk_transcendence") { }
-
-
-    class spell_monk_transcendence_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_monk_transcendence_SpellScript);
-
-        void HandleAfterCast()
-        {
-            if (GetCaster() && GetCaster()->ToPlayer())
-            {
-                Player* player = GetCaster()->ToPlayer();
-                
-                if (Creature* spirit = player->GetTransSpirit())
-                {
-                    spirit->SetPosition(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
-                    //spirit->SetDisplayId(player->GetDisplayId());
-                    spirit->CastSpell(spirit, SPELL_MEDITATE, true);
-                    spirit->AddAura(SPELL_VISUAL_SPIRIT, spirit);
-                    spirit->SetMaxHealth(player->GetMaxHealth() / 2);
-                    spirit->SetHealth(spirit->GetMaxHealth());
-                    player->CastSpell(spirit, SPELL_CLONE_CASTER, true);
-                    spirit->AddAura(SPELL_ROOT_FOR_EVER, spirit);
-                    player->SendRemoveControlBar();
-                    spirit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    spirit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
-                }
-            }
-        }
-
-        void Register()
-        {
-            AfterCast += SpellCastFn(spell_monk_transcendence_SpellScript::HandleAfterCast);
-        }
-
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_monk_transcendence_SpellScript();
-    }
-};
-
 // Serpent's Zeal - 127722
 class spell_monk_serpents_zeal : public SpellScriptLoader
 {
@@ -608,7 +481,7 @@ class spell_monk_serpents_zeal : public SpellScriptLoader
         {
             PrepareAuraScript(spell_monk_serpents_zeal_AuraScript);
 
-			void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
             {
                 PreventDefaultAction();
 
@@ -666,7 +539,7 @@ class spell_monk_serpents_zeal : public SpellScriptLoader
 
                         if (statue && (statue->IsPet() || statue->IsGuardian()))
                             if (statue->GetOwner() && statue->GetOwner()->GetGUID() == _player->GetGUID())
-								statue->CastCustomSpell(statue, SPELL_MONK_EMINENCE_HEAL, &bp, NULL, NULL, true, 0, NULL, _player->GetGUID()); // Eminence - statue
+                                statue->CastCustomSpell(statue, SPELL_MONK_EMINENCE_HEAL, &bp, NULL, NULL, true, 0, NULL, _player->GetGUID()); // Eminence - statue
                     }
                 }
             }
@@ -902,7 +775,7 @@ class spell_monk_black_ox_statue : public SpellScriptLoader
 
                     summon->SetUInt64Value(UNIT_FIELD_SUMMONED_BY, player->GetGUID());
                     summon->setFaction(player->getFaction());
-					summon->SetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                    summon->SetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL, GetSpellInfo()->Id);
                     summon->SetMaxHealth(player->CountPctFromMaxHealth(50));
                     summon->SetHealth(summon->GetMaxHealth());
                 }
@@ -971,14 +844,22 @@ class spell_monk_black_ox_statue : public SpellScriptLoader
                             {
                                 if (statue->GetOwner() && statue->GetOwner()->GetGUID() == _plr->GetGUID())
                                 {
-                                    std::list<Unit*> _targets;
-                                    _plr->GetPartyMembers(_targets);
-                                    for (std::list<Unit*>::iterator itr = _targets.begin(); itr != _targets.end(); ++itr)
-                                        if ((*itr) && (*itr)->GetGUID() == _plr->GetGUID())
-                                            _targets.remove((*itr));
+                                    std::list<Unit*> targets;
 
-                                    Trinity::Containers::RandomResizeList(_targets, 1);
-                                    for (auto itr : _targets)
+                                    _plr->GetPartyMembers(targets);
+
+                                    for (auto itr : targets)
+                                    {
+                                        if (itr->GetGUID() == statue->GetGUID() ||
+                                            itr->GetGUID() == _plr->GetGUID())
+                                            continue;
+
+                                        targets.push_back(itr);
+                                    }
+
+                                    Trinity::Containers::RandomResizeList(targets, 1);
+
+                                    for (auto itr : targets)
                                         statue->CastSpell(itr, SPELL_MONK_GUARD, true);
                                 }
                             }
@@ -1402,7 +1283,7 @@ class spell_monk_spinning_fire_blossom : public SpellScriptLoader
                     std::list<Unit*> tempList;
                     std::list<Unit*> targetList;
 
-                    _player->GetAttackableUnitListInRange(tempList, 50.0f);
+                    //_player->GetAttackableUnitListInRange(tempList, 50.0f);
 
                     for (auto itr : tempList)
                     {
@@ -1442,54 +1323,6 @@ class spell_monk_spinning_fire_blossom : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_monk_spinning_fire_blossom_SpellScript();
-        }
-};
-
-// Path of Blossom - 124336
-class spell_monk_path_of_blossom : public SpellScriptLoader
-{
-    public:
-        spell_monk_path_of_blossom() : SpellScriptLoader("spell_monk_path_of_blossom") { }
-
-        class spell_monk_path_of_blossom_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_monk_path_of_blossom_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
-            {
-                if (GetCaster())
-                {
-                    bool _near = false;
-                    std::list<AreaTrigger*> blossoms;
-                    GetCaster()->GetAreaTriggerList(blossoms, 122035);
-                    if (!blossoms.empty())
-                    {
-                        blossoms.sort(Trinity::AreaTriggerDurationPctOrderPred());
-                        for (auto itr : blossoms)
-                        {
-                            AreaTrigger* blossom = itr;
-                            if (blossom->GetDistance2d(GetCaster()) < 3.0f)
-                            {
-                                _near = true;
-                                break; // stop iterating if we've found a blossom within 3yd
-                            }
-                        }
-                    }
-
-                    if (!_near)
-                        GetCaster()->CastSpell(GetCaster(), SPELL_MONK_PATH_OF_BLOSSOM_AREATRIGGER, true);
-                }
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_path_of_blossom_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_monk_path_of_blossom_AuraScript();
         }
 };
 
@@ -1636,70 +1469,6 @@ class spell_monk_teachings_of_the_monastery : public SpellScriptLoader
         {
             return new spell_monk_teachings_of_the_monastery_SpellScript();
         }
-};
-
-// Glyph of Mana Tea - 115294
-class spell_monk_glyph_of_mana_tea : public SpellScriptLoader
-{
-    public:
-        spell_monk_glyph_of_mana_tea() : SpellScriptLoader("spell_monk_glyph_of_mana_tea") { }
-
-        class spell_monk_glyph_of_mana_tea_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_monk_glyph_of_mana_tea_SpellScript);
-
-            SpellModifier* spellMod;
-
-            void HandleBeforeCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    int32 stacks = 0;
-
-                    if (Aura* manaTeaStacks = _player->GetAura(SPELL_MONK_MANA_TEA_STACKS))
-                        stacks = manaTeaStacks->GetStackAmount();
-
-                    int32 newDuration = stacks * IN_MILLISECONDS;
-
-                    spellMod = new SpellModifier();
-                    spellMod->op = SPELLMOD_DURATION;
-                    spellMod->type = SPELLMOD_FLAT;
-                    spellMod->spellId = SPELL_MONK_MANA_TEA_STACKS;
-                    spellMod->value = newDuration;
-                    spellMod->mask[1] = 0x200000;
-                    spellMod->mask[2] = 0x1;
-
-                    _player->AddSpellMod(spellMod, true);
-                }
-            }
-
-            void HandleOnHit()
-            {
-                if (GetCaster())
-                {
-                    if (Aura* manaTea = GetCaster()->GetAura(SPELL_MONK_MANA_TEA_STACKS))
-                    {
-                        if (manaTea->GetStackAmount() > 1)
-                            manaTea->SetStackAmount(manaTea->GetStackAmount() - 1);
-                        else
-                            GetCaster()->RemoveAura(SPELL_MONK_MANA_TEA_STACKS);
-                    }
-                }
-            }
-
-            void HandleAfterCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->AddSpellMod(spellMod, false);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_monk_glyph_of_mana_tea_SpellScript::HandleOnHit);
-                BeforeCast += SpellCastFn(spell_monk_glyph_of_mana_tea_SpellScript::HandleBeforeCast);
-                AfterCast += SpellCastFn(spell_monk_glyph_of_mana_tea_SpellScript::HandleAfterCast);
-            }
-        };
 };
 
 // Mana Tea - 115294
@@ -2323,7 +2092,7 @@ class spell_monk_tigereye_brew : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_tigereye_brew_SpellScript);
 
-			bool Validate(SpellInfo const* /*spellInfo*/) override
+			bool Validate(SpellInfo const* /*spellInfo*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_MONK_TIGEREYE_BREW))
                     return false;
@@ -2338,7 +2107,7 @@ class spell_monk_tigereye_brew : public SpellScriptLoader
                     {
                         if (AuraApplication* aura = _player->GetAuraApplication(SPELL_MONK_TIGEREYE_BREW_STACKS, _player->GetGUID()))
                         {
-                            int32 stackAmount = aura->GetBase()->GetStackAmount() * 2;
+                            int32 stackAmount = aura->GetBase()->GetStackAmount() * 5.7;
 
                             AuraApplication* tigereyeBrew = _player->GetAuraApplication(SPELL_MONK_TIGEREYE_BREW, _player->GetGUID());
                             if (tigereyeBrew)
@@ -2362,6 +2131,44 @@ class spell_monk_tigereye_brew : public SpellScriptLoader
         }
 };
 
+// Chi Brew - 115399
+class spell_monk_chi_brew : public SpellScriptLoader
+{
+    public:
+		spell_monk_chi_brew() : SpellScriptLoader("spell_monk_chi_brew") { }
+
+		class spell_monk_chi_brew_SpellScript : public SpellScript
+        {
+			PrepareSpellScript(spell_monk_chi_brew_SpellScript);
+
+			bool Validate(SpellInfo const* /*spellInfo*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_TIGEREYE_BREW))
+                    return false;
+                return true;
+            }
+
+			void HandleOnHit()
+			{
+				if (Player* _player = GetCaster()->ToPlayer())
+				{
+					_player->CastSpell(_player, SPELL_MONK_TIGEREYE_BREW_STACKS, true);
+					_player->CastSpell(_player, SPELL_MONK_TIGEREYE_BREW_STACKS, true);
+				}
+			}
+
+            void Register()
+            {
+				OnHit += SpellHitFn(spell_monk_chi_brew_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+			return new spell_monk_chi_brew_SpellScript();
+        }
+};
+
 // Tiger's Lust - 116841
 class spell_monk_tigers_lust : public SpellScriptLoader
 {
@@ -2372,7 +2179,7 @@ class spell_monk_tigers_lust : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_tigers_lust_SpellScript);
 
-			bool Validate(SpellInfo const* /*spellInfo*/) override
+            bool Validate(SpellInfo const* /*spellInfo*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_MONK_FLYING_SERPENT_KICK_NEW))
                     return false;
@@ -2807,44 +2614,50 @@ class spell_monk_disable : public SpellScriptLoader
     public:
         spell_monk_disable() : SpellScriptLoader("spell_monk_disable") { }
 
-        class spell_monk_disable_SpellScript : public SpellScript
+    class spell_monk_disable_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_monk_disable_AuraScript);
+
+        bool Validate(SpellInfo const* /*spell*/)
         {
-            PrepareSpellScript(spell_monk_disable_SpellScript);
-
-            bool snaredOnHit;
-
-            SpellCastResult CheckCast()
-            {
-                snaredOnHit = false;
-
-                if (GetCaster())
-                    if (Unit* target = GetCaster()->GetVictim())
-                        if (target->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED))
-                            snaredOnHit = true;
-
-                return SPELL_CAST_OK;
-            }
-
-            void HandleOnHit()
-            {
-                if (Unit* caster = GetCaster())
-                    if (Player* _player = caster->ToPlayer())
-                        if (Unit* target = GetHitUnit())
-                            if (snaredOnHit)
-                                _player->CastSpell(target, SPELL_MONK_DISABLE_ROOT, true);
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_monk_disable_SpellScript::CheckCast);
-                OnHit += SpellHitFn(spell_monk_disable_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_monk_disable_SpellScript();
+            if (!sSpellMgr->GetSpellInfo(SPELL_MONK_DISABLE))
+                return false;
+            return true;
         }
+
+        void OnPeriodic(AuraEffect const* aurEff)
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (Unit* owner = GetUnitOwner())
+                {
+                    if (owner->GetDistance2d(caster) < 10.0f)
+                    {
+                        aurEff->GetBase()->RefreshDuration();
+                    }
+                }
+            }           
+        }
+
+        void AfterReapply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            if (Unit* caster = GetCaster())
+                if (Unit* target = GetTarget())
+                    caster->CastSpell(target, SPELL_MONK_DISABLE_ROOT, true);
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_disable_AuraScript::OnPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            AfterEffectApply += AuraEffectRemoveFn(spell_monk_disable_AuraScript::AfterReapply, EFFECT_0, SPELL_AURA_MOD_DECREASE_SPEED, AURA_EFFECT_HANDLE_REAPPLY);
+        }
+    };
+
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_monk_disable_AuraScript();
+    }
 };
 
 // Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
@@ -2913,7 +2726,7 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         // Second effect by spec : Instant heal or DoT
-						if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == CHAR_SPECIALIZATION_MONK_WINDWALKER
+                        if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == CHAR_SPECIALIZATION_MONK_WINDWALKER
                             && caster->ToPlayer()->HasAura(128595))
                         {
                             // Your Blackout Kick always deals 20% additional damage over 4 sec regardless of positioning but you're unable to trigger the healing effect.
@@ -2939,7 +2752,7 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                             }
                         }
                         // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
-						else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == CHAR_SPECIALIZATION_MONK_BREWMASTER)
+                        else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == CHAR_SPECIALIZATION_MONK_BREWMASTER)
                             caster->CastSpell(caster, SPELL_MONK_SHUFFLE, true);
                     }
                 }
@@ -3075,6 +2888,8 @@ class spell_monk_touch_of_death : public SpellScriptLoader
                     {
                         if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && GetExplTargetUnit()->ToCreature()->IsDungeonBoss())
                             return SPELL_FAILED_BAD_TARGETS;
+                        else if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && GetExplTargetUnit()->ToCreature()->IsPet())
+                            return SPELL_FAILED_BAD_TARGETS;
                         else if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && (GetExplTargetUnit()->GetHealth() > GetCaster()->GetHealth()))
                             return SPELL_FAILED_BAD_TARGETS;
                         else if (GetExplTargetUnit()->GetTypeId() == TYPEID_PLAYER && (GetExplTargetUnit()->GetHealthPct() > 10.0f))
@@ -3082,9 +2897,11 @@ class spell_monk_touch_of_death : public SpellScriptLoader
                     }
                     else
                     {
-                        if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && GetExplTargetUnit()->ToCreature()->IsDungeonBoss())
+                        if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && GetExplTargetUnit()->ToCreature()->IsDungeonBoss() && GetExplTargetUnit()->ToCreature()->IsPet())
                             return SPELL_FAILED_BAD_TARGETS;
                         else if (GetExplTargetUnit()->GetTypeId() == TYPEID_PLAYER)
+                            return SPELL_FAILED_BAD_TARGETS;
+                        else if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && GetExplTargetUnit()->ToCreature()->IsPet())
                             return SPELL_FAILED_BAD_TARGETS;
                         else if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && (GetExplTargetUnit()->GetHealth() > GetCaster()->GetHealth()))
                             return SPELL_FAILED_BAD_TARGETS;
@@ -3266,6 +3083,139 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
         }
 };
 
+// 119996 - Transcendence Transfert
+class spell_monk_transcendence_transfer : public SpellScriptLoader
+{
+public:
+    spell_monk_transcendence_transfer() : SpellScriptLoader("spell_monk_transcendence_transfer") { }
+
+    class spell_monk_transcendence_transfer_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_monk_transcendence_transfer_SpellScript);
+
+        SpellCastResult CheckCast()
+        {
+            if (GetCaster() && GetCaster()->ToPlayer())
+            {
+                Player* player = GetCaster()->ToPlayer();
+                if (Creature* spirit = player->GetTransSpirit())
+                {
+                    float distance = 40.0f;
+
+                    if (player->GetExactDist2d(spirit->GetPositionX(), spirit->GetPositionY()) <= distance)
+                        return SPELL_CAST_OK;
+                    else if (player->GetExactDist2d(spirit->GetPositionX(), spirit->GetPositionY()) >= distance)
+                        return SPELL_FAILED_OUT_OF_RANGE;
+                }
+                else
+                    return SPELL_FAILED_NO_PET;
+            }
+
+            return SPELL_FAILED_DONT_REPORT;
+        }
+
+        void Cast()
+        {
+            if (GetCaster() && GetCaster()->ToPlayer())
+            {
+                Player* player = GetCaster()->ToPlayer();
+
+                if (Creature* spirit = player->GetTransSpirit())
+                {
+                    float distance = 40.0f;
+                    if (player->GetExactDist2d(spirit->GetPositionX(), spirit->GetPositionY()) <= distance)
+                    {
+                        float petX, petY, petZ;
+                        uint32 petMapId;
+                        spirit->GetPosition(petX, petY, petZ);
+                        petMapId = spirit->GetMapId();
+
+                        spirit->DespawnOrUnsummon();
+                        player->TeleportTo(petMapId, petX, petY, petZ, 0.0f);
+                        player->CastSpell(player, 102141);
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnCast += SpellCastFn(spell_monk_transcendence_transfer_SpellScript::Cast);
+            OnCheckCast += SpellCheckCastFn(spell_monk_transcendence_transfer_SpellScript::CheckCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_monk_transcendence_transfer_SpellScript();
+    }
+};
+
+/*######
+## npc_transcendence_spirit -- 54569
+######*/
+
+enum TransSpiritSpells
+{
+    SPELL_INITIALIZE_IMAGES = 102284,
+    SPELL_CLONE_CASTER      = 119051,
+    SPELL_VISUAL_SPIRIT     = 119053,
+    SPELL_MEDITATE          = 124416,
+    SPELL_ROOT_FOR_EVER     = 31366
+};
+
+enum transcendenceActions
+{
+    ACTION_TELEPORT     = 1
+};
+
+// 102141 Transcendence Spawn
+class spell_monk_transcendence : public SpellScriptLoader
+{
+public:
+    spell_monk_transcendence() : SpellScriptLoader("spell_monk_transcendence") { }
+
+
+    class spell_monk_transcendence_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_monk_transcendence_SpellScript);
+
+        void HandleAfterCast()
+        {
+            if (GetCaster() && GetCaster()->ToPlayer())
+            {
+                Player* player = GetCaster()->ToPlayer();
+
+                if (Creature* spirit = player->GetTransSpirit())
+                {
+                    spirit->SetPosition(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
+                    spirit->SetDisplayId(player->GetDisplayId());
+                    spirit->CastSpell(spirit, SPELL_MEDITATE, true);
+                    spirit->AddAura(SPELL_VISUAL_SPIRIT, spirit);
+                    spirit->SetMaxHealth(player->GetMaxHealth() / 2);
+                    spirit->SetHealth(spirit->GetMaxHealth());
+                    player->CastSpell(spirit, SPELL_CLONE_CASTER, true);
+                    spirit->AddAura(SPELL_ROOT_FOR_EVER, spirit);
+                    player->SendRemoveControlBar();
+                    spirit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    spirit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
+                }
+            }
+        }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_monk_transcendence_SpellScript::HandleAfterCast);
+        }
+
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_monk_transcendence_SpellScript();
+    }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_fists_of_fury_stun();
@@ -3274,8 +3224,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_chi_wave_bolt();
     new spell_monk_chi_wave();
     new spell_monk_grapple_weapon();
-    new spell_monk_transcendence();
-    new spell_monk_transcendence_transfer();
     new spell_monk_serpents_zeal();
     new spell_monk_dampen_harm();
     new spell_monk_item_s12_4p_mistweaver();
@@ -3290,12 +3238,10 @@ void AddSC_monk_spell_scripts()
     new spell_monk_touch_of_karma();
     new spell_monk_spinning_fire_blossom_damage();
     new spell_monk_spinning_fire_blossom();
-    new spell_monk_path_of_blossom();
     new spell_monk_thunder_focus_tea();
     new spell_monk_jade_serpent_statue();
     new spell_monk_teachings_of_the_monastery();
     new spell_monk_mana_tea();
-    new spell_monk_glyph_of_mana_tea();
     new spell_monk_mana_tea_stacks();
     new spell_monk_enveloping_mist();
     new spell_monk_surging_mist();
@@ -3326,4 +3272,7 @@ void AddSC_monk_spell_scripts()
     new spell_monk_provoke();
     new spell_monk_roll();
     new spell_monk_tigereye_brew_stacks();
+	new spell_monk_chi_brew();
+    new spell_monk_transcendence_transfer();
+    new spell_monk_transcendence();
 }
