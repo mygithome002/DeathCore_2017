@@ -15,7 +15,7 @@ This source is completely free development of that depends on everyone. I hope t
 
 If you wish to contribute ideas or code please visit our website at the link below or to send requests to our [Github repository] (https://github.com/NoffearrDeathProjecT/DeathCore).
 
-For more information about the project, visit our website at project [DeathCore Open Source Emulator] (https://www.noffearrdeathproject.org)
+For more information about the project, visit our website at project [DeathCore Open Source Emulator] (http://www.noffearrdeathproject.org/)
 
 
 ## Requirements
@@ -67,4 +67,4 @@ This project is brought to you thanks to:
 
 ## Links
 
-[Forums](https://www.noffearrdeathproject.org)
+[Forums](http://www.noffearrdeathproject.org/)
