@@ -14,8 +14,7 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
-
-void AddSC_tirisfal_glades()
+ 
+void AddSC_swamp_of_sorrows()
 {
 }

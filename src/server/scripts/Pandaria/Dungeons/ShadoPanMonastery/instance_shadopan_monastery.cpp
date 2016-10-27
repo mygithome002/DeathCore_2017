@@ -461,7 +461,7 @@ public:
 			}
 		}
 
-		void UpdateAI(const uint32 diff)
+		void UpdateAI(uint32 diff)
 		{
 			if (!UpdateVictim())
 				return;
@@ -510,7 +510,7 @@ public:
 			me->setActive(true);
 		}
 
-		void UpdateAI(const uint32 diff)
+		void UpdateAI(uint32 diff)
 		{
 			if (!pInstance || !pInstance->GetData(DATA_ARCHERY))
 				return;
@@ -602,7 +602,7 @@ public:
 				damage = 0;
 		}
 
-		void UpdateAI(const uint32 diff)
+		void UpdateAI(uint32 diff)
 		{
 			if (!UpdateVictim())
 				return;

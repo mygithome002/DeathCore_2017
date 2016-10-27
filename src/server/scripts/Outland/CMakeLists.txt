@@ -1,16 +1,20 @@
 # Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
 #
-# This file is free software; as a special exception the author gives
-# unlimited permission to copy and/or distribute it, with or without
-# modifications, as long as this notice is preserved.
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
 #
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <http://www.gnu.org/licenses/>.
 
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
-  Outland/zone_nagrand.cpp
   Outland/HellfireCitadel/MagtheridonsLair/magtheridons_lair.h
   Outland/HellfireCitadel/MagtheridonsLair/instance_magtheridons_lair.cpp
   Outland/HellfireCitadel/MagtheridonsLair/boss_magtheridon.cpp
@@ -46,7 +50,6 @@ set(scripts_STAT_SRCS
   Outland/CoilfangReservoir/TheUnderbog/boss_hungarfen.cpp
   Outland/CoilfangReservoir/TheUnderbog/boss_the_black_stalker.cpp
   Outland/CoilfangReservoir/TheUnderbog/instance_the_underbog.cpp
-  Outland/zone_shattrath_city.cpp
   Outland/TempestKeep/Mechanar/boss_mechano_lord_capacitus.cpp
   Outland/TempestKeep/Mechanar/boss_pathaleon_the_calculator.cpp
   Outland/TempestKeep/Mechanar/boss_nethermancer_sepethrea.cpp
@@ -91,10 +94,6 @@ set(scripts_STAT_SRCS
   Outland/Auchindoun/ShadowLabyrinth/boss_murmur.cpp
   Outland/Auchindoun/ShadowLabyrinth/instance_shadow_labyrinth.cpp
   Outland/Auchindoun/ShadowLabyrinth/shadow_labyrinth.h
-  Outland/boss_doomwalker.cpp
-  Outland/zone_terokkar_forest.cpp
-  Outland/zone_hellfire_peninsula.cpp
-  Outland/boss_doomlord_kazzak.cpp
   Outland/BlackTemple/boss_teron_gorefiend.cpp
   Outland/BlackTemple/black_temple.h
   Outland/BlackTemple/illidari_council.cpp
@@ -107,14 +106,20 @@ set(scripts_STAT_SRCS
   Outland/BlackTemple/boss_warlord_najentus.cpp
   Outland/BlackTemple/boss_bloodboil.cpp
   Outland/BlackTemple/boss_illidan.cpp
-  Outland/zone_shadowmoon_valley.cpp
-  Outland/zone_blades_edge_mountains.cpp
   Outland/GruulsLair/boss_high_king_maulgar.cpp
   Outland/GruulsLair/boss_gruul.cpp
   Outland/GruulsLair/gruuls_lair.h
   Outland/GruulsLair/instance_gruuls_lair.cpp
-  Outland/zone_netherstorm.cpp
-  Outland/zone_zangarmarsh.cpp
+  Outland/WorldBosses/boss_doomlord_kazzak.cpp
+  Outland/WorldBosses/boss_doomwalker.cpp
+  Outland/Zones/zone_blades_edge_mountains.cpp
+  Outland/Zones/zone_hellfire_peninsula.cpp
+  Outland/Zones/zone_nagrand.cpp
+  Outland/Zones/zone_netherstorm.cpp
+  Outland/Zones/zone_shadowmoon_valley.cpp
+  Outland/Zones/zone_shattrath_city.cpp
+  Outland/Zones/zone_terokkar_forest.cpp
+  Outland/Zones/zone_zangarmarsh.cpp
 )
 
 message("  -> Prepared: Outland")

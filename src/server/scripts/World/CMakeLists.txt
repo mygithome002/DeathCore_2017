@@ -23,6 +23,7 @@ set(scripts_STAT_SRCS
   World/npcs_special.cpp
   World/player_scripts.cpp
   World/boss_emerald_dragons.cpp
+  World/boss_city_kings.cpp
 )
 
 message("  -> Prepared: World")

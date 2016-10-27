@@ -1365,10 +1365,28 @@ void WorldSession::HandleSpellClick(WorldPacket& recvData)
 
 void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
 {
-    TC_LOG_DEBUG("network", "WORLD: CMSG_GET_MIRRORIMAGE_DATA");
-    uint64 guid;
-    recvData >> guid;
-    recvData.read_skip<uint32>(); // DisplayId ?
+    TC_LOG_DEBUG("network", "WORLD: CMSG_GET_MIRROR_IMAGE_DATA");
+    ObjectGuid guid;
+
+    recvData.read_skip<uint32>(); // DisplayId
+
+    guid[0] = recvData.ReadBit();
+    guid[2] = recvData.ReadBit();
+    guid[1] = recvData.ReadBit();
+    guid[6] = recvData.ReadBit();
+    guid[5] = recvData.ReadBit();
+    guid[4] = recvData.ReadBit();
+    guid[7] = recvData.ReadBit();
+    guid[3] = recvData.ReadBit();
+
+    recvData.ReadByteSeq(guid[6]);
+    recvData.ReadByteSeq(guid[0]);
+    recvData.ReadByteSeq(guid[3]);
+    recvData.ReadByteSeq(guid[5]);
+    recvData.ReadByteSeq(guid[4]);
+    recvData.ReadByteSeq(guid[2]);
+    recvData.ReadByteSeq(guid[1]);
+    recvData.ReadByteSeq(guid[7]);
 
     // Get unit for which data is needed by client
     Unit* unit = ObjectAccessor::GetObjectInWorld(guid, (Unit*)NULL);
@@ -1383,27 +1401,46 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     if (!creator)
         return;
 
-    WorldPacket data(SMSG_MIRRORIMAGE_DATA, 68);
-    data << uint64(guid);
-    data << uint32(creator->GetDisplayId());
-    data << uint8(creator->getRace());
-    data << uint8(creator->getGender());
-    data << uint8(creator->getClass());
-
-    if (creator->GetTypeId() == TYPEID_PLAYER)
+    if (Player* player = creator->ToPlayer())
     {
-        Player* player = creator->ToPlayer();
-        Guild* guild = NULL;
+        WorldPacket data(SMSG_MIRROR_IMAGE_COMPONENTED_DATA, 8 + 4 + 8 * 1 + 8 + 11 * 4);
+        Guild* guild = player->GetGuild();
+        ObjectGuid guildGuid = guild ? guild->GetGUID() : 0;
 
-        if (uint32 guildId = player->GetGuildId())
-            guild = sGuildMgr->GetGuildById(guildId);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guildGuid[3]);
+        data.WriteBit(guildGuid[6]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guildGuid[7]);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guildGuid[2]);
+        data.WriteBit(guildGuid[1]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guildGuid[4]);
+        data.WriteBit(guildGuid[0]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guildGuid[5]);
+        data.WriteBit(guid[3]);
+        data.WriteBits(11, 22); // item slots count
+        data.WriteBit(guid[6]);
+        data.FlushBits();
 
-        data << uint8(player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 0));   // skin
-        data << uint8(player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 1));   // face
-        data << uint8(player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 2));   // hair
-        data << uint8(player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 3));   // haircolor
-        data << uint8(player->GetByteValue(PLAYER_FIELD_REST_STATE, 0)); // facialhair
-        data << uint64(guild ? guild->GetGUID() : 0);
+        data << uint8(player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 3)); // haircolor
+        data << uint32(creator->GetDisplayId());
+        data << uint8(player->GetByteValue(PLAYER_FIELD_REST_STATE, 0));    // facial hair
+
+        data.WriteByteSeq(guildGuid[6]);
+        data.WriteByteSeq(guildGuid[4]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guildGuid[1]);
+        data.WriteByteSeq(guid[3]);
+        data << uint8(player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 2)); // hair 
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[0]);
+        data << uint8(creator->getRace());
+        data << uint8(player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 0)); // skin
+        data.WriteByteSeq(guildGuid[7]);
 
         static EquipmentSlots const itemSlots[] =
         {
@@ -1416,8 +1453,8 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
             EQUIPMENT_SLOT_FEET,
             EQUIPMENT_SLOT_WRISTS,
             EQUIPMENT_SLOT_HANDS,
-            EQUIPMENT_SLOT_BACK,
             EQUIPMENT_SLOT_TABARD,
+            EQUIPMENT_SLOT_BACK,
             EQUIPMENT_SLOT_END
         };
 
@@ -1433,27 +1470,45 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
             else
                 data << uint32(0);
         }
+
+        data.WriteByteSeq(guid[4]);
+        data << uint8(creator->getClass());
+        data << uint8(creator->getGender());
+        data << uint8(player->GetByteValue(PLAYER_FIELD_HAIR_COLOR_ID, 1)); // face
+        data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guildGuid[3]);
+        data.WriteByteSeq(guildGuid[2]);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guildGuid[0]);
+        data.WriteByteSeq(guildGuid[5]);
+        data.WriteByteSeq(guid[6]);
+
+        SendPacket(&data);
     }
     else
     {
-        // Skip player data for creatures
-        data << uint8(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-    }
+        WorldPacket data(SMSG_MIRROR_IMAGE_CREATURE_DATA, 8 + 4);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[2]);
 
-    SendPacket(&data);
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guid[7]);
+        data << uint32(creator->GetDisplayId());
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[1]);
+
+        SendPacket(&data);
+    }
 }
 
 void WorldSession::HandleUpdateProjectilePosition(WorldPacket& recvPacket)

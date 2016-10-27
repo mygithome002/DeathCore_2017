@@ -223,7 +223,7 @@ public:
 			summons.DespawnAll();
 		}
 
-		void DoAction(const int32 action)
+		void DoAction(int32 action)
 		{
 			if (action == ACTION_NOVICE_DONE)
 			{
@@ -331,7 +331,7 @@ public:
 			}
 		}
 
-		void UpdateAI(const uint32 diff)
+		void UpdateAI(uint32 diff)
 		{
 			events.Update(diff);
 
@@ -507,7 +507,7 @@ public:
 			}
 		}
 
-		void UpdateAI(const uint32 diff)
+		void UpdateAI(uint32 diff)
 		{
 			if (!UpdateVictim())
 				return;
@@ -609,7 +609,7 @@ public:
 			}
 		}
 
-		void UpdateAI(const uint32 diff)
+		void UpdateAI(uint32 diff)
 		{
 			if (!stillInFight)
 				return;
@@ -697,7 +697,7 @@ public:
 			fireBallTimer = 500;
 		}
 
-		void UpdateAI(const uint32 diff)
+		void UpdateAI(uint32 diff)
 		{
 			if (fireBallTimer <= diff)
 			{
@@ -739,7 +739,7 @@ public:
 			damageTimer = 500;
 		}
 
-		void UpdateAI(const uint32 diff)
+		void UpdateAI(uint32 diff)
 		{
 			if (damageTimer <= diff)
 			{

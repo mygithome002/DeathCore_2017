@@ -1,50 +1,52 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+* Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2011-2016 Project SkyFire <http://www.projectskyfire.org/>
+*
+* This program is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the
+* Free Software Foundation; either version 2 of the License, or (at your
+* option) any later version.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "scarlet_monastery.h"
 
 enum Texts
 {
-    SAY_AGGRO       = 0,
-    SAY_EARTHQUAKE  = 1,
-    SAY_OVERRUN     = 2,
-    SAY_SLAY        = 3,
-    SAY_DEATH       = 4
+	TALK_AGGRO = 0,
+	TALK_DEATH = 1,
+	TALK_WIPE  = 2,
+	TALK_KILL1 = 3,
+	TALK_KILL2 = 4,
 };
 
 enum Spells
 {
-    SPELL_EARTHQUAKE        = 153616,
-    SPELL_SUNDER_ARMOR      = 153726,
-    SPELL_CHAIN_LIGHTNING   = 153764,
-    SPELL_OVERRUN           = 154221,
-    SPELL_ENRAGE            = 157173,
-    SPELL_MARK_DEATH        = 153234,
-    SPELL_AURA_DEATH        = 153616
+	SPELL_BLAZING_FISTS         = 114807,
+	SPELL_FIRESTORM_KICK        = 113764,
+	SPELL_FIRESTORM_CHARGE      = 114487,
+	SPELL_RISING_FLAME          = 114410,
+	SPELL_SCORCHED_EARTH        = 114460,
+	SPELL_SCORCHED_EARTH_SUMMON = 114463,
+	SPELL_SCORCHED_EARTH_VISUAL = 114464,
 };
 
 enum Events
 {
-    EVENT_ENRAGE    = 1,
-    EVENT_ARMOR     = 2,
-    EVENT_CHAIN     = 3,
-    EVENT_QUAKE     = 4,
-    EVENT_OVERRUN   = 5
+	EVENT_BLAZING_FISTS    = 1,
+	EVENT_FIRESTORM_KICK   = 2,
+	EVENT_FIRESTORM_CHARGE = 3,
+	EVENT_SCORCHED_EARTH   = 4,
 };
 
 class boss_brother_korloff : public CreatureScript
@@ -52,116 +54,107 @@ class boss_brother_korloff : public CreatureScript
     public:
         boss_brother_korloff() : CreatureScript("boss_brother_korloff") { }
 
-        struct boss_brother_korloffAI : public ScriptedAI
+        struct boss_brother_korloffAI : public BossAI
         {
-            boss_brother_korloffAI(Creature* creature) : ScriptedAI(creature)
+            boss_brother_korloffAI(Creature* creature) : BossAI(creature, DATA_BROTHER_KORLOFF)
             {
-                Initialize();
+				pInstance = creature->GetInstanceScript();
             }
 
-            void Initialize()
-            {
-                _inEnrage = false;
-            }
+			InstanceScript* pInstance;
+			bool risingFlameTrigger = false;
 
             void Reset() override
             {
-                _events.Reset();
-                _events.ScheduleEvent(EVENT_ENRAGE, 0);
-                _events.ScheduleEvent(EVENT_ARMOR, urand(5000, 13000));
-                _events.ScheduleEvent(EVENT_CHAIN, urand(10000, 30000));
-                _events.ScheduleEvent(EVENT_QUAKE, urand(25000, 35000));
-                _events.ScheduleEvent(EVENT_OVERRUN, urand(30000, 45000));
-                Initialize();
+				
             }
 
-            void KilledUnit(Unit* victim) override
+            void KilledUnit(Unit* victim)
             {
-                victim->CastSpell(victim, SPELL_MARK_DEATH, 0);
-
-                if (urand(0, 4))
-                    return;
-
-                Talk(SAY_SLAY);
+				if (victim->GetTypeId() == TYPEID_PLAYER)
+				{
+					switch (urand(1, 2))
+					{
+						case 1:
+							Talk(TALK_KILL1);
+							break;
+						case 2:
+							Talk(TALK_KILL2);
+							break;
+					}
+				}
             }
 
-            void JustDied(Unit* /*killer*/) override
+            void JustDied(Unit* killer)
             {
-                Talk(SAY_DEATH);
+				if (killer->GetTypeId() == TYPEID_PLAYER)
+					Talk(TALK_DEATH);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void EnterCombat(Unit* who)
             {
-                Talk(SAY_AGGRO);
+				events.ScheduleEvent(EVENT_BLAZING_FISTS, urand(7000, 10000));
+				events.ScheduleEvent(EVENT_FIRESTORM_CHARGE, 20000);
+
+				if (who->GetTypeId() == TYPEID_PLAYER)
+					Talk(TALK_AGGRO);
             }
 
-            void MoveInLineOfSight(Unit* who) override
-
-            {
-                if (who && who->GetTypeId() == TYPEID_PLAYER && me->IsValidAttackTarget(who))
-                    if (who->HasAura(SPELL_MARK_DEATH))
-                        who->CastSpell(who, SPELL_AURA_DEATH, 1);
-            }
+			void JustReachedHome()
+			{
+				_JustReachedHome();
+				Talk(TALK_WIPE);
+			}
 
             void UpdateAI(uint32 diff) override
             {
                 if (!UpdateVictim())
                     return;
 
-                _events.Update(diff);
+                events.Update(diff);
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
-                while (uint32 eventId = _events.ExecuteEvent())
+                while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
-                        case EVENT_ENRAGE:
-                            if (!HealthAbovePct(20))
-                            {
-                                DoCast(me, SPELL_ENRAGE);
-                                _events.ScheduleEvent(EVENT_ENRAGE, 6000);
-                                _inEnrage = true;
-                            }
-                            break;
-                        case EVENT_OVERRUN:
-                            Talk(SAY_OVERRUN);
-                            DoCastVictim(SPELL_OVERRUN);
-                            _events.ScheduleEvent(EVENT_OVERRUN, urand(25000, 40000));
-                            break;
-                        case EVENT_QUAKE:
-                            if (urand(0, 1))
-                                return;
+						case EVENT_BLAZING_FISTS:
+						{
+							DoCastVictim(SPELL_BLAZING_FISTS);
+							events.ScheduleEvent(EVENT_BLAZING_FISTS, urand(7000, 10000));
+							break;
+						}
 
-                            Talk(SAY_EARTHQUAKE);
+						case EVENT_FIRESTORM_CHARGE:
+						{
+							if (Unit* target = SelectTarget(SelectAggroTarget::SELECT_TARGET_RANDOM, 0, 50.0f, true))
+							{
+								DoCast(target, SPELL_FIRESTORM_CHARGE);
+								events.ScheduleEvent(EVENT_FIRESTORM_KICK, 1500);
+							}
 
-                            //remove enrage before casting earthquake because enrage + earthquake = 16000dmg over 8sec and all dead
-                            if (_inEnrage)
-                                me->RemoveAurasDueToSpell(SPELL_ENRAGE);
+							break;
+						}
 
-                            DoCast(me, SPELL_EARTHQUAKE);
-                            _events.ScheduleEvent(EVENT_QUAKE, urand(30000, 55000));
-                            break;
-                        case EVENT_CHAIN:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                                DoCast(target, SPELL_CHAIN_LIGHTNING);
-                            _events.ScheduleEvent(EVENT_CHAIN, urand(7000, 27000));
-                            break;
-                        case EVENT_ARMOR:
-                            DoCastVictim(SPELL_SUNDER_ARMOR);
-                            _events.ScheduleEvent(EVENT_ARMOR, urand(10000, 25000));
-                            break;
-                        default:
-                            break;
+						case EVENT_FIRESTORM_KICK:
+						{
+							DoCast(SPELL_FIRESTORM_KICK);
+							events.ScheduleEvent(EVENT_FIRESTORM_KICK, 20000);
+							break;
+						}
+
+						case EVENT_SCORCHED_EARTH:
+						{
+							DoCast(me, SPELL_SCORCHED_EARTH);
+							break;
+						}
                     }
                 }
+
                 DoMeleeAttackIfReady();
             }
-
-            private:
-                EventMap _events;
-                bool _inEnrage;
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -170,7 +163,65 @@ class boss_brother_korloff : public CreatureScript
         }
 };
 
+class mob_scorched_earth : public CreatureScript
+{
+	public:
+		mob_scorched_earth() : CreatureScript("mob_scorched_earth") { }
+
+		struct mob_scorched_earthAI : public ScriptedAI
+		{
+			mob_scorched_earthAI(Creature* creature) : ScriptedAI(creature)
+			{
+				pInstance = creature->GetInstanceScript();
+			}
+
+			InstanceScript* pInstance;
+
+			void Reset() override
+			{
+				me->AddAura(SPELL_SCORCHED_EARTH_VISUAL, me);
+				me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+				me->setFaction(16);
+				me->SetInCombatWithZone();
+			}
+		};
+
+		CreatureAI* GetAI(Creature* creature) const override
+		{
+			return new mob_scorched_earthAI(creature);
+		}
+};
+
+class spell_scorched_earth : public SpellScriptLoader
+{
+	public:
+		spell_scorched_earth() : SpellScriptLoader("spell_scorched_earth") { }
+
+		class spell_scorched_earth_AuraScript : public AuraScript
+		{
+			PrepareAuraScript(spell_scorched_earth_AuraScript);
+
+			void OnTick(AuraEffect const* /*aurEff*/)
+			{
+				if (Unit* caster = GetCaster())
+					caster->CastSpell(caster, SPELL_SCORCHED_EARTH_SUMMON);
+			}
+
+			void Register() override
+			{
+				OnEffectPeriodic += AuraEffectPeriodicFn(spell_scorched_earth_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+			}
+		};
+
+		AuraScript* GetAuraScript() const override
+		{
+			return new spell_scorched_earth_AuraScript();
+		}
+};
+
 void AddSC_boss_brother_korloff()
 {
     new boss_brother_korloff();
+	new mob_scorched_earth();
+	new spell_scorched_earth();
 }
