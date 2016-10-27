@@ -27,7 +27,7 @@ For more information about the project, visit our website at project [DeathCore 
 + CMake = 2.8.0 
 + OpenSSL = 1.0.0 
 + GCC = 4.7.2 (Linux only) 
-+ MS Visual Studio = 14 (2015)(Windows only)
++ MS Visual Studio = 12 (2013)(Windows only)
 
 
 ## Reporting issues
