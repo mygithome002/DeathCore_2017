@@ -106,7 +106,7 @@ void Player::SetFakeRaceAndMorph()
        }
 }
 
-bool Player::SendBattleGroundChat(uint32 msgtype, std::string message)
+bool Player::BuildPlayerChat(uint32 msgtype, std::string message)
 {
     // Select distance to broadcast to.
     float distance = msgtype == CHAT_MSG_SAY ? sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY) : sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL);
