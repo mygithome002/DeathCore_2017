@@ -158,5 +158,3 @@ set(scripts_STAT_SRCS
 )
 
 message("  -> Prepared: Pandaria")
-
-GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
