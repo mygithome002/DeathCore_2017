@@ -27,7 +27,7 @@ public:
 	AnticheatData();
 	~AnticheatData();
 
-	const uint32 GetLastOpcode();
+	uint32 GetLastOpcode() const;
 	void SetLastOpcode(uint32 opcode);
 
 	const MovementInfo& GetLastMovementInfo();
