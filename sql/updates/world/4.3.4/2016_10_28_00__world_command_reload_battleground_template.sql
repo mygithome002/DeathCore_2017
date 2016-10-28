@@ -5,4 +5,4 @@ DELETE FROM `command` WHERE `name` IN
 ("reload battleground_template");
 
 REPLACE INTO `command` (`name`, `security`, `help`) VALUES
-("dreload battleground_template", 4, "Syntax: .reload battleground_template\r\nReload Battleground Templates.");
+("reload battleground_template", 4, "Syntax: .reload battleground_template\r\nReload Battleground Templates.");
