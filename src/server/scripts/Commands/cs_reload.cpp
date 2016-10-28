@@ -373,10 +373,10 @@ public:
  
 	static bool HandleReloadBattlegroundTemplate(ChatHandler* handler, char const* /*args*/)
 	{
-		TC_LOG_INFO("Re-Loading Battleground Templates...");
-		sBattlegroundMgr->CreateInitialBattlegrounds();
-		handler->SendGlobalGMSysMessage("DB table `battleground_template` reloaded.");
-		return true;
+        TC_LOG_INFO("misc", "Re-Loading Battleground Templates...");
+        sBattlegroundMgr->LoadBattlegroundTemplates();
+        handler->SendGlobalGMSysMessage("DB table `battleground_template` reloaded.");
+        return true;
 	}
 
     static bool HandleReloadCommandCommand(ChatHandler* handler, const char* /*args*/)
