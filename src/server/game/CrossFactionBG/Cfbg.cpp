@@ -68,7 +68,7 @@ void Player::SetFakeRaceAndMorph()
 m_FakeRace = GetOTeam() == ALLIANCE ? RACE_BLOODELF : RACE_HUMAN;
 }
 
-bool Player::SendBattleGroundChat(uint32 msgtype, std::string message)
+bool Player::BuildPlayerChat(&data, msgtype, message, LANG_UNIVERSAL)
 {
     // Select distance to broadcast to.
     float distance = msgtype == CHAT_MSG_SAY ? sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY) : sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL);
