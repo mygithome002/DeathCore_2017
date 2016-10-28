@@ -74,7 +74,8 @@ public:
             { "areatrigger_tavern",            rbac::RBAC_PERM_COMMAND_RELOAD_AREATRIGGER_TAVERN, true,  &HandleReloadAreaTriggerTavernCommand,          "", NULL },
             { "areatrigger_teleport",          rbac::RBAC_PERM_COMMAND_RELOAD_AREATRIGGER_TELEPORT, true,  &HandleReloadAreaTriggerTeleportCommand,        "", NULL },
             { "autobroadcast",                 rbac::RBAC_PERM_COMMAND_RELOAD_AUTOBROADCAST, true,  &HandleReloadAutobroadcastCommand,              "", NULL },
-            { "command",                       rbac::RBAC_PERM_COMMAND_RELOAD_COMMAND, true,  &HandleReloadCommandCommand,                    "", NULL },
+            { "battleground_template",         rbac::RBAC_PERM_COMMAND_RELOAD_BATTLEGROUND_TEMPLATE,            true,  &HandleReloadBattlegroundTemplate,              "", NULL },
+			{ "command",                       rbac::RBAC_PERM_COMMAND_RELOAD_COMMAND, true,  &HandleReloadCommandCommand,                    "", NULL },
             { "conditions",                    rbac::RBAC_PERM_COMMAND_RELOAD_CONDITIONS, true,  &HandleReloadConditions,                        "", NULL },
             { "config",                        rbac::RBAC_PERM_COMMAND_RELOAD_CONFIG, true,  &HandleReloadConfigCommand,                     "", NULL },
             { "creature_text",                 rbac::RBAC_PERM_COMMAND_RELOAD_CREATURE_TEXT, true,  &HandleReloadCreatureText,                      "", NULL },
@@ -166,7 +167,7 @@ public:
     //reload commands
     static bool HandleReloadGMTicketsCommand(ChatHandler* /*handler*/, const char* /*args*/)
     {
-        sTicketMgr->LoadTickets();
+        sTicketMgr->LoadGmTickets();
         return true;
     }
 
@@ -192,6 +193,8 @@ public:
         HandleReloadGameTeleCommand(handler, "");
 
         HandleReloadAutobroadcastCommand(handler, "");
+	    HandleReloadBattlegroundTemplate(handler, "");
+
         return true;
     }
 
@@ -367,6 +370,14 @@ public:
         handler->SendGlobalGMSysMessage("DB table `autobroadcast` reloaded.");
         return true;
     }
+ 
+	static bool HandleReloadBattlegroundTemplate(ChatHandler* handler, char const* /*args*/)
+	{
+		TC_LOG_INFO("Re-Loading Battleground Templates...");
+		sBattlegroundMgr->CreateInitialBattlegrounds();
+		handler->SendGlobalGMSysMessage("DB table `battleground_template` reloaded.");
+		return true;
+	}
 
     static bool HandleReloadCommandCommand(ChatHandler* handler, const char* /*args*/)
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2013-2016 JadeCore <https://www.jadecore.tk/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -939,7 +939,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder, PreparedQueryResu
     LoadAccountData(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_ACCOUNT_DATA), PER_CHARACTER_CACHE_MASK);
     SendAccountDataTimes(PER_CHARACTER_CACHE_MASK);
 
-    pCurrChar->SendFeatureSystemStatus();
+    bool feedbackSystem = sWorld->getBoolConfig(CONFIG_TICKETS_FEEDBACK_SYSTEM_ENABLED);
+    bool excessiveWarning = false;
 
     // Send MOTD
     {
@@ -2658,4 +2659,3 @@ void Player::XPGainAborted()
 
     GetSession()->SendPacket(&data);
 }
-

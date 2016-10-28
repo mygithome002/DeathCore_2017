@@ -425,7 +425,13 @@ void World::LoadConfigSettings(bool reload)
     SetMotd(sConfigMgr->GetStringDefault("Motd", "Welcome to a Trinity Core Server."));
 
     ///- Read ticket system setting from the config file
-    m_bool_configs[CONFIG_ALLOW_TICKETS] = sConfigMgr->GetBoolDefault("AllowTickets", true);
+    m_bool_configs[CONFIG_TICKETS_FEEDBACK_SYSTEM_ENABLED] = sConfigMgr->GetBoolDefault("TicketSystem.FeedBackTickets", true);
+    m_bool_configs[CONFIG_TICKETS_GM_ENABLED] = sConfigMgr->GetBoolDefault("TicketSystem.GMTickets", true);
+    if (reload)
+    {
+        sTicketMgr->SetFeedBackSystemStatus(m_bool_configs[CONFIG_TICKETS_FEEDBACK_SYSTEM_ENABLED]);
+        sTicketMgr->SetGmTicketSystemStatus(m_bool_configs[CONFIG_TICKETS_GM_ENABLED]);
+    }
 
     ///- Get string for new logins (newly created characters)
     SetNewCharString(sConfigMgr->GetStringDefault("PlayerStart.String", ""));
@@ -1785,10 +1791,10 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadFactionChangeTitles();
 
     TC_LOG_INFO("server.loading", "Loading GM tickets...");
-    sTicketMgr->LoadTickets();
+    sTicketMgr->LoadGmTickets();
 
-    TC_LOG_INFO("server.loading", "Loading GM surveys...");
-    sTicketMgr->LoadSurveys();
+    TC_LOG_INFO("server.loading", "Loading GM bugs...");
+    sTicketMgr->LoadBugTickets();
 
     TC_LOG_INFO("server.loading", "Loarding Rated Stas...");
     sRatedMgr->LoadRatedInfo();

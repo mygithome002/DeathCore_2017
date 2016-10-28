@@ -584,12 +584,13 @@ class WorldSession
 
         // GM Ticket opcodes
         void HandleSubmitBugOpcode(WorldPacket & recvPacket);
-        void HandleSubmitSuggestionOpcode(WorldPacket & recvPacket);
+        void HandleSubmitSuggestOpcode(WorldPacket & recvPacket);
         void HandleGMTicketCreateOpcode(WorldPacket& recvPacket);
         void HandleGMTicketUpdateOpcode(WorldPacket& recvPacket);
         void HandleGMTicketDeleteOpcode(WorldPacket& recvPacket);
         void HandleGMTicketGetTicketOpcode(WorldPacket& recvPacket);
         void HandleGMTicketSystemStatusOpcode(WorldPacket& recvPacket);
+        void HandleGMTicketCaseStatusOpcode(WorldPacket& recvPacket);
         void HandleGMSurveySubmit(WorldPacket& recvPacket);
         void HandleReportLag(WorldPacket& recvPacket);
         void HandleGMResponseResolve(WorldPacket& recvPacket);
