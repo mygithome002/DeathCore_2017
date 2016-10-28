@@ -61,10 +61,10 @@ Read file [COPYING](COPYING)
 
 This project is brought to you thanks to:
 
-- [DeathCore developers and contributors](https://github.com/NoffearrDeathProjecT/DeathCore/graphs/contributors)
-- [TrinityCore developers and contributors](https://github.com/TrinityCore/TrinityCore/blob/3.3.5/THANKS)
-- [MaNGOS, ScriptDev2 and UDB developers and contributors](https://github.com/cmangos/mangos-wotlk/blob/master/AUTHORS.md)
-- [SkyFire developers and contributors](https://github.com/ProjectSkyfire/SkyFire.548/blob/master/THANKS.md)
+- The [DeathCore developers and contributors](https://github.com/NoffearrDeathProjecT/DeathCore/graphs/contributors)
+- All the [TrinityCore developers and contributors](https://github.com/TrinityCore/TrinityCore/blob/3.3.5/THANKS)
+- All the [MaNGOS, ScriptDev2 and UDB developers and contributors](https://github.com/cmangos/mangos-wotlk/blob/master/AUTHORS.md)
+- All the [SkyFire developers and contributors](https://github.com/ProjectSkyfire/SkyFire.548/blob/master/THANKS.md)
 
 
 ## Links
