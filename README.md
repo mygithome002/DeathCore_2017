@@ -9,13 +9,15 @@
 
 ## Introduction
 
-DeathCore Open Source Emulator™ is a team of programmers without professional profits that make games Framework MMORPG mainly based on C ++. It is completely free your projects. Are inspired by the designs of TrinityCore with open source, projects undergo major changes over time to optimize, improve and clean the base of the code at the same time improving the mechanics in the game and functionality.
+Noffearr Death ProjecT™ is a team of programmers without professional profits that make games Framework MMORPG mainly based on C ++. 
+
+It is completely free your projects. Are inspired by the designs of TrinityCore with open source, projects undergo major changes over time to optimize, improve and clean the base of the code at the same time improving the mechanics in the game and functionality.
 
 This source is completely free development of that depends on everyone. I hope the community enough encouragement and help us improve it.
 
 If you wish to contribute ideas or code please visit our website at the link below or to send requests to our [Github repository] (https://github.com/NoffearrDeathProjecT/DeathCore).
 
-For more information about the project, visit our website at project [DeathCore Open Source Emulator] (http://www.noffearrdeathproject.org/)
+For more information about the project, visit our website at project [Noffearr Death ProjecT™] (http://www.noffearrdeathproject.org/)
 
 
 ## Requirements
@@ -59,12 +61,11 @@ Read file [COPYING](COPYING)
 
 This project is brought to you thanks to:
 
-- [DeathCore developers and contributors](https://github.com/NoffearrDeathProjecT/DeathCore/graphs/contributors)
-- [TrinityCore developers and contributors](https://github.com/TrinityCore/TrinityCore/blob/3.3.5/THANKS)
-- [MaNGOS, ScriptDev2 and UDB developers and contributors](https://github.com/cmangos/mangos-wotlk/blob/master/AUTHORS.md)
-- [SkyFire developers and contributors](https://github.com/ProjectSkyfire/SkyFire.548/blob/master/THANKS.md)
+- The [DeathCore developers and contributors](https://github.com/NoffearrDeathProjecT/DeathCore/graphs/contributors)
+- All the [TrinityCore developers and contributors](https://github.com/TrinityCore/TrinityCore/blob/3.3.5/THANKS)
+- All the [MaNGOS, ScriptDev2 and UDB developers and contributors](https://github.com/cmangos/mangos-wotlk/blob/master/AUTHORS.md)
 
 
 ## Links
 
-[Forums](http://www.noffearrdeathproject.org/)
+[Forums](http://www.community.noffearrdeathproject.org/)
