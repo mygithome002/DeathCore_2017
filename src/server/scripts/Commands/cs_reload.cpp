@@ -25,6 +25,7 @@ EndScriptData */
 #include "AccountMgr.h"
 #include "AchievementMgr.h"
 #include "AuctionHouseMgr.h"
+#include "BattlegroundMgr.h"
 #include "Chat.h"
 #include "CreatureTextMgr.h"
 #include "DisableMgr.h"
@@ -371,13 +372,13 @@ public:
         return true;
     }
  
-	static bool HandleReloadBattlegroundTemplate(ChatHandler* handler, char const* /*args*/)
-	{
-        TC_LOG_INFO("misc", "Re-Loading Battleground Templates...");
-        sBattlegroundMgr->LoadBattlegroundTemplates();
+    static bool HandleReloadBattlegroundTemplate(ChatHandler* handler, char const* /*args*/)
+    {
+		TC_LOG_INFO("misc", "Re-Loading Battleground Templates...");
+        sBattlegroundMgr->CreateInitialBattlegrounds();
         handler->SendGlobalGMSysMessage("DB table `battleground_template` reloaded.");
         return true;
-	}
+    }
 
     static bool HandleReloadCommandCommand(ChatHandler* handler, const char* /*args*/)
     {
