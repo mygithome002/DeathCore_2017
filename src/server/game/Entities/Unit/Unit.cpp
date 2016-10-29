@@ -9765,7 +9765,7 @@ void Unit::IncrDiminishing(SpellInfo const* auraSpellInfo, bool triggered)
     DiminishingGroup const group = auraSpellInfo->GetDiminishingReturnsGroupForSpell(triggered);
     DiminishingLevels const maxLevel = auraSpellInfo->GetDiminishingReturnsMaxLevel(triggered);
 
-     // Checking for existing in the table
+    // Checking for existing in the table
     DiminishingReturn& diminish = m_Diminishing[group];
     if (static_cast<int32>(diminish.hitCount) < maxLevel)
         ++diminish.hitCount;
@@ -9776,6 +9776,8 @@ float Unit::ApplyDiminishingToDuration(SpellInfo const* auraSpellInfo, bool trig
     DiminishingGroup const group = auraSpellInfo->GetDiminishingReturnsGroupForSpell(triggered);
     if (duration == -1 || group == DIMINISHING_NONE)
         return 1.0f;
+
+    int32 const limitDuration = auraSpellInfo->GetDiminishingReturnsLimitDuration(triggered);
 
     // test pet/charm masters instead pets/charmeds
     Unit const* targetOwner = GetCharmerOrOwner();
@@ -9848,7 +9850,7 @@ void Unit::ApplyDiminishingAura(DiminishingGroup group, bool apply)
             diminish.hitTime = getMSTime();
     }
 }
- 
+
 void Unit::ClearDiminishings()
 {
     for (uint32 i = 0; i < DIMINISHING_MAX; ++i)

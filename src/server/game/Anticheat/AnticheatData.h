@@ -27,18 +27,18 @@ public:
 	AnticheatData();
 	~AnticheatData();
 
+	const uint32 GetLastOpcode();
 	void SetLastOpcode(uint32 opcode);
-	uint32 GetLastOpcode() const;
 
 	const MovementInfo& GetLastMovementInfo();
 	void SetLastMovementInfo(MovementInfo& moveInfo);
 
+	const uint8 GetReports();
 	void IncrementReports();
-	uint8 GetReports() const;
 
+	const uint32 GetRefreshTime();
 	void SetRefreshTime(uint32 time);
-	uint32 GetRefreshTime() const;
-	
+
 	void ResetPlayerData();
 
 private:

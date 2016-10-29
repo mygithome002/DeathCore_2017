@@ -226,13 +226,13 @@ public:
         return true;
     }
 
-   static bool HandleVipManagerListCommand(ChatHandler* handler, char const* /*args*/)
+    static bool HandleVipManagerListCommand(ChatHandler* handler, char const* args)
     {
         ListAccountVip(handler);
         return true;
     }
 
-    static bool HandleVipInfoCommand(ChatHandler* handler, const char* /*args*/)
+    static bool HandleVipInfoCommand(ChatHandler* handler, const char* args)
     {
         Player* player = handler->GetSession()->GetPlayer();
 
@@ -273,7 +273,7 @@ public:
         return true;
     }
 
-    static bool HandleVipBuffCommand(ChatHandler* handler, const char* /*args*/)
+    static bool HandleVipBuffCommand(ChatHandler* handler, const char* args)
     {
         Player* player = handler->GetSession()->GetPlayer();
 
@@ -348,7 +348,7 @@ public:
         return true;
     }
 
-    static bool HandleVipMallCommand(ChatHandler* handler, const char* /*args*/)
+    static bool HandleVipMallCommand(ChatHandler* handler, const char* args)
     {
 
         Player* me = handler->GetSession()->GetPlayer();
@@ -374,7 +374,7 @@ public:
         return true;
     }
 
-    static bool HandleVipCustomizeCommand(ChatHandler* handler, const char* /*args*/)
+    static bool HandleVipCustomizeCommand(ChatHandler* handler, const char* args)
     {
         Player* player = handler->GetSession()->GetPlayer();
 
@@ -387,7 +387,7 @@ public:
         return true;
     }
 
-    static bool HandleVipChangeRaceCommand(ChatHandler* handler, const char* /*args*/)
+    static bool HandleVipChangeRaceCommand(ChatHandler* handler, const char* args)
     {
         Player* player = handler->GetSession()->GetPlayer();
 
@@ -400,7 +400,7 @@ public:
         return true;
     }
 
-    static bool HandleVipChangeFactionCommand(ChatHandler* handler, const char* /*args*/)
+    static bool HandleVipChangeFactionCommand(ChatHandler* handler, const char* args)
     {
         Player* player = handler->GetSession()->GetPlayer();
 
