@@ -197,10 +197,18 @@ public:
         HandleReloadVehicleTemplateAccessoryCommand(handler, "");
 
         HandleReloadAutobroadcastCommand(handler, "");
-	HandleReloadBattlegroundTemplate(handler, "");
+        HandleReloadBattlegroundTemplate(handler, "");
         return true;
     }
 
+    static bool HandleReloadBattlegroundTemplate(ChatHandler* handler, char const* /*args*/)
+    {
+        sLog->outString("Re-Loading Battleground Templates...");
+        sBattlegroundMgr->CreateInitialBattlegrounds();
+        handler->SendGlobalGMSysMessage("DB table `battleground_template` reloaded.");
+        return true;
+    }
+	
     static bool HandleReloadAllAchievementCommand(ChatHandler* handler, const char* /*args*/)
     {
         HandleReloadAchievementCriteriaDataCommand(handler, "");
@@ -374,14 +382,6 @@ public:
         return true;
     }
  
-	static bool HandleReloadBattlegroundTemplate(ChatHandler* handler, char const* /*args*/)
-	{
-		sLog->outString("Re-Loading Battleground Templates...");
-		sBattlegroundMgr->CreateInitialBattlegrounds();
-		handler->SendGlobalGMSysMessage("DB table `battleground_template` reloaded.");
-		return true;
-	}
-
     static bool HandleReloadCommandCommand(ChatHandler* handler, const char* /*args*/)
     {
         handler->SetLoadCommandTable(true);
