@@ -33,12 +33,12 @@ public:
 	const MovementInfo& GetLastMovementInfo();
 	void SetLastMovementInfo(MovementInfo& moveInfo);
 
-	const uint8 GetReports();
 	void IncrementReports();
+	uint8 GetReports() const;
 
-	const uint32 GetRefreshTime();
 	void SetRefreshTime(uint32 time);
-
+	uint32 GetRefreshTime() const;
+	
 	void ResetPlayerData();
 
 private:
