@@ -142,7 +142,7 @@ public:
         return true;
     }
 
-    static bool HandleVipManagerAddCommand(ChatHandler* handler, char const* args)
+    static bool HandleVipManagerAddCommand(ChatHandler* handler, char const* /*args*/)
     {
         if (!*args)
         {
@@ -185,7 +185,7 @@ public:
         return true;
     }
 
-    static bool HandleVipManagerDeleteCommand(ChatHandler* handler, char const* args)
+    static bool HandleVipManagerDeleteCommand(ChatHandler* handler, char const* /*args*/)
     {
         if (!*args)
         {
@@ -226,7 +226,7 @@ public:
         return true;
     }
 
-    static bool HandleVipManagerListCommand(ChatHandler* handler, char const* args)
+   static bool HandleVipManagerListCommand(ChatHandler* handler, char const* /*args*/)
     {
         ListAccountVip(handler);
         return true;
