@@ -24,6 +24,7 @@ EndScriptData */
 
 #include "AchievementMgr.h"
 #include "AuctionHouseMgr.h"
+#include "BattlegroundMgr.h"
 #include "Chat.h"
 #include "CreatureTextMgr.h"
 #include "DisableMgr.h"
