@@ -205,7 +205,7 @@ void AnticheatMgr::SpeedHackDetection(Player* player, MovementInfo movementInfo)
 		Report(player, SPEED_HACK);
 }
 
-void AnticheatMgr::FlyHackDetection(Player* player, MovementInfo movementInfo)
+void AnticheatMgr::FlyHackDetection(Player* player, MovementInfo /*movementInfo*/)
 {
 	uint32 key = player->GetGUID().GetCounter();
 
