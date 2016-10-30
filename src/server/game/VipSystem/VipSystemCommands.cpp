@@ -236,12 +236,6 @@ public:
     {
         Player* player = handler->GetSession()->GetPlayer();
 
-        if (IsValidToUse(player, handler))
-        {
-            for (int i = 0; i < (sizeof(vAuras) / sizeof(*vAuras)); i++)
-                player->AddAura(vAuras[i], player);
-        }
-
         QueryResult result = LoginDatabase.PQuery("SELECT vipTime FROM account_access WHERE id = %u", player->GetSession()->GetAccountId());
 
         if (result)

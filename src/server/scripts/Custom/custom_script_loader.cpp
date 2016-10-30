@@ -25,7 +25,6 @@ void AddSC_example_ItemGossip();
 void AddSC_item_beastmaster();
 void AddSC_item_res_group();
 void AddSC_example_PlayerGossip();
-void AddSC_TemplateNPC();
 void AddSC_Tools_NPC();
 void AddSC_MTG_NpcMorph();
 void AddSC_REFORGER_NPC();
@@ -57,7 +56,6 @@ void AddCustomScripts()
     AddSC_item_beastmaster();
     AddSC_item_res_group();
     AddSC_example_PlayerGossip();
-	AddSC_TemplateNPC();
     AddSC_Tools_NPC();
     AddSC_MTG_NpcMorph();
     AddSC_REFORGER_NPC();
