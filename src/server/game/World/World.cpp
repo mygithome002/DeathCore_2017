@@ -1985,7 +1985,6 @@ void World::SetInitialWorldSettings()
     }
  
     TC_LOG_INFO("server.loading", "Loading Template Talents...");
-    sTemplateNpcMgr->LoadTalentsContainer();
 
     uint32 startupDuration = GetMSTimeDiffToNow(startupBegin);
 
