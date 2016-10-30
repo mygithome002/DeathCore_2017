@@ -687,11 +687,11 @@ void Battleground::RewardReputationToTeam(uint32 a_faction_id, uint32 h_faction_
             
             Player* player = ObjectAccessor::FindPlayer(itr->first);
             
-            if (!player)
-            {
+            /*if (!player)
+           {
                 TC_LOG_LEVEL_ERROR("bg.battleground", "BattleGround:RewardReputationToTeam: %u not found!", itr->first);
                 continue;
-            }
+            }*/
             uint32 team = player->GetTeam();
             if (team == TeamID)                
                 if (Player* player = _GetPlayerForTeam(TeamID, itr, "RewardReputationToTeam"))
