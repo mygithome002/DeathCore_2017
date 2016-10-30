@@ -226,7 +226,7 @@ public:
         return true;
     }
 
-    static bool HandleVipManagerListCommand(ChatHandler* handler, char const* args)
+    static bool HandleVipManagerListCommand(ChatHandler* handler, char const* /*args*/)
     {
         ListAccountVip(handler);
         return true;
