@@ -205,7 +205,7 @@ void AnticheatMgr::SpeedHackDetection(Player* player, MovementInfo movementInfo)
 		Report(player, SPEED_HACK);
 }
 
-void AnticheatMgr::FlyHackDetection(Player* player, MovementInfo movementInfo, uint32 opcode)
+void AnticheatMgr::FlyHackDetection(Player* player, MovementInfo movementInfo)
 {
 	uint32 key = player->GetGUID().GetCounter();
 
@@ -245,7 +245,7 @@ void AnticheatMgr::WallClimbHackDetection(Player* player, MovementInfo movementI
 		Report(player, WALL_CLIMB_HACK);
 }
 
-void AnticheatMgr::WalkOnWaterHackDetection(Player* player, MovementInfo movementInfo, uint32 opcode)
+void AnticheatMgr::WalkOnWaterHackDetection(Player* player, MovementInfo movementInfo)
 {
 	uint32 key = player->GetGUID().GetCounter();
 
