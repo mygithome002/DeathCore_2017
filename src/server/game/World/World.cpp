@@ -1987,22 +1987,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Template Talents...");
     sTemplateNpcMgr->LoadTalentsContainer();
 
-    // Load templates for Template NPC #2
-    TC_LOG_INFO("server.loading", "Loading Template Glyphs...");
-    sTemplateNpcMgr->LoadGlyphsContainer();
-
-    // Load templates for Template NPC #3
-    TC_LOG_INFO("server.loading", "Loading Template Gear for Humans...");
-    sTemplateNpcMgr->LoadHumanGearContainer();
-
-    // Load templates for Template NPC #4
-    TC_LOG_INFO("server.loading", "Loading Template Gear for Alliances...");
-    sTemplateNpcMgr->LoadAllianceGearContainer();
-
-    // Load templates for Template NPC #5
-    TC_LOG_INFO("server.loading", "Loading Template Gear for Hordes...");
-    sTemplateNpcMgr->LoadHordeGearContainer();
-
     uint32 startupDuration = GetMSTimeDiffToNow(startupBegin);
 
     TC_LOG_INFO("server.worldserver", "World initialized in %u minutes %u seconds", (startupDuration / 60000), ((startupDuration % 60000) / 1000));
