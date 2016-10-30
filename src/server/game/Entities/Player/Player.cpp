@@ -4846,7 +4846,7 @@ Corpse* Player::CreateCorpse()
     _corpseLocation.WorldRelocate(*this);
 	
     _uf = getCFSRace();
-    const uint8       = (uint8) (_uf);
+    uint8       = (uint8) (_uf);
 
     uint8 skin = GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_SKIN_ID);
     uint8 face = GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_FACE_ID);
