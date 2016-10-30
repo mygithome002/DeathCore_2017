@@ -245,7 +245,7 @@ void AnticheatMgr::WallClimbHackDetection(Player* player, MovementInfo movementI
 		Report(player, WALL_CLIMB_HACK);
 }
 
-void AnticheatMgr::WalkOnWaterHackDetection(Player* player, MovementInfo movementInfo)
+void AnticheatMgr::WalkOnWaterHackDetection(Player* player, MovementInfo /*movementInfo*/)
 {
 	uint32 key = player->GetGUID().GetCounter();
 
