@@ -55,7 +55,7 @@ private:
 	void FlyHackDetection(Player* player, MovementInfo movementInfo);
 	void WallClimbHackDetection(Player* player, MovementInfo movementInfo, uint32 opcode);
 	void WalkOnWaterHackDetection(Player* player, MovementInfo movementInfo);
-	void JumpHackDetection(Player* player, MovementInfo movementInfo, uint32 opcode);
+	void JumpHackDetection(Player* player, MovementInfo /*movementInfo*/, uint32 opcode);
 };
 
 #define sAnticheatMgr AnticheatMgr::instance()

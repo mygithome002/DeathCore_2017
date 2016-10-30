@@ -264,7 +264,7 @@ void AnticheatMgr::WalkOnWaterHackDetection(Player* player, MovementInfo /*movem
 	Report(player, WALK_ON_WATER_HACK);
 }
 
-void AnticheatMgr::JumpHackDetection(Player* player, MovementInfo movementInfo, uint32 opcode)
+void AnticheatMgr::JumpHackDetection(Player* player, MovementInfo /*movementInfo*/, uint32 opcode)
 {
 	uint32 key = player->GetGUID().GetCounter();
 
