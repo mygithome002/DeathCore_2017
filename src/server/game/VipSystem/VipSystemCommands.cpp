@@ -232,7 +232,7 @@ public:
         return true;
     }
 
-    static bool HandleVipInfoCommand(ChatHandler* handler, const char* args)
+    static bool HandleVipInfoCommand(ChatHandler* handler, const char* /*args*/)
     {
         Player* player = handler->GetSession()->GetPlayer();
 
