@@ -23,8 +23,6 @@
 
 const uint32 RANK_VIP = (uint32)SEC_VIP;
 
-uint32 vAuras[] = { 59908/*21562, 20217, 6673, 57330, 3714, 467, 469, 43499, 5862, 24705, 26035, 22888, 26393, 35076, 34410, 24425, 19740, 1126*/};
-
 using namespace std;
 using namespace rbac;
 
@@ -45,7 +43,6 @@ public:
         static std::vector<ChatCommand> VipCommandTable =
         {
             { "info", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipInfoCommand, "" },
-            //{ "buffs", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipBuffCommand, "" },
             //{ "teletransportar", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipTeleCommand, "" },
             { "tamanho", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipScaleCommand, "" },
             { "sala",          RBAC_PERM_COMMAND_CUSTOM_VIP,    true,   &HandleVipMallCommand,          "" },
@@ -264,20 +261,6 @@ public:
 
             } while (result->NextRow());
         }
-        return true;
-    }
-
-    static bool HandleVipBuffCommand(ChatHandler* handler, const char* args)
-    {
-        Player* player = handler->GetSession()->GetPlayer();
-
-        if (IsValidToUse(player, handler))
-        {
-            for (int i = 0; i < (sizeof(vAuras) / sizeof(*vAuras)); i++)
-                player->AddAura(vAuras[i], player);
-        }
-
-        handler->PSendSysMessage("|cffB400B4[|cffFFA500BUFF V.I.P|cffB400B4] |cffFF0000Você está quase Imortal!");
         return true;
     }
 

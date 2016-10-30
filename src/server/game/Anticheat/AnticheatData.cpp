@@ -20,7 +20,7 @@
 AnticheatData::AnticheatData() {}
 AnticheatData::~AnticheatData() {}
 
-const uint32 AnticheatData::GetLastOpcode()
+uint32 AnticheatData::GetLastOpcode()
 {
 	return lastOpcode;
 }
@@ -40,7 +40,7 @@ void AnticheatData::SetLastMovementInfo(MovementInfo& moveInfo)
 	lastMovementInfo = moveInfo;
 }
 
-const uint8 AnticheatData::GetReports()
+uint8 AnticheatData::GetReports()
 {
 	return totalReports;
 }
@@ -50,7 +50,7 @@ void AnticheatData::IncrementReports()
 	totalReports++;
 }
 
-const uint32 AnticheatData::GetRefreshTime()
+uint32 AnticheatData::GetRefreshTime()
 {
 	return refreshTime;
 }
