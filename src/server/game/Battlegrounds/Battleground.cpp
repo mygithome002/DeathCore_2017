@@ -689,7 +689,7 @@ void Battleground::RewardReputationToTeam(uint32 a_faction_id, uint32 h_faction_
             
             if (!player)
            {
-                TC_LOG_ERROR("bg.battleground", "Battleground:RewardReputationToTeam: %u not found!", itr->first.ToString().c_str());
+                TC_LOG_ERROR("bg.battleground", "Battleground::RewardReputationToTeam: %u not found!");
                 continue;
             }
             uint32 team = player->GetTeam();
