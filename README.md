@@ -4,7 +4,6 @@
 
 5.4.8 | 4.3.4 | 3.3.5
 :------------: | :------------: | :------------:
-[![5.4.8 Build Status](https://travis-ci.org/NoffearrDeathProjecT/DeathCore.svg?branch=5.4.8)](https://travis-ci.org/NoffearrDeathProjecT/DeathCore/builds) |[![4.3.4 Build Status](https://travis-ci.org/NoffearrDeathProjecT/DeathCore.svg?branch=4.3.4)](https://travis-ci.org/NoffearrDeathProjecT/DeathCore/builds) | [![3.3.5 Build Status](https://travis-ci.org/NoffearrDeathProjecT/DeathCore.svg?branch=3.3.5)](https://travis-ci.org/NoffearrDeathProjecT/DeathCore/builds)
 [![5.4.8 Build status](https://ci.appveyor.com/api/projects/status/qfnroow5ul7x7m86/branch/5.4.8?svg=true)](https://ci.appveyor.com/project/Bodeguero/deathcore/branch/5.4.8) | [![4.3.4 Build status](https://ci.appveyor.com/api/projects/status/qfnroow5ul7x7m86/branch/4.3.4?svg=true)](https://ci.appveyor.com/project/Bodeguero/deathcore/branch/4.3.4) | [![3.3.5 Build status](https://ci.appveyor.com/api/projects/status/qfnroow5ul7x7m86/branch/3.3.5?svg=true)](https://ci.appveyor.com/project/Bodeguero/deathcore/branch/3.3.5)
 
 ## Introduction
@@ -22,14 +21,26 @@ For more information about the project, visit our website at project [Noffearr D
 
 ## Requirements
 
-+ Platform: Linux, Windows or Mac
-+ Processor supporting SSE2 
-+ ACE = 5.8.3 (included for Windows) 
-+ MySQL = 5.1.0 (included for Windows)
-+ CMake = 2.8.0 
-+ OpenSSL = 1.0.0 
-+ GCC = 4.7.2 (Linux only) 
-+ MS Visual Studio = 12 (2013)(Windows only)
++ Platform: Windows
++ [CMake](https://cmake.org/files/v3.4/cmake-3.4.3-win32-x86.exe)
++ [Git Extensions](https://sourceforge.net/projects/gitextensions/files/latest/download)
++ [Boost (x86)](https://sourceforge.net/projects/boost/files/boost-binaries/1.60.0/boost_1_60_0-msvc-14.0-32.exe/download)
++ [Boost (x64)](https://sourceforge.net/projects/boost/files/boost-binaries/1.60.0/boost_1_60_0-msvc-14.0-64.exe/download)
++ [MySQL](http://cdn.mysql.com//archives/mysql-5.5/mysql-5.5.42-win32.msi)
++ [Microsoft Visual C++ 2008 Redistributable Package (x86)](http://download.microsoft.com/download/1/1/1/1116b75a-9ec3-481a-a3c8-1777b5381140/vcredist_x86.exe)
++ [Microsoft Visual C++ 2008 Redistributable Package (x64)](http://download.microsoft.com/download/d/2/4/d242c3fb-da5a-4542-ad66-f9661d0a8d19/vcredist_x64.exe) 
++ [Microsoft Visual C++ 2010 Redistributable Package (x86)](http://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe) 
++ [Microsoft Visual C++ 2010 Redistributable Package (x64)](http://download.microsoft.com/download/3/2/2/3224B87F-CFA0-4E70-BDA3-3DE650EFEBA5/vcredist_x64.exe) 
++ [Microsoft Visual C++ 2012 Redistributable Package (x86)](http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe)
++ [Microsoft Visual C++ 2012 Redistributable Package (x64)](http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe)
++ [Microsoft Visual C++ 2013 Redistributable Package (x86)](http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe)
++ [Microsoft Visual C++ 2013 Redistributable Package (x64)](http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe)
++ [Microsoft Visual C++ 2015 Redistributable Package (x86)](https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe)
++ [Microsoft Visual C++ 2015 Redistributable Package (x64)](https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe)
++ [Microsoft .NET Framework 4.6.2](https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe)
++ [MS Visual Studio = 12 (2013)(Windows only)](http://download.microsoft.com/download/A/A/D/AAD1AA11-FF9A-4B3C-8601-054E89260B78/vs2013.5_ce_enu.iso?type=ISO)
++ [OpenSSL x86](http://slproweb.com/download/Win32OpenSSL-1_0_2j.exe)
++ [OpenSSL x64](http://slproweb.com/download/Win64OpenSSL-1_0_2j.exe)
 
 
 ## Reporting issues
