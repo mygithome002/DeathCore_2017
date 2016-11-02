@@ -22,14 +22,15 @@ For more information about the project, visit our website at project [Noffearr D
 
 ## Requirements
 
-+ Platform: Linux, Windows or Mac
-+ Processor supporting SSE2 
-+ ACE = 5.8.3 (included for Windows) 
-+ MySQL = 5.1.0 (included for Windows)
-+ CMake = 2.8.0 
-+ OpenSSL = 1.0.0 
-+ GCC = 4.7.2 (Linux only) 
-+ MS Visual Studio = 12 (2013)(Windows only)
+
+Software requirements are available in the [wiki - thanks TrinityCore](http://www.trinitycore.info/display/tc/Requirements) for
+Windows, Linux and OS X.
+
+
+## Install
+
+Detailed installation guides are available in the [wiki - thanks TrinityCore](http://www.trinitycore.info/display/tc/Installation+Guide) for
+Windows, Linux and OS X.
 
 
 ## Reporting issues
