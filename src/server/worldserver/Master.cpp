@@ -139,7 +139,7 @@ int Master::Run()
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "  	            ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝");
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "");                                                        
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "  	Noffearr Death ProjecT 2016(c) Open-Sourced Game Emulation"); 
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "		       http://www.noffearrdeathproject.net ");
+    sLog->outInfo(LOG_FILTER_WORLDSERVER, "		       http://www.noffearrdeathproject.org ");
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "");
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "");
 
