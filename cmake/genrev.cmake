@@ -13,6 +13,7 @@
 
 if(NOT BUILDDIR)
   # Workaround for funny MSVC behaviour - this segment only run during compile
+  set(NO_GIT ${WITHOUT_GIT})
   set(GIT_EXEC ${GIT_EXECUTABLE})
   set(BUILDDIR ${CMAKE_BINARY_DIR})
 endif()
@@ -22,10 +23,10 @@ if(NO_GIT)
   set(rev_hash "rev.01")
   set(rev_branch "Archived")
 else()
-  if(GIT_EXEC)
+  if(GIT_EXECUTABLE)
     # Create a revision-string that we can use
     execute_process(
-      COMMAND "${GIT_EXEC}" describe --match init --dirty=+ --abbrev=12 --always
+      COMMAND "${GIT_EXECUTABLE}" describe --long --match init --dirty=+ --abbrev=12 --always
       WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
       OUTPUT_VARIABLE rev_info
       OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -34,7 +35,7 @@ else()
 
     # And grab the commits timestamp
     execute_process(
-      COMMAND "${GIT_EXEC}" show -s --format=%ci
+      COMMAND "${GIT_EXECUTABLE}" show -s --format=%ci
       WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
       OUTPUT_VARIABLE rev_date
       OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -43,7 +44,7 @@ else()
     
     # Also retrieve branch name
     execute_process(
-      COMMAND "${GIT_EXEC}" rev-parse --abbrev-ref HEAD
+      COMMAND "${GIT_EXECUTABLE}" rev-parse --abbrev-ref HEAD
       WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
       OUTPUT_VARIABLE rev_branch
       OUTPUT_STRIP_TRAILING_WHITESPACE
