@@ -92,7 +92,7 @@ void AnticheatMgr::Punish(Player* player, uint8 hackType)
 		for (SessionMap::const_iterator itr = sessions.begin(); itr != sessions.end(); ++itr)
 		{
 			if (itr->second->GetSecurity() > IgnoreAccountRank)
-				itr->second->SendNotification("|CFFFFFF00[DeathCore Servers - Sistema Anticheat - Antihacker] :: |r |CFFFFFFFF[%s]|r Pode estar usando %s, verifique isso!", player->GetName().c_str(), str.c_str());
+				itr->second->SendNotification("|CFFFFFF00[Sistema Anticheat - Antihacker] :: |r |CFFFFFFFF[%s]|r Pode estar usando %s, verifique isso!", player->GetName().c_str(), str.c_str());
 		}
 		break;
 	case 1:
@@ -102,7 +102,7 @@ void AnticheatMgr::Punish(Player* player, uint8 hackType)
 		for (SessionMap::const_iterator itr = sessions.begin(); itr != sessions.end(); ++itr)
 		{
 			if (itr->second->GetSecurity() < IgnoreAccountRank)
-				itr->second->SendNotification("|CFFFFFF00[DeathCore Servers - Sistema Anticheat - Antihacker] :: |r |CFFFFFFFF[%s]|r Foi parado e mandado para a Sala Oficial do Administrador por usar %s!", player->GetName().c_str(), str.c_str());
+				itr->second->SendNotification("|CFFFFFF00[Sistema Anticheat - Antihacker] :: |r |CFFFFFFFF[%s]|r Foi parado e mandado para a Sala Oficial do Administrador por usar %s!", player->GetName().c_str(), str.c_str());
 		}
 		break;
 	case 2:
@@ -111,7 +111,7 @@ void AnticheatMgr::Punish(Player* player, uint8 hackType)
 		for (SessionMap::const_iterator itr = sessions.begin(); itr != sessions.end(); ++itr)
 		{
 			if (itr->second->GetSecurity() < IgnoreAccountRank)
-				itr->second->SendNotification("|CFFFFFF00[DeathCore Servers - Sistema Anticheat - Antihacker] :: |r |CFFFFFFFF[%s]|r Foi desconectado por usar %s!", player->GetName().c_str(), str.c_str());
+				itr->second->SendNotification("|CFFFFFF00[Sistema Anticheat - Antihacker] :: |r |CFFFFFFFF[%s]|r Foi desconectado por usar %s!", player->GetName().c_str(), str.c_str());
 		}
 		break;
 	case 3:
@@ -120,7 +120,7 @@ void AnticheatMgr::Punish(Player* player, uint8 hackType)
 		for (SessionMap::const_iterator itr = sessions.begin(); itr != sessions.end(); ++itr)
 		{
 			if (itr->second->GetSecurity() < IgnoreAccountRank)
-				itr->second->SendNotification("|CFFFFFF00[DeathCore Servers - Sistema Anticheat - Antihacker] :: |r |CFFFFFFFF[%s]|r Se suicidou por usar %s!", player->GetName().c_str(), str.c_str());
+				itr->second->SendNotification("|CFFFFFF00[Sistema Anticheat - Antihacker] :: |r |CFFFFFFFF[%s]|r Se suicidou por usar %s!", player->GetName().c_str(), str.c_str());
 		}
 		break;
 	case 4:
@@ -132,7 +132,7 @@ void AnticheatMgr::Punish(Player* player, uint8 hackType)
 		for (SessionMap::const_iterator itr = sessions.begin(); itr != sessions.end(); ++itr)
 		{
 			if (itr->second->GetSecurity() < IgnoreAccountRank)
-				itr->second->SendNotification("|CFFFFFF00[DeathCore Servers - Sistema Anticheat - Antihacker] :: |r |CFFFFFFFF[%s]|r Levou Stum e Dormiu por usar %s!", player->GetName().c_str(), str.c_str());
+				itr->second->SendNotification("|CFFFFFF00[Sistema Anticheat - Antihacker] :: |r |CFFFFFFFF[%s]|r Levou Stum e Dormiu por usar %s!", player->GetName().c_str(), str.c_str());
 		}
 		break;
     }
@@ -156,7 +156,7 @@ void AnticheatMgr::Report(Player* player, uint8 hackType)
 		break;
 	default:
 		if (m_Players[key].GetReports() > 1)
-			ChatHandler(player->GetSession()).PSendSysMessage("|CFFFF0000[DeathCore Servers - Sistema Anticheat - Antihacker] :: Detectando uso de Cheat - Hacker [ %u / %u ] para ser punido.|r", m_Players[key].GetReports(), MaxReports);
+			ChatHandler(player->GetSession()).PSendSysMessage("|CFFFF0000[Sistema Anticheat - Antihacker] :: Detectando uso de Cheat - Hacker [ %u / %u ] para ser punido.|r", m_Players[key].GetReports(), MaxReports);
 		if (m_Players[key].GetReports() >= MaxReports)
 			Punish(player, hackType);
 		break;

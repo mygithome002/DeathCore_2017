@@ -48,7 +48,7 @@ if(sConfigMgr->GetBoolDefault("DoubleXP.Enable", true))
         day == boost::date_time::Saturday ||
         day == boost::date_time::Sunday) {
 
-        ChatHandler(player->GetSession()).PSendSysMessage("FineWoW Servers - Evento Dobro de XP Ativado!");
+        ChatHandler(player->GetSession()).PSendSysMessage("Evento Dobro de XP Ativado!");
         }
 }
     }

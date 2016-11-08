@@ -66,61 +66,61 @@ public:
 			/* Alliance Morph List */
 		case GOSSIP_ACTION_INFO_DEF + 5: /* Human Male Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(19723);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 6: /* Human Female Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(19724);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 7: /* Dwarf Male Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(20317);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 8: /* Dwarf Female Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(37918);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 9: /* Nightelf Male Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(20318);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 10:/* Nightelf Female Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(37919);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 11:/* Gnome Male Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(20580);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 12:/* Gnome Female Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(20320);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 13:/* Draenei Male Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(37916);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 14:/* Draenei Female Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(20323);
 			break;
 
@@ -143,61 +143,61 @@ public:
 			/* Horde Morph List */
 		case GOSSIP_ACTION_INFO_DEF + 17:/* Orc Male Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(37920);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 18:/* Orc Female Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(20316);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 19:/* Undead Male Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(37923);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 20:/* Undead Female Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(37924);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 21:/* Tauren Male Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(20319);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 22:/* Tauren Female Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(20584);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 23:/* Troll Male Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(20321);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 24:/* Troll Female Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(37922);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 26:/* Bloodelf Female Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(20370);
 			break;
 
 		case GOSSIP_ACTION_INFO_DEF + 25:/* Bloodelf Male Morph*/
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(20368);
 			break;
 
@@ -216,51 +216,51 @@ public:
 
 		case 20: // Thrall
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(4527);
 			break;
 
 		case 21: //Lady Sylvanas
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(11657);
 			break;
 
 		case 22: // Cairne Bloodhoof
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(4307);
 			break;
 
 		case 23: // Lor´themar Theron
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(17122);
 			break;
 
 
 		case 24: // King Magni Bronzebeard
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(3597);
 			break;
 
 
 		case 25: // Highlord Bolvar Fordragon
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(5566);
 			break;
 
 		case 26: // High Tinker Mekkatorque
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(7006);
 			break;
 
 		case 27: // Tyrande Whisperwind
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(7274);
 			break;
 
@@ -277,25 +277,25 @@ public:
 
 		case 30: // Fel Orc
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(21267);
 			break;
 
 		case 31: // Lich King
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(22235);
 			break;
 
 		case 32: // Warchief
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->SetDisplayId(19799);
 			break;
 // -------------------------------------------------------//
 		case GOSSIP_ACTION_INFO_DEF + 27: // DEMORPH
 			player->PlayerTalkClass->SendCloseGossip();
-			player->CastSpell(player, 27123);
+			player->CastSpell(player, 19484);
 			player->DeMorph();
 			break;
 

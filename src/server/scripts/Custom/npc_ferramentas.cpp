@@ -49,7 +49,7 @@ public:
                 case 1: // Restaurar HP e MP
                         if(player->IsInCombat())
                         {
-                            player->GetSession()->SendNotification("|cffFFFF00DeathCore Servers - Ferramentas \n |cffFFFFFFVocê está em combate!");
+                            player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFVocê está em combate!");
 							player->PlayerTalkClass->SendCloseGossip();
                                 return false;
                         }
@@ -57,7 +57,7 @@ public:
                                 player->SetPower(POWER_MANA, player->GetMaxPower(POWER_MANA));
  
 							player->SetHealth(player->GetMaxHealth());
-							player->GetSession()->SendNotification("|cffFFFF00DeathCore Servers - Ferramentas \n |cffFFFFFFVida e Mana Resetados com Sucesso!");
+							player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFVida e Mana Resetados com Sucesso!");
 							player->CastSpell(player, 36400);
 							CloseGossipMenuFor(player);
                         break;
@@ -71,7 +71,7 @@ public:
                                         player->UnbindInstance(itr, Difficulty(i));
                                 }
                         }
-						player->GetSession()->SendNotification("|cffFFFF00DeathCore Servers - Ferramentas \n |cffFFFFFFInstances Resetados com Sucesso!");
+						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFInstances Resetados com Sucesso!");
 						player->CastSpell(player, 59908);
                         CloseGossipMenuFor(player);
                         break;
@@ -79,20 +79,20 @@ public:
                 case 3: // Resetar Cooldowns
                         if(player->IsInCombat())
                         {
-                            player->GetSession()->SendNotification("|cffFFFF00DeathCore Servers - Ferramentas \n |cffFFFFFFVocê está em combate!");
+                            player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFVocê está em combate!");
 							player->PlayerTalkClass->SendCloseGossip();
                                 return false;
                         }
  
 						player->GetSpellHistory()->ResetAllCooldowns();
-						player->GetSession()->SendNotification("|cffFFFF00DeathCore Servers - Ferramentas \n |cffFFFFFFCooldowns Resetados com Sucesso!");
+						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFCooldowns Resetados com Sucesso!");
 						player->CastSpell(player, 463);
                         CloseGossipMenuFor(player);
                         break;
 
                 case 4: // Resetar Combat
                         player->CombatStop();
-						player->GetSession()->SendNotification("|cffFFFF00DeathCore Servers - Ferramentas \n |cffFFFFFFCombate Removido com Sucesso!");
+						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFCombate Removido com Sucesso!");
 						player->CastSpell(player, 24222);
                         CloseGossipMenuFor(player);
                         break;
@@ -100,14 +100,14 @@ public:
                 case 5: // Remover Sickness
                         if(player->HasAura(15007))
                         player->RemoveAura(15007);
-						player->GetSession()->SendNotification("|cffFFFF00DeathCore Servers - Ferramentas \n |cffFFFFFFSickness Removido com Sucesso!");
+						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFSickness Removido com Sucesso!");
 						player->CastSpell(player, 41300);
                         CloseGossipMenuFor(player);
                         break;
 
                 case 6: // Reparar Items
                         player->DurabilityRepairAll(false, 0, false);
-						player->GetSession()->SendNotification("|cffFFFF00DeathCore Servers - Ferramentas \n |cffFFFFFFEquipamentos Reparados com Sucesso!");
+						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFEquipamentos Reparados com Sucesso!");
 						player->CastSpell(player, 29541);
                         CloseGossipMenuFor(player);
                         break;
@@ -115,13 +115,13 @@ public:
                case 7: // Resetar Talents
                         player->ResetTalents(true);
                         player->SendTalentsInfoData(false);
-						player->GetSession()->SendNotification("|cffFFFF00DeathCore Servers - Ferramentas \n |cffFFFFFFTalentos Resetados com Sucesso!");
+						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFTalentos Resetados com Sucesso!");
 						player->CastSpell(player, 19484);
                         CloseGossipMenuFor(player);
                         break;
 
 				case 8: // Fechar Menu
-						player->GetSession()->SendNotification("|cffFFFF00DeathCore Servers - Ferramentas \n |cffFFFFFFObrigado, Utilize sempre esta ferramenta assim que precisar!");
+						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFObrigado, Utilize sempre esta ferramenta assim que precisar!");
 						CloseGossipMenuFor(player);
 						break;
              }
