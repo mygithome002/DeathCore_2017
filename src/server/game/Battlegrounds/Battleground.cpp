@@ -676,7 +676,6 @@ void Battleground::RewardReputationToTeam(uint32 a_faction_id, uint32 h_faction_
 
     for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
-        Player* player = _GetPlayerForTeam(TeamID, itr, "RewardReputationToTeam");
         if (!a_factionEntry || !h_factionEntry)
              return;
 
