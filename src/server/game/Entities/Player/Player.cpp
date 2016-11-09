@@ -4845,7 +4845,7 @@ Corpse* Player::CreateCorpse()
 
     _corpseLocation.WorldRelocate(*this);
 	
-    uint8 race = (uint8) (_uf);
+    _uf = getCFSRace();
     uint8 skin = GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_SKIN_ID);
     uint8 face = GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_FACE_ID);
     uint8 hairstyle = GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_STYLE_ID);
