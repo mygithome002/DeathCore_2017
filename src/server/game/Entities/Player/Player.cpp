@@ -16951,7 +16951,7 @@ void Player::AutoQuestCompleteDisplayQuestGiver(uint32 p_questId)
 		return;
 
 	uint32 entry = (*result)[0].GetUInt32();
-	bool visible = false;
+
 	for (auto itr = m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
 	{
 		if (!itr->IsCreatureOrPet() && !itr->IsCreatureOrVehicle()) continue;
