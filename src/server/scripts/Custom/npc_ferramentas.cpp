@@ -41,7 +41,7 @@ public:
 		SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
                 return true;
         }
-	bool OnGossipSelect(Player * player, Creature * creature, uint32 /*sender*/, uint32 actions)
+	bool OnGossipSelect(Player * player, Creature /*creature*/, uint32 /*sender*/, uint32 actions)
         {
 		player->PlayerTalkClass->ClearMenus();
 
