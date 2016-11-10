@@ -4,6 +4,7 @@
 
 5.4.8 | 4.3.4 | 3.3.5
 :------------: | :------------: | :------------:
+[![5.4.8 Build Status](https://travis-ci.org/NoffearrDeathProjecT/DeathCore.svg?branch=5.4.8)](https://travis-ci.org/NoffearrDeathProjecT/DeathCore/builds) |[![4.3.4 Build Status](https://travis-ci.org/NoffearrDeathProjecT/DeathCore.svg?branch=4.3.4)](https://travis-ci.org/NoffearrDeathProjecT/DeathCore/builds) | [![3.3.5 Build Status](https://travis-ci.org/NoffearrDeathProjecT/DeathCore.svg?branch=3.3.5)](https://travis-ci.org/NoffearrDeathProjecT/DeathCore/builds)
 [![5.4.8 Build status](https://ci.appveyor.com/api/projects/status/qfnroow5ul7x7m86/branch/5.4.8?svg=true)](https://ci.appveyor.com/project/Bodeguero/deathcore/branch/5.4.8) | [![4.3.4 Build status](https://ci.appveyor.com/api/projects/status/qfnroow5ul7x7m86/branch/4.3.4?svg=true)](https://ci.appveyor.com/project/Bodeguero/deathcore/branch/4.3.4) | [![3.3.5 Build status](https://ci.appveyor.com/api/projects/status/qfnroow5ul7x7m86/branch/3.3.5?svg=true)](https://ci.appveyor.com/project/Bodeguero/deathcore/branch/3.3.5)
 
 ## Introduction
