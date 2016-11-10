@@ -299,7 +299,6 @@ static void SendReforgePackets(Player* player)
 
 void RemoveReforge(Player* player, uint32 itemguid, bool update)
 {
-    uint32 lowGUID = player->GetGUID().GetCounter();
     if (!itemguid || player->reforgeMap.empty() ||
         player->reforgeMap.find(itemguid) == player->reforgeMap.end())
         return;
