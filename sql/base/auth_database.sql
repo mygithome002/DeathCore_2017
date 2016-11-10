@@ -2,17 +2,13 @@
 SQLyog Ultimate v11.11 (64 bit)
 MySQL - 5.6.24 : Database - auth
 *********************************************************************
-*/
-
+*/
 /*!40101 SET NAMES utf8 */;
-
 /*!40101 SET SQL_MODE=''*/;
-
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-CREATE DATABASE /*!32312 IF NOT EXISTS*/`auth335` /*!40100 DEFAULT CHARACTER SET latin1 */;
 
 /*Table structure for table `account` */
 
@@ -36,7 +32,7 @@ CREATE TABLE `account` (
   `lock_country` varchar(2) NOT NULL DEFAULT '00',
   `last_login` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `online` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `expansion` tinyint(3) unsigned NOT NULL DEFAULT '2',
+  `expansion` tinyint(3) unsigned NOT NULL DEFAULT '4',
   `mutetime` bigint(20) NOT NULL DEFAULT '0',
   `mutereason` varchar(255) NOT NULL DEFAULT '',
   `muteby` varchar(50) NOT NULL DEFAULT '',
@@ -462,7 +458,7 @@ CREATE TABLE `realmlist` (
   `timezone` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `allowedSecurityLevel` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `population` float unsigned NOT NULL DEFAULT '0',
-  `gamebuild` int(10) unsigned NOT NULL DEFAULT '12340',
+  `gamebuild` int(10) unsigned NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COMMENT='Realm System';
