@@ -12371,7 +12371,7 @@ void Player::MoveItemFromInventory(uint8 bag, uint8 slot, bool update)
 {
     if (Item* it = GetItemByPos(bag, slot))
     {
-       RemoveReforge(this, it->GetGUID().GetCounter(), true);
+        RemoveReforge(this, it->GetGUID().GetCounter(), true);
 	   ItemRemovedQuestCheck(it->GetEntry(), it->GetCount());
         RemoveItem(bag, slot, update);
         it->SetNotRefundable(this, false);

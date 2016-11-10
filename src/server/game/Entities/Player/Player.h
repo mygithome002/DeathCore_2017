@@ -2320,6 +2320,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         std::string GetMapAreaAndZoneString() const;
         std::string GetCoordsMapAreaAndZoneString() const;
+ 
+        ReforgeMapType reforgeMap; // reforgeMap[iGUID] = ReforgeData
 
     protected:
         // Gamemaster whisper whitelist
