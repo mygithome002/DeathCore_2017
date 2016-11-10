@@ -1046,8 +1046,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         PlayerAI* AI() const { return reinterpret_cast<PlayerAI*>(i_AI); }
 		
-        ReforgeMapType reforgeMap; // reforgeMap[iGUID] = ReforgeData
-
         private:
             bool m_ForgetBGPlayers;
             bool m_ForgetInListPlayers;
