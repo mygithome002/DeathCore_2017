@@ -27,7 +27,7 @@ class VIP_Item_60d : public ItemScript
 public:
     VIP_Item_60d() : ItemScript("VIP_Item_60d") {}
 
-    void SetAccountVip(Player* player, uint32 accountId, char* vipTime, char* vipComment)
+    void SetAccountVip(Player* player, uint32 accountId, char const* vipTime, char const* vipComment)
     {
 		uint32 _time = time(NULL);
         uint32 _vipTime = TimeStringToSecs(vipTime);
