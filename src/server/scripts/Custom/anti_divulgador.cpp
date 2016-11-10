@@ -48,7 +48,7 @@ public:
                 CheckMessage(player, msg, lang, NULL, NULL, NULL, channel);
         }
  
-void CheckMessage(Player* player, std::string& msg, uint32 lang, Player* /*receiver*/, Group* /*group*/, Guild* /*guild*/, Channel* channel)
+void CheckMessage(Player* player, std::string& msg, uint32 /*lang*/, Player* /*receiver*/, Group* /*group*/, Guild* /*guild*/, Channel* channel)
 {
     //if (player->isGameMaster() || lang == LANG_ADDON)
             //return;

@@ -26,7 +26,7 @@ void AddSC_item_beastmaster();
 void AddSC_item_res_group();
 void AddSC_example_PlayerGossip();
 void AddSC_Tools_NPC();
-void AddSC_MTG_NpcMorph();
+void AddSC_NDP_NpcMorph();
 void AddSC_REFORGER_NPC();
 void AddSC_NPC_VisualWeapon();
 void AddSC_Arena_AntiDraw();
@@ -57,7 +57,7 @@ void AddCustomScripts()
     AddSC_item_res_group();
     AddSC_example_PlayerGossip();
     AddSC_Tools_NPC();
-    AddSC_MTG_NpcMorph();
+    AddSC_NDP_NpcMorph();
     AddSC_REFORGER_NPC();
     AddSC_NPC_VisualWeapon();
     AddSC_Arena_AntiDraw();

@@ -18,17 +18,17 @@
 #include "ScriptMgr.h"
 #include "ScriptedGossip.h"
 
-class MTG_NpcMorph : public CreatureScript
+class NDP_NpcMorph : public CreatureScript
 {
 public:
-	MTG_NpcMorph() : CreatureScript("MTG_NpcMorph") { }
+	NDP_NpcMorph() : CreatureScript("NDP_NpcMorph") { }
 
 	bool OnGossipHello(Player * player, Creature * creature)
 	{
 		if (player->IsInCombat())
 		{
 			CloseGossipMenuFor(player);
-			player->GetSession()->SendNotification("Você está em combate!", LANG_UNIVERSAL, player);
+			player->GetSession()->SendNotification("Você está em combate!");
 			return false;
 		}
 		
@@ -313,7 +313,7 @@ public:
 	
 };
 
-void AddSC_MTG_NpcMorph()
+void AddSC_NDP_NpcMorph()
 {
-	new MTG_NpcMorph;
+	new NDP_NpcMorph;
 }
