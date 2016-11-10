@@ -27,7 +27,7 @@ class VIP_Item : public ItemScript
 public:
     VIP_Item() : ItemScript("VIP_Item") {}
 
-    void SetAccountVip(Player * player, uint32 accountId, /*char*/ vipTime, /*char*/ vipComment)
+    void SetAccountVip(Player* player, uint32 accountId, char* vipTime, char* vipComment)
     {
 		uint32 _time = time(NULL);
         uint32 _vipTime = TimeStringToSecs(vipTime);
@@ -38,7 +38,7 @@ public:
             LoginDatabase.PQuery("REPLACE INTO account_access (id, gmlevel, RealmID, vipTime, vipComment) VALUES ('%u','%u','-1','%u','%s')", accountId, RANK_VIP, _time + _vipTime, vipComment);
     }
 
-    bool OnUse(Player * player, Item * item, SpellCastTargets const&) override
+    bool OnUse(Player* player, Item* item, SpellCastTargets const&) override
     {
         ChatHandler(player->GetSession()).SendSysMessage("Agora sua conta é V.I.P!");
         player->DestroyItemCount(item->GetEntry(), 1, true, false);

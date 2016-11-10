@@ -22,7 +22,7 @@ class Reset_OnDuelEnd : public PlayerScript
     public:
         Reset_OnDuelEnd() : PlayerScript("Reset_OnDuelEnd") {}
 
-    void OnDuelEnd(Player *winner, Player *looser, DuelCompleteType type)
+    void OnDuelEnd(Player *winner, Player *looser, DuelCompleteType /*type*/)
     {
 						// Resets Players 1
                         winner->RemoveArenaSpellCooldowns();
