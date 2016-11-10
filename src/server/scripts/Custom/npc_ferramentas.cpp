@@ -43,7 +43,7 @@ public:
         }
 	bool OnGossipSelect(Player* /*player*/, Creature* /*creature*/, uint32 /*sender*/, uint32 actions)
         {
-		player->PlayerTalkClass->ClearMenus();
+        ClearGossipMenuFor(player);
 
 		switch (actions)
                 {
