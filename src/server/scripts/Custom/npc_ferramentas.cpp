@@ -28,7 +28,7 @@ class Tools_NPC : public CreatureScript
 public:
         Tools_NPC() : CreatureScript("Tools_NPC") { }
  
-	bool OnGossipHello(Player *player, Creature *creature)
+	bool OnGossipHello(Player * player, Creature * creature)
         {
 		AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface\\icons\\Spell_Nature_Regenerate:30:30:-15|t Restaurar Vida e Mana", GOSSIP_SENDER_MAIN, 1);
 		AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface\\icons\\Spell_Shadow_UnstableAffliction_1:30:30:-15|t Resetar Instances", GOSSIP_SENDER_MAIN, 2);
@@ -41,10 +41,11 @@ public:
 		SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
                 return true;
         }
-	bool OnGossipSelect(Player * player, Creature * creature, uint32 sender, uint32 action)
+	bool OnGossipSelect(Player * player, Creature * creature, uint32 /*sender*/, uint32 actions)
         {
-                player->PlayerTalkClass->ClearMenus();
-                switch(action)
+		player->PlayerTalkClass->ClearMenus();
+
+		switch (actions)
                 {
                 case 1: // Restaurar HP e MP
                         if(player->IsInCombat())

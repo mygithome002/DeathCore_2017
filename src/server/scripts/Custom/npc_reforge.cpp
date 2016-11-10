@@ -119,20 +119,20 @@ static Item* GetEquippedItem(Player* player, uint32 guidlow)
 
 void RemoveReforge(Player* player, uint32 itemguid, bool update);
 
-// Supply lowguid or reforge! (or both)
-// Warning, this function may modify player->reforgeMap when lowguid is supplied
-static void SendReforgePacket(Player* player, uint32 entry, uint32 lowguid = 0, const ReforgeData* reforge = NULL)
+// Supply lowGUID or reforge! (or both)
+// Warning, this function may modify player->reforgeMap when lowGUID is supplied
+static void SendReforgePacket(Player* player, uint32 entry, uint32 lowGUID = 0, const ReforgeData* reforge = NULL)
 {
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(entry);
     if (!pProto)
         return;
 
-    if (lowguid)
+    if (lowGUID)
     {
-        if (!player->reforgeMap.empty() && player->reforgeMap.find(lowguid) != player->reforgeMap.end())
-            reforge = &player->reforgeMap[lowguid];
+        if (!player->reforgeMap.empty() && player->reforgeMap.find(lowGUID) != player->reforgeMap.end())
+            reforge = &player->reforgeMap[lowGUID];
         else
-            RemoveReforge(player, lowguid, true);
+            RemoveReforge(player, lowGUID, true);
     }
 
     // Update player cache (self only) pure visual.
@@ -299,7 +299,7 @@ static void SendReforgePackets(Player* player)
 
 void RemoveReforge(Player* player, uint32 itemguid, bool update)
 {
-    uint32 lowguid = player->GetGUID().GetCounter();
+    uint32 lowGUID = player->GetGUID().GetCounter();
     if (!itemguid || player->reforgeMap.empty() ||
         player->reforgeMap.find(itemguid) == player->reforgeMap.end())
         return;
@@ -437,9 +437,9 @@ public:
 
     void OnSave(Player* player) override
     {
-        uint32 lowguid = player->GetGUID().GetCounter();
+        uint32 lowGUID = player->GetGUID().GetCounter();
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
-        trans->PAppend("DELETE FROM `custom_reforging` WHERE `Owner` = %u", lowguid);
+        trans->PAppend("DELETE FROM `custom_reforging` WHERE `Owner` = %u", lowGUID);
         if (!player->reforgeMap.empty())
         {
             // Only save items that are in inventory / bank / etc
@@ -450,7 +450,7 @@ public:
                 if (it2 == player->reforgeMap.end())
                     continue;
 
-                trans->PAppend("REPLACE INTO `custom_reforging` (`GUID`, `increase`, `decrease`, `stat_value`, `Owner`) VALUES (%u, %u, %u, %i, %u)", it2->first, it2->second.increase, it2->second.decrease, it2->second.stat_value, lowguid);
+                trans->PAppend("REPLACE INTO `custom_reforging` (`GUID`, `increase`, `decrease`, `stat_value`, `Owner`) VALUES (%u, %u, %u, %i, %u)", it2->first, it2->second.increase, it2->second.decrease, it2->second.stat_value, lowGUID);
             }
         }
 
