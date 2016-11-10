@@ -22,8 +22,6 @@ void AddSC_fake_commandscript();
 void AddSC_XpWeekend();
 void AddSC_Reset();
 void AddSC_example_ItemGossip();
-void AddSC_item_beastmaster();
-void AddSC_item_res_group();
 void AddSC_example_PlayerGossip();
 void AddSC_Tools_NPC();
 void AddSC_NDP_NpcMorph();
@@ -53,8 +51,6 @@ void AddCustomScripts()
     AddSC_XpWeekend();
     AddSC_Reset();
     AddSC_example_ItemGossip();
-    AddSC_item_beastmaster();
-    AddSC_item_res_group();
     AddSC_example_PlayerGossip();
     AddSC_Tools_NPC();
     AddSC_NDP_NpcMorph();
