@@ -1,6 +1,6 @@
-﻿[//]: # (*********************************)
-[//]: # (** DO NOT DELETE THIS TEMPLATE **)
-[//]: # (*********************************)
+[//]: # (***************************)
+[//]: # (** FILL IN THIS TEMPLATE **)
+[//]: # (***************************)
 
 **Changes proposed:**
 
@@ -8,16 +8,22 @@
 -  
 -  
 
-**Branch(es):** 5.4.8 / 4.3.4 / 3.3.5
+**Target branch(es):** 5.4.8 / 4.3.4 / 3.3.5
 
-**Issues addressed:** Closes #
+- [ ] 5.4.8
+- [ ] 4.3.4
+- [ ] 3.3.5
+
+**Issues addressed:** Closes #  (insert issue tracker number)
+
 
 **Tests performed:** (Does it build, tested in-game, etc.)
 
-**Known issues and TODO list:**
+
+**Known issues and TODO list:** (add/remove lines as needed)
 
 - [ ] 
-- [ ] 
+- [ ]
 
 **NOTE** Enable the setting "Allow edits from maintainers." when creating your pull request.  
 **NOTE** If this PR __only__ contains SQL files, create an issue instead.  
