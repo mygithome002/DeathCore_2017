@@ -1603,17 +1603,24 @@ void AddBattlegroundScripts()
 void AddSC_System_Censure();
 void AddSC_AutoQuestComplete();
 void AddSC_fake_commandscript();
+void AddSC_Ingame_commandscript();
 void AddSC_VipSystemCommands();
 void AddSC_morphs_npc();
-void AddSC_Gold_System();
+void AddSC_skill_npc();
+void AddSC_GossipNpc();
+void AddSC_Title_gossip_codebox();
+void AddSC_Top5_Killers();
+void AddSC_arenateamranks();
+void AddSC_VIP_NPC();
 void AddSC_NPC_VisualWeapon();
+void AddSC_vipmall_security();
+void AddSC_Gold_System();
 void AddSC_VIP_Item();
 void AddSC_VIP_Item_60d();
 void AddSC_VIP_Item_120d();
 void AddSC_VIP_Item_240d();
 void AddSC_VIP_Item_480d();
 void AddSC_VIP_Item_960d();
-void AddSC_VIP_NPC();
 
 #endif
 
@@ -1623,19 +1630,26 @@ void AddCustomScripts()
     /* This is where custom scripts should be added. */
 	
 	AddSC_System_Censure();
-	AddSC_AutoQuestComplete();
-	AddSC_fake_commandscript();
-	AddSC_VipSystemCommands();
-	AddSC_morphs_npc();
-	AddSC_Gold_System();
-	AddSC_NPC_VisualWeapon();
-	AddSC_VIP_Item();
-	AddSC_VIP_Item_60d();
-	AddSC_VIP_Item_120d();
-	AddSC_VIP_Item_240d();
-	AddSC_VIP_Item_480d();
-	AddSC_VIP_Item_960d();
-	AddSC_VIP_NPC();
+    AddSC_AutoQuestComplete();
+    AddSC_fake_commandscript();
+    AddSC_Ingame_commandscript();
+    AddSC_VipSystemCommands();
+    AddSC_morphs_npc();
+    AddSC_skill_npc();
+    AddSC_GossipNpc();
+    AddSC_Title_gossip_codebox();
+    AddSC_Top5_Killers();
+    AddSC_arenateamranks();
+    AddSC_VIP_NPC();
+    AddSC_NPC_VisualWeapon();
+    AddSC_vipmall_security();
+    AddSC_Gold_System();
+    AddSC_VIP_Item();
+    AddSC_VIP_Item_60d();
+    AddSC_VIP_Item_120d();
+    AddSC_VIP_Item_240d();
+    AddSC_VIP_Item_480d();
+    AddSC_VIP_Item_960d();
 
 
 #endif

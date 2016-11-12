@@ -18,9 +18,17 @@ set(scripts_STAT_SRCS
 Custom/anti_divulgador.cpp
 Custom/auto_quest_complete.cpp
 Custom/comando_fake_players.cpp
+Custom/comando_shop.cpp
 Custom/comando_vip.cpp
 Custom/npc_morph.cpp
+Custom/npc_profissoes.cpp
+Custom/npc_teleporter.cpp
+Custom/npc_titulos.cpp
+Custom/npc_top_5_matadores.cpp
+Custom/npc_top_ranks_arena.cpp
+Custom/npc_vendedor_vip.cpp
 Custom/npc_visual_weapon.cpp
+Custom/script_protetor.cpp
 Custom/sistema_gold.cpp
 Custom/token_vip_30d.cpp
 Custom/token_vip_60d.cpp
@@ -28,7 +36,6 @@ Custom/token_vip_120d.cpp
 Custom/token_vip_240d.cpp
 Custom/token_vip_480d.cpp
 Custom/token_vip_960d.cpp
-Custom/vendedor_vip.cpp
 )
 
 message("  -> Prepared: Custom")

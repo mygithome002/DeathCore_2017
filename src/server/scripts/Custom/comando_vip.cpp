@@ -370,7 +370,7 @@ public:
         else
             me->SaveRecallPosition();
 
-        me->TeleportTo(0, -11216.884766f, -1719.028931f, -2.722186f, 4.527766f); // MapId, X, Y, Z, O
+        me->TeleportTo(1, 4847.365234f, -2811.368408f, 1444.530029f, 6.261538f); // MapId, X, Y, Z, O
         return true;
     }
 
