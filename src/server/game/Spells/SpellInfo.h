@@ -24,6 +24,8 @@
 #include "Object.h"
 #include "SpellAuraDefines.h"
 
+#include <boost/container/flat_set.hpp>
+
 class Unit;
 class Player;
 class Item;
@@ -300,6 +302,18 @@ struct TC_GAME_API SpellDiminishInfo
     int32 DiminishDurationLimit = 0;
 };
 
+struct TC_GAME_API ImmunityInfo
+{
+    uint32 SchoolImmuneMask = 0;
+    uint32 ApplyHarmfulAuraImmuneMask = 0;
+    uint32 MechanicImmuneMask = 0;
+    uint32 DispelImmune = 0;
+    uint32 DamageSchoolMask = 0;
+
+    boost::container::flat_set<AuraType> AuraTypeImmune;
+    boost::container::flat_set<SpellEffects> SpellEffectImmune;
+};
+
 class TC_GAME_API SpellInfo
 {
     friend class SpellMgr;
@@ -429,7 +443,9 @@ class TC_GAME_API SpellInfo
         bool IsPositive() const;
         bool IsPositiveEffect(uint8 effIndex) const;
         bool IsChanneled() const;
+        bool IsMoveAllowedChannel() const;
         bool NeedsComboPoints() const;
+        bool IsNextMeleeSwingSpell() const;
         bool IsBreakingStealth() const;
         bool IsRangedWeaponSpell() const;
         bool IsAutoRepeatRangedSpell() const;
@@ -440,8 +456,8 @@ class TC_GAME_API SpellInfo
         bool IsAffectedBySpellMods() const;
         bool IsAffectedBySpellMod(SpellModifier const* mod) const;
 
-        bool CanPierceImmuneAura(SpellInfo const* aura) const;
-        bool CanDispelAura(SpellInfo const* aura) const;
+        bool CanPierceImmuneAura(SpellInfo const* auraSpellInfo) const;
+        bool CanDispelAura(SpellInfo const* auraSpellInfo) const;
 
         bool IsSingleTarget() const;
         bool IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo) const;
@@ -497,6 +513,11 @@ class TC_GAME_API SpellInfo
         DiminishingLevels GetDiminishingReturnsMaxLevel(bool triggered) const;
         int32 GetDiminishingReturnsLimitDuration(bool triggered) const;
 
+        // spell immunities
+        void ApplyAllSpellImmunitiesTo(Unit* target, uint8 effIndex, bool apply) const;
+        bool CanSpellProvideImmunityAgainstAura(SpellInfo const* auraSpellInfo) const;
+        bool CanSpellCastOverrideAuraEffect(SpellInfo const* auraSpellInfo, uint8 auraEffIndex) const;
+
     private:
         // loading helpers
         void _InitializeExplicitTargetMask();
@@ -506,6 +527,7 @@ class TC_GAME_API SpellInfo
         void _LoadSpellSpecific();
         void _LoadAuraState();
         void _LoadSpellDiminishInfo();
+        void _LoadImmunityInfo();
 
         // unloading helpers
         void _UnloadImplicitTargetConditionLists();
@@ -515,6 +537,8 @@ class TC_GAME_API SpellInfo
 
         SpellDiminishInfo _diminishInfoNonTriggered;
         SpellDiminishInfo _diminishInfoTriggered;
+
+        ImmunityInfo _immunityInfo[MAX_SPELL_EFFECTS];
 };
 
 #endif // _SPELLINFO_H
