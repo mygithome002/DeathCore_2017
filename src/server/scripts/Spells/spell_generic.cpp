@@ -37,6 +37,7 @@
 #include "SkillDiscovery.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
+#include "Vehicle.h"
 
 class spell_gen_absorb0_hitlimit1 : public SpellScriptLoader
 {
@@ -4550,6 +4551,33 @@ class spell_gen_aura_service_uniform : public SpellScriptLoader
 			return new spell_gen_aura_service_uniform_AuraScript();
 			}
 };
+ 
+class spell_gen_eject_all_passengers : public SpellScriptLoader
+{
+    public:
+        spell_gen_eject_all_passengers() : SpellScriptLoader("spell_gen_eject_all_passengers") { }
+
+        class spell_gen_eject_all_passengers_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_eject_all_passengers_SpellScript);
+
+            void RemoveVehicleAuras()
+            {
+                if (Vehicle* vehicle = GetHitUnit()->GetVehicleKit())
+                    vehicle->RemoveAllPassengers();
+            }
+
+            void Register() 
+            {
+                AfterHit += SpellHitFn(spell_gen_eject_all_passengers_SpellScript::RemoveVehicleAuras);
+            }
+        };
+
+        SpellScript* GetSpellScript() const 
+        {
+            return new spell_gen_eject_all_passengers_SpellScript();
+        }
+};
 
 void AddSC_generic_spell_scripts()
 {
@@ -4660,4 +4688,5 @@ void AddSC_generic_spell_scripts()
 	new spell_gen_mixology_bonus();
 	new spell_gen_fix_anticheat();
 	new spell_gen_aura_service_uniform();
+    new spell_gen_eject_all_passengers();
 }

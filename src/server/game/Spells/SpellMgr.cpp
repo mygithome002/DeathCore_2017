@@ -2973,6 +2973,52 @@ void SpellMgr::LoadSpellCustomAttr()
             case 72446: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                 break;
+			// Heart of the Wild
+			case 17003:
+				spellInfo->SpellFamilyName = SPELLFAMILY_DRUID;
+
+				spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
+				spellInfo->Effects[EFFECT_1].BasePoints = 0;
+				spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_ATTACK_POWER_PCT;
+				spellInfo->Effects[EFFECT_1].MiscValueB = 3;
+
+				spellInfo->Effects[EFFECT_2].Effect = SPELL_EFFECT_APPLY_AURA;
+				spellInfo->Effects[EFFECT_2].BasePoints = 0;
+				spellInfo->Effects[EFFECT_2].TargetA = SpellImplicitTargetInfo(TARGET_UNIT_CASTER);
+				spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_MOD_PERCENT_STAT;
+				spellInfo->Effects[EFFECT_2].MiscValue = UNIT_MOD_STAT_STAMINA;
+				spellInfo->Effects[EFFECT_2].MiscValueB = 2;
+				break;
+			case 17004:
+				spellInfo->SpellFamilyName = SPELLFAMILY_DRUID;
+
+				spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
+				spellInfo->Effects[EFFECT_1].BasePoints = 0;
+				spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_ATTACK_POWER_PCT;
+				spellInfo->Effects[EFFECT_1].MiscValueB = 7;
+
+				spellInfo->Effects[EFFECT_2].Effect = SPELL_EFFECT_APPLY_AURA;
+				spellInfo->Effects[EFFECT_2].BasePoints = 0;
+				spellInfo->Effects[EFFECT_2].TargetA = SpellImplicitTargetInfo(TARGET_UNIT_CASTER);
+				spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_MOD_PERCENT_STAT;
+				spellInfo->Effects[EFFECT_2].MiscValue = UNIT_MOD_STAT_STAMINA;
+				spellInfo->Effects[EFFECT_2].MiscValueB = 4;
+				break;
+			case 17005:
+				spellInfo->SpellFamilyName = SPELLFAMILY_DRUID;
+
+				spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
+				spellInfo->Effects[EFFECT_1].BasePoints = 0;
+				spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_ATTACK_POWER_PCT;
+				spellInfo->Effects[EFFECT_1].MiscValueB = 10;
+
+				spellInfo->Effects[EFFECT_2].Effect = SPELL_EFFECT_APPLY_AURA;
+				spellInfo->Effects[EFFECT_2].BasePoints = 0;
+				spellInfo->Effects[EFFECT_2].TargetA = SpellImplicitTargetInfo(TARGET_UNIT_CASTER);
+				spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_MOD_PERCENT_STAT;
+				spellInfo->Effects[EFFECT_2].MiscValue = UNIT_MOD_STAT_STAMINA;
+				spellInfo->Effects[EFFECT_2].MiscValueB = 6;
+				break;
             case 64422: // Sonic Screech (Auriaya)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
@@ -3095,6 +3141,22 @@ void SpellMgr::LoadSpellCustomAttr()
             case 100698:
                 spellInfo->Effects[0].TriggerSpell = 0;
                 break;
+			// Divine Fire (priest t12 2p bonus)
+            case 99131:
+                spellInfo->Effects[EFFECT_0].BasePoints = 412;
+                break;
+            // Flame Tide (Shaman t12 2p bonus)
+            case 99189:
+                spellInfo->Effects[EFFECT_0].BasePoints = 234;
+                break;
+            // Fire of Heaven (Paladin t12 2p bonus)
+            case 99069:
+                spellInfo->Effects[EFFECT_0].BasePoints = 1404;
+                break;
+			// Heartfire (Druid t12 2p bonus)
+			case 99007:
+				spellInfo->Effects[EFFECT_0].BasePoints = 187;
+				break;
             case 82935: // Caustic Slime
             case 88915: // Caustic Slime
             case 88916: // Caustic Slime
@@ -3166,6 +3228,10 @@ void SpellMgr::LoadSpellCustomAttr()
             case 92315:	// Mage - Pyromaniac(Dot after casting Pyroblast with Hot Strake + Using Impact set to 3 target)
                 spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_EFFECT_DUMMY;
                 break;
+			case 51460:	// Runic Corruption
+				spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_POWER_REGEN_PERCENT;
+				spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_DUMMY;
+				break;
             case 80380: // Disable Temporarily the Aura Effect "MELEE_SLOW"
                 spellInfo->Effects[1].BasePoints = 0;
                 break;
@@ -3297,6 +3363,12 @@ void SpellMgr::LoadSpellInfoCorrections()
             case 59735:
                 spellInfo->Effects[EFFECT_1].TriggerSpell = 59736;
                 break;
+			case 78788: // Fungal Growth Rank 1
+				spellInfo->Effects[EFFECT_0].MiscValue = 81289;
+				break;
+			case 78789: // Fungal Growth Rank 2
+				spellInfo->Effects[EFFECT_0].MiscValue = 81282;
+				break;
             case 52611: // Summon Skeletons
             case 52612: // Summon Skeletons
                 spellInfo->Effects[EFFECT_0].MiscValueB = 64;
@@ -3712,6 +3784,15 @@ void SpellMgr::LoadSpellInfoCorrections()
                 break;
             case 71169: // Shadow's Fate
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
+                break;
+            case 72347: // Lock Players and Tap Chest
+                spellInfo->AttributesEx3 &= ~SPELL_ATTR3_NO_INITIAL_AGGRO;
+                break;
+            case 73843: // Award Reputation - Boss Kill
+            case 73844: // Award Reputation - Boss Kill
+            case 73845: // Award Reputation - Boss Kill
+            case 73846: // Award Reputation - Boss Kill
+                spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(EFFECT_RADIUS_50000_YARDS); // 50000yd
                 break;
             case 72378: // Blood Nova (Deathbringer Saurfang)
             case 73058: // Blood Nova (Deathbringer Saurfang)
@@ -4223,6 +4304,11 @@ void SpellMgr::LoadSpellInfoCorrections()
             case 99488:
                 spellInfo->Effects[0].MiscValue |= 16;
                 break;
+			case 14751: // Chakra
+				spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+				spellInfo->Effects[0].MiscValue = 0;
+				spellInfo->Effects[0].SpellClassMask = flag96(0x0, 0x0, 0x0);
+				break;
 			// ISLE OF CONQUEST SPELLS
            //
             case 66551: // Teleport
