@@ -3832,8 +3832,8 @@ Vip.Rate.Gathering   = 2
 #        Default:     0 - Global announce for gm.
 #                     1 - Freeze player and Teleport Official Jail
 #                     2 - Kick player
-#					  3 - Suicide player
-#					  4 - Stum and Sleep Player
+#					            3 - Suicide player
+#					            4 - Stum and Sleep Player
 #
 #    Anticheat.MaxReports
 #        Description: Maximum of reports to set action.
