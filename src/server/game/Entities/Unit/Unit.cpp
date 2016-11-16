@@ -9696,7 +9696,9 @@ void Unit::ModSpellCastTime(SpellInfo const* spellInfo, int32 & castTime, Spell*
         castTime = int32(float(castTime) * m_modAttackSpeedPct[RANGED_ATTACK]);
     else if (spellInfo->SpellVisual[0] == 3881 && HasAura(67556)) // cooking with Chef Hat.
         castTime = 500;
-}
+    // Glyph & Enchant Instant
+		if (spellInfo->Effects[0].Effect == SPELL_EFFECT_ENCHANT_ITEM || spellInfo->Effects[0].Effect == SPELL_EFFECT_APPLY_GLYPH || spellInfo->Effects[0].Effect == SPELL_EFFECT_ENCHANT_ITEM_PRISMATIC)
+    castTime = 1;}
 
 void Unit::ModSpellDurationTime(SpellInfo const* spellInfo, int32 & duration, Spell* spell)
 {
