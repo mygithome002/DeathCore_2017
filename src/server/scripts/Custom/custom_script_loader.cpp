@@ -30,6 +30,7 @@ void AddSC_Professions_NPC();
 void AddSC_REFORGER_NPC();
 void AddSC_transmogriefer();
 void AddSC_Top5_Killers();
+void AddSC_NPC_TransmogDisplayVendor();
 void AddSC_VIP_NPC();
 void AddSC_NPC_VisualWeapon();
 void AddSC_weptransmog();
@@ -58,6 +59,7 @@ void AddCustomScripts()
     AddSC_REFORGER_NPC();
     AddSC_transmogriefer();
     AddSC_Top5_Killers();
+	AddSC_NPC_TransmogDisplayVendor();
     AddSC_VIP_NPC();
     AddSC_NPC_VisualWeapon();
     AddSC_weptransmog();
