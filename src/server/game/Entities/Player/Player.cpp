@@ -21788,14 +21788,16 @@ bool Player::BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 vendorslot, uin
         // honor points price
         if (GetHonorPoints() < (iece->reqhonorpoints * count))
         {
-            SendEquipError(EQUIP_ERR_NOT_ENOUGH_HONOR_POINTS, nullptr, nullptr);
+//            SendEquipError(EQUIP_ERR_NOT_ENOUGH_HONOR_POINTS, nullptr, nullptr);
+			ChatHandler(GetSession()).PSendSysMessage("Para a compra deste item `%s` Você precisa de %u Honor Points.", pProto->Name1, (iece->reqhonorpoints * count));
             return false;
         }
 
         // arena points price
         if (GetArenaPoints() < (iece->reqarenapoints * count))
         {
-            SendEquipError(EQUIP_ERR_NOT_ENOUGH_ARENA_POINTS, nullptr, nullptr);
+//            SendEquipError(EQUIP_ERR_NOT_ENOUGH_ARENA_POINTS, nullptr, nullptr);
+			ChatHandler(GetSession()).PSendSysMessage("Para a compra deste item `%s` Você precisa de %u Arena Points.", pProto->Name1, (iece->reqarenapoints * count));
             return false;
         }
 
@@ -21804,7 +21806,9 @@ bool Player::BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 vendorslot, uin
         {
             if (iece->reqitem[i] && !HasItemCount(iece->reqitem[i], (iece->reqitemcount[i] * count)))
             {
-                SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, nullptr, nullptr);
+   //             SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, nullptr, nullptr);
+				ItemTemplate const* item = sObjectMgr->GetItemTemplate(iece->reqitem[i]);
+				ChatHandler(GetSession()).PSendSysMessage("Para a compra deste item `%s` Você precisa de %u %s.", pProto->Name1, (iece->reqitemcount[i] * count), item->Name1);
                 return false;
             }
         }
