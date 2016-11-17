@@ -21716,6 +21716,7 @@ bool Player::BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 vendorslot, uin
     {
         TransmogDisplayVendorMgr::HandleTransmogrify(this, creature, vendorslot, item);
         return false;
+    }
 
     if (!(pProto->AllowableClass & getClassMask()) && pProto->Bonding == BIND_WHEN_PICKED_UP && !IsGameMaster())
     {
