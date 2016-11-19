@@ -71,7 +71,7 @@ class item_beastmaster : public ItemScript
     public:
         item_beastmaster() : ItemScript("item_beastmaster") {}
  
-        void CreatePet(Player* player, Item* item, uint32 entry)
+        void CreatePet(Player* player, Item* /*item*/, uint32 entry)
         {
             if (player->GetPet())
             {

@@ -79,7 +79,7 @@ public:
 		{
 			for (Group::MemberSlotList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
 			{
-				Group::MemberSlot const &slot = *itr;
+				Group::MemberSlot const& slot = *itr;
 				Player* deadPlayersInGroup = ObjectAccessor::FindPlayer((*itr).guid);
 
 				//skip if player/s is/are offline //--This check is mandatory. the server will crash without it
