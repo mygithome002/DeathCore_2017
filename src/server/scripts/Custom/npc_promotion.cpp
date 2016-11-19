@@ -43,7 +43,7 @@ public:
         return true;
     }
  
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 actions)
+    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 actions)
     {
 	    
 		if (player->getLevel() == 80) 

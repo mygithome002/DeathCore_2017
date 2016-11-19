@@ -23,7 +23,7 @@ class item_spawn_teleporter : public ItemScript
 public:
 	item_spawn_teleporter() : ItemScript("item_spawn_teleporter") { }
 
-	bool OnUse(Player* player, Item* item, SpellCastTargets const&) override
+	bool OnUse(Player* player, Item* /*item*/, SpellCastTargets const&) override
 	{
   		player->SummonCreature(481851,player->GetPositionX() ,player->GetPositionY()+10, player->GetPositionZ(), 0,TEMPSUMMON_TIMED_DESPAWN,30000);
 		ChatHandler(player->GetSession()).SendSysMessage("O teleporter foi criado, você tem 30 segundos para escolher para onde ir!");

@@ -49,7 +49,7 @@ public:
 		return true;
 	}
 
-	bool OnGossipSelect(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+	bool OnGossipSelect(Player *player, Creature *_Creature, uint32 /*sender*/, uint32 action)
 	{
 
 		switch(action)
