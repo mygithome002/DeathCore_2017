@@ -113,7 +113,7 @@ class item_beastmaster : public ItemScript
         }
  
  
-        bool OnUse(Player* player, Item* item, SpellCastTargets const& targets) override
+        bool OnUse(Player* player, Item* item, SpellCastTargets const& /*targets*/) override
         {
             if (player->IsInCombat())
             {
