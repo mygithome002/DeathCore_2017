@@ -135,7 +135,7 @@ class item_beastmaster : public ItemScript
             return true;
         }
  
-        void OnGossipSelect(Player* player, Item* item, uint32 sender, uint32 action) override
+        void OnGossipSelect(Player* player, Item* item, uint32 /*sender*/, uint32 action) override
         {
            
             ClearGossipMenuFor(player);
