@@ -34,7 +34,7 @@ public:
 		return false;
 	}
 
-	bool OnUse(Player* playerWhoUsesTheItem, Item* item, SpellCastTargets const& /*targets*/)
+	bool OnUse(Player* playerWhoUsesTheItem, Item* /*item*/, SpellCastTargets const& /*targets*/)
 	{
 		Group* group = playerWhoUsesTheItem->GetGroup();
 		Group::MemberSlotList const &members = group->GetMemberSlots();
