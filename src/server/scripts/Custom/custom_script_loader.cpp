@@ -20,6 +20,7 @@ void AddSC_VipSystemCommands();
 void AddSC_System_Censure();
 void AddSC_NoFarming();
 void AddSC_fake_commandscript();
+void AddSC_XpWeekend();
 void AddSC_Reset();
 void AddSC_item_beastmaster();
 void AddSC_example_ItemGossip();
@@ -54,6 +55,7 @@ void AddCustomScripts()
     AddSC_System_Censure();
     AddSC_NoFarming();
     AddSC_fake_commandscript();
+	AddSC_XpWeekend();
     AddSC_Reset();
 	AddSC_item_beastmaster();
     AddSC_example_ItemGossip();
