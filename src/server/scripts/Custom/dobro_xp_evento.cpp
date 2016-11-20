@@ -38,7 +38,7 @@ if(sConfigMgr->GetBoolDefault("DoubleXP.Enable", true))
         amount = amount*2; }
 }
 }
-    void OnLogin(Player* player, bool firstLogin)
+    void OnLogin(Player* player, bool loginFirst)
     {
 if(sConfigMgr->GetBoolDefault("DoubleXP.Enable", true))
 {
