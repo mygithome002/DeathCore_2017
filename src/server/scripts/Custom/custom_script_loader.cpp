@@ -32,6 +32,7 @@ void AddSC_Npc_Beastmaster();
 void AddSC_Tools_NPC();
 void AddSC_NDP_NpcMorph();
 void AddSC_Professions_NPC();
+void AddSC_npc_promo();
 void AddSC_REFORGER_NPC();
 void AddSC_transmogriefer();
 void AddSC_Top5_Killers();
@@ -67,6 +68,7 @@ void AddCustomScripts()
     AddSC_Tools_NPC();
     AddSC_NDP_NpcMorph();
     AddSC_Professions_NPC();
+	AddSC_npc_promo();
     AddSC_REFORGER_NPC();
     AddSC_transmogriefer();
     AddSC_Top5_Killers();
