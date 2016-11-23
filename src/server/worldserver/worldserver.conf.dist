@@ -43,6 +43,7 @@
 #    SYSTEM AUTO QUEST COMPLETE
 #    SYSTEM TRANSMOGRIFICATION
 #    SYSTEM FATIGUE TIMER
+#    SYSTEM ENCHANTMENT
 #
 ###################################################################################################
 
@@ -4122,3 +4123,37 @@ Transmogrification.SetCopperCost = 0
 Fatigue.Enabled = 1
 
 ###################################################################################################
+################################SYSTEM ENCHANTMENT#################################################
+###################################################################################################
+#
+# Charge.Enchantments
+#        Default = 1 (Enabled)
+#                = 0 (Disabled)
+ 
+Charge.Enchantments = 1
+ 
+#
+# Type.Token
+#      
+#        Default = 1 (Item[Token])
+#                = 2 (Gold)
+#      
+ 
+Type.Token = 1
+ 
+#
+# IDToken
+#      Id of item
+#      Default = 49426 Emblema of Frost
+ 
+IDToken = 49426
+ 
+#
+# Value.Enchants
+#      Value of each charm
+#      Default = 100
+ 
+Value.Enchants = 1
+ 
+#
+#####################################################
