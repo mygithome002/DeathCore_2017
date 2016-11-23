@@ -23,6 +23,8 @@
 #include "ScriptedGossip.h"
 #include "Language.h"
 
+static const uint32 buffIdstools[] = { 43223, 5862, 33377, 33779, 31305, 70692, 42995 };
+
 class Tools_NPC : public CreatureScript
 {
 public:
@@ -30,7 +32,7 @@ public:
  
 	bool OnGossipHello(Player * player, Creature * creature)
         {
-		AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface\\icons\\Spell_Nature_Regenerate:30:30:-15|t Restaurar Vida e Mana", GOSSIP_SENDER_MAIN, 1);
+		AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface\\icons\\Spell_Nature_Regenerate:30:30:-15|t Buffs - Restaurar Vida/Mana", GOSSIP_SENDER_MAIN, 1);
 		AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface\\icons\\Spell_Shadow_UnstableAffliction_1:30:30:-15|t Resetar Instances", GOSSIP_SENDER_MAIN, 2);
 		AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface\\icons\\SPELL_HOLY_BORROWEDTIME:30:30:-15|t Resetar Cooldowns", GOSSIP_SENDER_MAIN, 3);
 		AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface\\icons\\Achievement_BG_AB_defendflags:30:30:-15|t Resetar Combate", GOSSIP_SENDER_MAIN, 4);
@@ -56,9 +58,10 @@ public:
                         }
                         else if(player->getPowerType() == POWER_MANA)
                                 player->SetPower(POWER_MANA, player->GetMaxPower(POWER_MANA));
- 
+						for (int i = 0; i < sizeof(buffIdstools) / sizeof(*buffIdstools); ++i)
+							player->CastSpell(player, buffIdstools[i]);
 							player->SetHealth(player->GetMaxHealth());
-							player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFVida e Mana Resetados com Sucesso!");
+							player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFRecebeu Buffs e sua Vida/Mana foram restaurados com sucesso!");
 							player->CastSpell(player, 36400);
 							CloseGossipMenuFor(player);
                         break;
@@ -72,7 +75,7 @@ public:
                                         player->UnbindInstance(itr, Difficulty(i));
                                 }
                         }
-						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFInstances Resetados com Sucesso!");
+						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFInstances resetados com sucesso!");
 						player->CastSpell(player, 59908);
                         CloseGossipMenuFor(player);
                         break;
@@ -86,7 +89,7 @@ public:
                         }
  
 						player->GetSpellHistory()->ResetAllCooldowns();
-						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFCooldowns Resetados com Sucesso!");
+						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFCooldowns resetados com sucesso!");
 						player->CastSpell(player, 463);
                         CloseGossipMenuFor(player);
                         break;
@@ -116,7 +119,7 @@ public:
                case 7: // Resetar Talents
                         player->ResetTalents(true);
                         player->SendTalentsInfoData(false);
-						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFTalentos Resetados com Sucesso!");
+						player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFTalentos resetados com sucesso!");
 						player->CastSpell(player, 19484);
                         CloseGossipMenuFor(player);
                         break;
