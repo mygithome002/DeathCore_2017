@@ -1,4 +1,6 @@
---
+-- Added System MultiVendor
+-- By Bodeguero for DeathCore.
+
 SET @ENTRY = (SELECT max(entry)+1 FROM creature_template);
 SET @MENU_ID = (SELECT max(menu_id)+1 FROM gossip_menu_option);
 
