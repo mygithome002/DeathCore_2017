@@ -416,7 +416,7 @@ bool playerCheckClasse(uint8 playerClass, unsigned char pcc)
 	}
 	return (Show);
 }
-void Acao(Player* player, Creature* creature, uint32 id)
+void Acao(Player* /*player*/, Creature* /*creature*/, uint32 id)
 {
 	switch (id)
 	{
