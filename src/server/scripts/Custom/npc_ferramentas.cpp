@@ -23,7 +23,7 @@
 #include "ScriptedGossip.h"
 #include "Language.h"
 
-uint32 vAuras[] = { 43223, 5862, 33377, 33779, 31305, 70692, 42995 };
+uint32 vAuras1[] = { 43223, 5862, 33377, 33779, 31305, 70692, 42995 };
 
 class Tools_NPC : public CreatureScript
 {
@@ -58,8 +58,8 @@ public:
                         }
                         else if(player->getPowerType() == POWER_MANA)
                                 player->SetPower(POWER_MANA, player->GetMaxPower(POWER_MANA));
-						for (uint32 i = 0; i < (sizeof(vAuras) / sizeof(*vAuras)); i++)
-							player->AddAura(vAuras[i], player);
+						for (uint32 i = 0; i < (sizeof(vAuras1) / sizeof(*vAuras1)); i++)
+							player->AddAura(vAuras1[i], player);
 							player->SetHealth(player->GetMaxHealth());
 							player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFRecebeu Buffs e sua Vida/Mana foram restaurados com sucesso!");
 							player->CastSpell(player, 36400);
