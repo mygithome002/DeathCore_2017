@@ -23,7 +23,6 @@
 
 const uint32 RANK_VIP = (uint32)SEC_VIP;
 
-uint32 vAuras1[] = { 59908/*21562, 20217, 6673, 57330, 3714, 467, 469, 43499, 5862, 24705, 26035, 22888, 26393, 35076, 34410, 24425, 19740, 1126*/};
 uint32 vAuras[] = { 59908,21562, 20217, 6673, 57330, 3714, 467, 469, 43499, 5862, 24705, 26035, 22888, 26393, 35076, 34410, 24425, 19740, 1126};
 
 using namespace std;
@@ -236,12 +235,6 @@ public:
     static bool HandleVipInfoCommand(ChatHandler* handler, const char* /*args*/)
     {
         Player* player = handler->GetSession()->GetPlayer();
-
-        if (IsValidToUse(player, handler))
-        {
-            for (string::size_type i = 0; i < (sizeof(vAuras1) / sizeof(*vAuras1)); i++)
-                player->AddAura(vAuras1[i], player);
-        }
 
         QueryResult result = LoginDatabase.PQuery("SELECT vipTime FROM account_access WHERE id = %u", player->GetSession()->GetAccountId());
 
