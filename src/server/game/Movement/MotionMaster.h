@@ -24,6 +24,7 @@
 #include "Object.h"
 #include "MoveSplineInitArgs.h"
 #include "SplineChain.h"
+#include "WaypointManager.h"
 
 class MovementGenerator;
 class Unit;
@@ -162,6 +163,7 @@ class TC_GAME_API MotionMaster
         void MoveTaxiFlight(uint32 path, uint32 pathnode);
         void MoveDistract(uint32 time);
         void MovePath(uint32 path_id, bool repeatable);
+        void MovePath(WaypointPath& path, bool repeatable);
         void MoveRotate(uint32 time, RotateDirection direction);
 
     private:
