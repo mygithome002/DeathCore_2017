@@ -23,7 +23,7 @@
 #include "ScriptedGossip.h"
 #include "Language.h"
 
-uint32 vAuras1[] = { 43223, 5862, 33377, 33779, 31305, 70692, 42995 };
+uint32 vAuras1[] = {21562, 20217, 6673, 57330, 3714};
 
 class Tools_NPC : public CreatureScript
 {
