@@ -472,7 +472,7 @@ bool CobrarEncantos(Player* player)
 				return true;
 			}
 			else{
-				ChatHandler(player->GetSession()).PSendSysMessage("|cffFF4500Você não tem o valor suficiente para encantar este item. Valor necessário:|cffFF4500%u|r", vEncanto);
+				ChatHandler(player->GetSession()).PSendSysMessage("|cffFF4500Você não tem o valor suficiente para encantar este item. Valor necessário:|cffFF4500%u|r |cffffcc00 Emblem Of Frost|r", vEncanto);
 				return false;
 			}
 		}
@@ -484,7 +484,7 @@ bool CobrarEncantos(Player* player)
 					return true;
 				}
 				else{
-					ChatHandler(player->GetSession()).PSendSysMessage("|cffFF4500Você não tem Gold sufuciente para encantar este item. Valor necessário:|cffFF4500%u|rK de gold", vEncanto);
+					ChatHandler(player->GetSession()).PSendSysMessage("|cffFF4500Você não tem Gold sufuciente para encantar este item. Valor necessário:|cffFF4500%u|r G |cffffcc00de Gold|r", vEncanto);
 					return false;
 				}
 			}
@@ -590,7 +590,7 @@ void Enchant(Player* player, Creature* creature, Item* item, uint32 enchantid)
 	std::string item_name = item->GetTemplate()->Name1.c_str();
 	//	char* message;
 	if (item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT) != 0){
-		player->GetSession()->SendNotification("|cff9400D3%s |cff00FF00Encantamento realizado com sucesso!", item->GetTemplate()->Name1.c_str());
+		player->GetSession()->SendNotification("|cff9400D3%s |cff00FF00encantamento realizado com sucesso!", item->GetTemplate()->Name1.c_str());
 		player->CastSpell(player, 46325, false); // Spell só para visual //26410
 		player->CastSpell(creature, 48340, false); // Spell só para visual //26410
 	}
@@ -608,7 +608,7 @@ bool RemoveEnchantS(Player* player, Item* item)
 	if (item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT) != 0)
 	{
 		item->ClearEnchantment(PERM_ENCHANTMENT_SLOT);
-		player->GetSession()->SendNotification("|cff9400D3%s |cff7CFC00Encantamento removido com sucesso!", item->GetTemplate()->Name1.c_str());
+		player->GetSession()->SendNotification("|cff9400D3%s |cff7CFC00encantamento removido com sucesso!", item->GetTemplate()->Name1.c_str());
 		return true;		
 	}
 	else

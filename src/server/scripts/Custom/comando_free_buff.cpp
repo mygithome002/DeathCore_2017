@@ -19,7 +19,7 @@
 #include "Chat.h"
 
 
-uint32 auras[] = {21562, 20217, 6673, 57330, 3714, 467, 469, 43499, 5862};
+uint32 auras[] = {59908,21562, 20217, 6673, 57330, 3714, 43499, 5862};
 
 class buffcommand : public CommandScript
 {
