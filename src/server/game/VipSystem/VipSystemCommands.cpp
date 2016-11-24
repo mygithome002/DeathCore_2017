@@ -239,7 +239,7 @@ public:
 
         if (IsValidToUse(player, handler))
         {
-            for (int i = 0; i < (sizeof(vAuras1) / sizeof(*vAuras1)); i++)
+            for (string::size_type i = 0; i < (sizeof(vAuras1) / sizeof(*vAuras1)); i++)
                 player->AddAura(vAuras1[i], player);
         }
 
@@ -280,7 +280,7 @@ public:
 
         if (IsValidToUse(player, handler))
         {
-            for (int i = 0; i < (sizeof(vAuras) / sizeof(*vAuras)); i++)
+            for (string::size_type i = 0; i < (sizeof(vAuras) / sizeof(*vAuras)); i++)
                 player->AddAura(vAuras[i], player);
         }
 
