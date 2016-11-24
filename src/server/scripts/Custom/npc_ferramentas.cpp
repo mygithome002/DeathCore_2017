@@ -58,7 +58,7 @@ public:
                         }
                         else if(player->getPowerType() == POWER_MANA)
                                 player->SetPower(POWER_MANA, player->GetMaxPower(POWER_MANA));
-						for (int i = 0; i < sizeof(buffIdstools) / sizeof(*buffIdstools); ++i)
+						for (string::size_type i = 0; i < sizeof(buffIdstools) / sizeof(*buffIdstools); ++i)
 							player->CastSpell(player, buffIdstools[i]);
 							player->SetHealth(player->GetMaxHealth());
 							player->GetSession()->SendNotification("|cffFFFF00Ferramentas \n |cffFFFFFFRecebeu Buffs e sua Vida/Mana foram restaurados com sucesso!");

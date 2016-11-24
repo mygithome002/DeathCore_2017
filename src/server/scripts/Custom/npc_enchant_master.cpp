@@ -351,7 +351,7 @@ MenusLista mvData[] =
 	{ 98, 0, 6, 11, 0, 0, 0, 0, "|TInterface/PaperDoll/UI-PaperDoll-Slot-Finger:30:30:-15:0|tFinger2->"},
 	{ 98, 99, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" }
 };
-uint32 GetText(unsigned int menu, Player* pPlayer)
+uint32 GetText(unsigned int menu, Player* /*pPlayer*/)
 {
 	uint32 TEXT = 50030; //Default
 	switch (mvData[menu].Menu)
