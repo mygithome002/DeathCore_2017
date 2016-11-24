@@ -502,7 +502,6 @@ void Enchant(Player* player, Creature* creature, Item* item, uint32 enchantid)
 	if (!CobrarEncantos(player))
 		return;
 
-	uint32 item_id = 0;
 	switch (enchantid)
 	{
 	case ENCHANT_WEP_GREATER_SPELL_POWER:
