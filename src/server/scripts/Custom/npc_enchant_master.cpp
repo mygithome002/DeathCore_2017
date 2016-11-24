@@ -84,14 +84,14 @@ struct MenusLista
 	string Nome;
 	//string NomeConfirm;
 };
-std::string icone = "|TInterface/PaperDoll/UI-PaperDoll-Slot-Head:30:30:30:30|t Rings";
+std::string icone = "Rings";
 MenusLista mvData[] =
 {
 	//{ Menu, subMenu, Icone, Slot, Skill, SkillValor, Classe, AcaoID, Nome },
 	
-	{ 1, 100, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\spell_holy_greaterheal:18:18:-15:0|t[Aplicar Encantamentos]" },
+	{ 1, 100, 4, 0, 0, 0, 0, 0, "[Aplicar Encantamentos]" },
 	//Remover Encantamentos
-	{ 1, 99, 6, 0, 0, 0, 0, 0, "|TInterface\\icons\\INV_Enchant_Disenchant:18:18:-15:0|t[Remover Encantamentos!]" },
+	{ 1, 99, 6, 0, 0, 0, 0, 0, "[Remover Encantamentos]" },
 
 	{ 100, 2, 4, 0, 0, 0, 0, 0, "[Enchant Weapon]" },
 	{ 100, 111, 4, 0, 0, 0, 0, 0, "[Enchant OffHand]" },
@@ -106,12 +106,12 @@ MenusLista mvData[] =
 	{ 100, 10, 4, 0, 0, 0, 0, 0, "[Enchant Chest]" },
 	{ 100, 11, 4, 0, 0, 0, 0, 0, "[Enchant Bracers]" },
 	{ 100, 12, 4, 0, 0, 0, 0, 0, "[Enchant Gloves]" },
-	{ 100, 150, 4, 0, 0, 0, 0, 0, "[NULL]" },
+	//{ 100, 150, 4, 0, 0, 0, 0, 0, "[NULL]" },
 	{ 100, 13, 4, 0, 0, 0, 0, 0, "[Eternal Belt Buckle]" }, //EQUIPMENT_SLOT_WAIST
 	{ 100, 14, 4, 0, 0, 0, 0, 0, "[Enchant Legs]" },	
 	{ 100, 15, 4, 0, 0, 0, 0, 0, "[Enchant Boots]" },
 	{ 100, 16, 4, 0, 333, 450, 0, 0, "Enchant Rings" }, // Requer SKILL_ENCHANTING 450
-	{ 100, 1, 8, 99, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20|t<< Voltar|r" },
+	{ 100, 1, 8, 99, 0, 0, 0, 0, "<< Voltar" },
 	
 	{ 99, 0, 6, 15, 0, 0, 0, 0, "[Enchant Weapon]" },
 	{ 99, 0, 6, 16, 0, 0, 0, 0, "[Enchant OffHand]" },
@@ -125,8 +125,8 @@ MenusLista mvData[] =
 	{ 99, 0, 6, 5, 0, 0, 0, 0, "[Eternal Belt Buckle]" },
 	{ 99, 0, 6, 6, 0, 0, 0, 0, "[Enchant Legs]" },
 	{ 99, 0, 6, 7, 0, 0, 0, 0, "[Enchant Boots]" },
-	{ 99, 98, 6, 0, 333, 450, 0, 0, "Enchant Rings" },
-	{ 99, 1, 8, 99, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20|t<< Voltar|r" },
+	{ 99, 98, 6, 0, 333, 450, 0, 0, "[Enchant Rings]" },
+	{ 99, 1, 8, 99, 0, 0, 0, 0, "<< Voltar" },
 	
 	// Show1HWeaponMenu			EQUIPMENT_SLOT_MAINHAND		
 	{ 2, 0, 2, 15, 0, 0, 6, 3369, "Rune of Cinderglacier" }, // Exclusivo para classe DK
@@ -145,8 +145,8 @@ MenusLista mvData[] =
 	{ 2, 0, 2, 15, 0, 0, 0, 2675, "Battlemaster -- Chance of heal on hit" },
 	{ 2, 0, 2, 15, 0, 0, 0, 3789, "Berserking -- 400 Attack Power Proc" },
 	{ 2, 0, 2, 15, 0, 0, 0, 1103, "Exceptional Agility -- 26 Agility" },
-	{ 2, 5, 2, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_book_04:20|tMias+ >>|r" }, //Proxima tela
-	{ 2, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20|t<< Voltar|r" },
+	{ 2, 5, 2, 0, 0, 0, 0, 0, "Próximo>>" }, //Proxima tela
+	{ 2, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 	
 	{ 5, 0, 2, 15, 0, 0, 0, 3844, "Exceptional Spirit -- 45 Spirit" },
 	{ 5, 0, 2, 15, 0, 0, 0, 3225, "Executioner -- 120 Arm Pen Proc" },
@@ -157,8 +157,8 @@ MenusLista mvData[] =
 	{ 5, 0, 2, 15, 0, 0, 0, 3833, "Superior Potency -- 65 Attack Power" },
 	{ 5, 0, 2, 15, 0, 0, 0, 3851, "Titanguard -- 50 Stamina" },
 	{ 5, 0, 2, 15, 0, 0, 0, 3731, "Titanium Weapon Chain -- Less Disarm Time" },
-	{ 5, 2, 2, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_book_04:20|t<< Anterior-|r" },
-	{ 5, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20|t<< Voltar|r" },
+	{ 5, 2, 2, 0, 0, 0, 0, 0, "<< Anterior" },
+	{ 5, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	// Show1HWeaponMenu			EQUIPMENT_SLOT_OFFHAND		
 	{ 111, 0, 2, 16, 0, 0, 6, 3369, "Rune of Cinderglacier" }, // Exclusivo para classe DK
@@ -177,8 +177,8 @@ MenusLista mvData[] =
 	{ 111, 0, 2, 16, 0, 0, 0, 2675, "Battlemaster -- Chance of heal on hit" },
 	{ 111, 0, 2, 16, 0, 0, 0, 3789, "Berserking -- 400 Attack Power Proc" },
 	{ 111, 0, 2, 16, 0, 0, 0, 1103, "Exceptional Agility -- 26 Agility" },
-	{ 111, 55, 2, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_book_04:20|tMias+ >>|r" }, //Proxima tela
-	{ 111, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20|t<< Voltar|r" },
+	{ 111, 55, 2, 0, 0, 0, 0, 0, "Próximo >>" }, //Proxima tela
+	{ 111, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	{ 55, 0, 2, 16, 0, 0, 0, 3844, "Exceptional Spirit -- 45 Spirit" },
 	{ 55, 0, 2, 16, 0, 0, 0, 3225, "Executioner -- 120 Arm Pen Proc" },
@@ -189,8 +189,8 @@ MenusLista mvData[] =
 	{ 55, 0, 2, 16, 0, 0, 0, 3833, "Superior Potency -- 65 Attack Power" },
 	{ 55, 0, 2, 16, 0, 0, 0, 3851, "Titanguard -- 50 Stamina" },
 	{ 55, 0, 2, 16, 0, 0, 0, 3731, "Titanium Weapon Chain -- Less Disarm Time" },
-	{ 55, 111, 2, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_book_04:20|t<< Anterior-|r" },
-	{ 55, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20|t<< Voltar|r" },
+	{ 55, 111, 2, 0, 0, 0, 0, 0, "<< Anterior" },
+	{ 55, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	// Show2HWeaponMenu 			EQUIPMENT_SLOT_MAINHAND			
 	{ 3, 0, 2, 15, 0, 0, 6, 3369, "Rune of Cinderglacier" }, // Exclusivo para classe DK
@@ -207,7 +207,7 @@ MenusLista mvData[] =
 	{ 3, 0, 2, 15, 0, 0, 0, 2670, "Major Agility -- 35 Agility" },
 	{ 3, 0, 2, 15, 0, 0, 0, 3827, "Massacre -- 110 Attack Power" },
 	{ 3, 0, 2, 15, 0, 0, 0, 2673, "Mongoose --120 Agility Proc" },
-	{ 3, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20|t<< Voltar|r" },
+	{ 3, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	// Show2HWeaponMenu 			EQUIPMENT_SLOT_OFFHAND  Só para Warrior	
 	{ 112, 0, 2, 16, 0, 0, 1, 3789, "Berserking -- 400 Attack Power Proc" },
@@ -216,140 +216,140 @@ MenusLista mvData[] =
 	{ 112, 0, 2, 16, 0, 0, 1, 2670, "Major Agility -- 35 Agility" },
 	{ 112, 0, 2, 16, 0, 0, 1, 3827, "Massacre -- 110 Attack Power" },
 	{ 112, 0, 2, 16, 0, 0, 1, 2673, "Mongoose --120 Agility Proc" },
-	{ 112, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20|t<< Voltar|r" },
+	{ 112, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	//ShowRangedMenu            EQUIPMENT_SLOT_RANGED
-	{ 4, 0, 2, 17, 0, 0, 0, 3608, "|TInterface\\icons\\inv_misc_spyglass_02:18:18:-15:0|tHeartseeker Scope" }, // Hunter e warrior
-	{ 4, 0, 2, 17, 0, 0, 3, 3607, "|TInterface\\icons\\inv_misc_spyglass_02:18:18:-15:0|tSun Scope" }, // Somente para hunter
-	{ 4, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20|t<< Voltar|r" },
+	{ 4, 0, 2, 17, 0, 0, 0, 3608, "Heartseeker Scope" }, // Hunter e warrior
+	{ 4, 0, 2, 17, 0, 0, 3, 3607, "Sun Scope" }, // Somente para hunter
+	{ 4, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	//ShowShieldMenu           EQUIPMENT_SLOT_OFFHAND   INVTYPE_SHIELD
-	{ 6, 0, 2, 16, 0, 0, 0, 1952, "|TInterface\\icons\\inv_misc_note_01:18:18:-15:0|tDefense -- 20 Defense" }, //30:30:-18:0
-	{ 6, 0, 2, 16, 0, 0, 0, 1128, "|TInterface\\icons\\inv_misc_note_01:18:18:-15:0|tGreater Intellect -- 25 Intellect" },
-	{ 6, 0, 2, 16, 0, 0, 0, 1071, "|TInterface\\icons\\inv_misc_note_01:18:18:-15:0|tMajor Stamina -- 18 Stamina" },
-	{ 6, 0, 2, 16, 0, 0, 0, 3229, "|TInterface\\icons\\inv_misc_note_01:18:18:-15:0|tResilience -- 12 Resilience" },
-	{ 6, 0, 2, 16, 0, 0, 0, 3849, "|TInterface\\icons\\inv_misc_note_01:18:18:-15:0|tTitanium Plating -- 36 Block" },
-	{ 6, 0, 2, 16, 0, 0, 0, 3748, "|TInterface\\icons\\inv_misc_note_01:18:18:-15:0|tTitanium Shield Spike -- 81 Block + 50% less Disarm" },
-	{ 6, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 6, 0, 2, 16, 0, 0, 0, 1952, "Defense -- 20 Defense" }, //30:30:-18:0
+	{ 6, 0, 2, 16, 0, 0, 0, 1128, "Greater Intellect -- 25 Intellect" },
+	{ 6, 0, 2, 16, 0, 0, 0, 1071, "Major Stamina -- 18 Stamina" },
+	{ 6, 0, 2, 16, 0, 0, 0, 3229, "Resilience -- 12 Resilience" },
+	{ 6, 0, 2, 16, 0, 0, 0, 3849, "Titanium Plating -- 36 Block" },
+	{ 6, 0, 2, 16, 0, 0, 0, 3748, "Titanium Shield Spike -- 81 Block + 50% less Disarm" },
+	{ 6, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	//ShowHeadMenu	      0 = EQUIPMENT_SLOT_HEAD	
-	{ 7, 0, 2, 0, 0, 0, 0, 3819, "|TInterface\\icons\\ability_warrior_shieldmastery:18:18:-15:0|tArc. - 30 Spell Power + 10 Mp5" },
-	{ 7, 0, 2, 0, 0, 0, 0, 3820, "|TInterface\\icons\\ability_warrior_shieldmastery:18:18:-15:0|tArc. - 30 Spell Power + 20 Crit" },
-	{ 7, 0, 2, 0, 0, 0, 0, 3796, "|TInterface\\icons\\ability_warrior_shieldmastery:18:18:-15:0|tArc. - 29 Spell Power + 20 Resil Rat" },
-	{ 7, 0, 2, 0, 0, 0, 0, 3842, "|TInterface\\icons\\ability_warrior_shieldmastery:18:18:-15:0|tArc. - 30 Stamina + 25 Resil" },
-	{ 7, 0, 2, 0, 0, 0, 0, 3818, "|TInterface\\icons\\ability_warrior_shieldmastery:18:18:-15:0|tArc. - 37 Stamina + 20 Defense" },
-	{ 7, 0, 2, 0, 0, 0, 0, 3817, "|TInterface\\icons\\ability_warrior_shieldmastery:18:18:-15:0|tArc. - 50 Attack Power + 20 Crit" },
-	{ 7, 0, 2, 0, 0, 0, 0, 3795, "|TInterface\\icons\\ability_warrior_shieldmastery:18:18:-15:0|tArc. - 50 Attack Power + 20 Resil" },
-	{ 7, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 7, 0, 2, 0, 0, 0, 0, 3819, "Arc. - 30 Spell Power + 10 Mp5" },
+	{ 7, 0, 2, 0, 0, 0, 0, 3820, "Arc. - 30 Spell Power + 20 Crit" },
+	{ 7, 0, 2, 0, 0, 0, 0, 3796, "Arc. - 29 Spell Power + 20 Resil Rat" },
+	{ 7, 0, 2, 0, 0, 0, 0, 3842, "Arc. - 30 Stamina + 25 Resil" },
+	{ 7, 0, 2, 0, 0, 0, 0, 3818, "Arc. - 37 Stamina + 20 Defense" },
+	{ 7, 0, 2, 0, 0, 0, 0, 3817, "Arc. - 50 Attack Power + 20 Crit" },
+	{ 7, 0, 2, 0, 0, 0, 0, 3795, "Arc. - 50 Attack Power + 20 Resil" },
+	{ 7, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	//ShowShouldersMenu      EQUIPMENT_SLOT_SHOULDERS
-	{ 8, 0, 2, 2, 773, 450, 0, 3835, "|TInterface\\icons\\inv_axe_85:18:18:-15:0|tMaster's Inscription of the Axe" }, // Requer SKILL_INSCRIPTION 450
-	{ 8, 0, 2, 2, 773, 450, 0, 3836, "|TInterface\\icons\\inv_axe_85:18:18:-15:0|tMaster's Inscription of the Crag" }, // Requer SKILL_INSCRIPTION 450
-	{ 8, 0, 2, 2, 773, 450, 0, 3837, "|TInterface\\icons\\inv_axe_85:18:18:-15:0|tMaster's Inscription of the Pinnacle" }, // Requer SKILL_INSCRIPTION 450
-	{ 8, 0, 2, 2, 773, 450, 0, 3838, "|TInterface\\icons\\inv_axe_86:18:18:-15:0|tMaster's Inscription of the Storm" }, // Requer SKILL_INSCRIPTION 450
-	{ 8, 0, 2, 2, 0, 0, 0, 3808, "|TInterface\\icons\\inv_axe_85:18:18:-15:0|tAxe - 40 Attack Power + 15 Crit" },
-	{ 8, 0, 2, 2, 0, 0, 0, 3809, "|TInterface\\icons\\inv_axe_85:18:18:-15:0|tCrag - 24 Spell Power + 8 Mp5" },
-	{ 8, 0, 2, 2, 0, 0, 0, 3852, "|TInterface\\icons\\inv_axe_85:18:18:-15:0|tPinnacle - 30 Stamina + 15 Resil" },
-	{ 8, 0, 2, 2, 0, 0, 0, 3811, "|TInterface\\icons\\inv_axe_85:18:18:-15:0|tGladiator - 20 Dodge + 15 Defense" },
-	{ 8, 0, 2, 2, 0, 0, 0, 3810, "|TInterface\\icons\\inv_axe_85:18:18:-15:0|tStorm - 24 Spell Power + 15 Crit" },
-	{ 8, 0, 2, 2, 0, 0, 0, 3794, "|TInterface\\icons\\inv_axe_85:18:18:-15:0|tDominance - 23 Spel Pow + 15 Resil" },	
-	{ 8, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 8, 0, 2, 2, 773, 450, 0, 3835, "Master's Inscription of the Axe" }, // Requer SKILL_INSCRIPTION 450
+	{ 8, 0, 2, 2, 773, 450, 0, 3836, "Master's Inscription of the Crag" }, // Requer SKILL_INSCRIPTION 450
+	{ 8, 0, 2, 2, 773, 450, 0, 3837, "Master's Inscription of the Pinnacle" }, // Requer SKILL_INSCRIPTION 450
+	{ 8, 0, 2, 2, 773, 450, 0, 3838, "Master's Inscription of the Storm" }, // Requer SKILL_INSCRIPTION 450
+	{ 8, 0, 2, 2, 0, 0, 0, 3808, "Axe - 40 Attack Power + 15 Crit" },
+	{ 8, 0, 2, 2, 0, 0, 0, 3809, "Crag - 24 Spell Power + 8 Mp5" },
+	{ 8, 0, 2, 2, 0, 0, 0, 3852, "Pinnacle - 30 Stamina + 15 Resil" },
+	{ 8, 0, 2, 2, 0, 0, 0, 3811, "Gladiator - 20 Dodge + 15 Defense" },
+	{ 8, 0, 2, 2, 0, 0, 0, 3810, "Storm - 24 Spell Power + 15 Crit" },
+	{ 8, 0, 2, 2, 0, 0, 0, 3794, "Dominance - 23 Spel Pow + 15 Resil" },	
+	{ 8, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	//ShowCloakMenu			EQUIPMENT_SLOT_BACK
-	{ 9, 0, 2, 14, 202, 450, 0, 3859, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tSpringy Arachnoweave" }, //Requer SKILL_ENGINEERING 450
-	{ 9, 0, 2, 14, 202, 450, 0, 3605, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tFlexweave Underlay" }, //SKILL_ENGINEERING 450
-	{ 9, 0, 2, 14, 0, 0, 4, 3256, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tShadow Armor" }, // Exclusivo Rogue
-	{ 9, 0, 2, 14, 197, 450, 0, 3728, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tDarkglow Embroidery" }, //Requer SKILL_TAILORING 450
-	{ 9, 0, 2, 14, 197, 450, 0, 3722, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tLightweave Embroidery" }, //Requer SKILL_TAILORING 450
-	{ 9, 0, 2, 14, 197, 450, 0, 3730, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tSwordguard Embroidery" }, //Requer SKILL_TAILORING 450
-	{ 9, 0, 2, 14, 0, 0, 0, 3296, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tWisdom - 10 Spirit +2% reduce threat" },
-	{ 9, 0, 2, 14, 0, 0, 0, 1951, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tTitanweave - 16 Defense" },
-	{ 9, 0, 2, 14, 0, 0, 0, 3243, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tSpell Piercing - 35 Spell Pen" },
-	{ 9, 0, 2, 14, 0, 0, 0, 3294, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tMighty Armor - 225 Armor" },
-	{ 9, 0, 2, 14, 0, 0, 0, 1099, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tMajor Agility - 22 Agility" },
-	{ 9, 0, 2, 14, 0, 0, 0, 3831, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tGreater Speed - 23 Haste" },
-	{ 9, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 9, 0, 2, 14, 202, 450, 0, 3859, "Springy Arachnoweave" }, //Requer SKILL_ENGINEERING 450
+	{ 9, 0, 2, 14, 202, 450, 0, 3605, "Flexweave Underlay" }, //SKILL_ENGINEERING 450
+	{ 9, 0, 2, 14, 0, 0, 4, 3256, "Shadow Armor" }, // Exclusivo Rogue
+	{ 9, 0, 2, 14, 197, 450, 0, 3728, "Darkglow Embroidery" }, //Requer SKILL_TAILORING 450
+	{ 9, 0, 2, 14, 197, 450, 0, 3722, "Lightweave Embroidery" }, //Requer SKILL_TAILORING 450
+	{ 9, 0, 2, 14, 197, 450, 0, 3730, "Swordguard Embroidery" }, //Requer SKILL_TAILORING 450
+	{ 9, 0, 2, 14, 0, 0, 0, 3296, "Wisdom - 10 Spirit +2% reduce threat" },
+	{ 9, 0, 2, 14, 0, 0, 0, 1951, "Titanweave - 16 Defense" },
+	{ 9, 0, 2, 14, 0, 0, 0, 3243, "Spell Piercing - 35 Spell Pen" },
+	{ 9, 0, 2, 14, 0, 0, 0, 3294, "Mighty Armor - 225 Armor" },
+	{ 9, 0, 2, 14, 0, 0, 0, 1099, "Major Agility - 22 Agility" },
+	{ 9, 0, 2, 14, 0, 0, 0, 3831, "Greater Speed - 23 Haste" },
+	{ 9, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
-	{ 10, 0, 2, 4, 0, 0, 0, 3233, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tExceptional Mana - 150 Mana" },
-	{ 10, 0, 2, 4, 0, 0, 0, 3533, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tGreater Mana Restoration - 10 Mp5" },
-	{ 10, 0, 2, 4, 0, 0, 0, 3245, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tExceptional Resilience - 20 Resilience" },
-	{ 10, 0, 2, 4, 0, 0, 0, 3297, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tSuper Health - 225 Health" },
-	{ 10, 0, 2, 4, 0, 0, 0, 3832, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|t10 of all stats" },
-	{ 10, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 10, 0, 2, 4, 0, 0, 0, 3233, "Exceptional Mana - 150 Mana" },
+	{ 10, 0, 2, 4, 0, 0, 0, 3533, "Greater Mana Restoration - 10 Mp5" },
+	{ 10, 0, 2, 4, 0, 0, 0, 3245, "Exceptional Resilience - 20 Resilience" },
+	{ 10, 0, 2, 4, 0, 0, 0, 3297, "Super Health - 225 Health" },
+	{ 10, 0, 2, 4, 0, 0, 0, 3832, "10 of all stats" },
+	{ 10, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	//ShowBracerMenu		EQUIPMENT_SLOT_WRISTS
-	{ 11, 0, 2, 8, 0, 0, 0, 3845, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tGreater Assault - 50 Attack Power" },
-	{ 11, 0, 2, 8, 0, 0, 0, 3458, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tExceptional Intellect - 16 Intellect" },
-	{ 11, 0, 2, 8, 0, 0, 0, 1147, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tMajor Spirit - 18 Spirit" },
-	{ 11, 0, 2, 8, 0, 0, 0, 3231, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tExpertise - 15 Expertise" },
-	{ 11, 0, 2, 8, 0, 0, 0, 2661, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tGreater Stats - 6 all stats" },
-	{ 11, 0, 2, 8, 0, 0, 0, 2332, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tSuperior Spellpower - 30 Spell Power" },
-	{ 11, 0, 2, 8, 0, 0, 0, 3850, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tMajor Stamina - 40 Stamina" },
-	{ 11, 0, 2, 8, 164, 450, 0, 3717, "|TInterface\\icons\\inv_bracer_mail_raidshaman_m_01:18:18:-15:0|tSocket Bracer" }, //Reuqer SKILL_BLACKSMITHING 450	
-	{ 11, 0, 2, 8, 165, 450, 0, 3756, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tFur Lining: Attack Power" }, //Reuqer SKILL_LEATHERWORKING 450
-	{ 11, 0, 2, 8, 165, 450, 0, 3757, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tFur Lining: Stamina" }, //Reuqer SKILL_LEATHERWORKING 450
-	{ 11, 0, 2, 8, 165, 450, 0, 3758, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tFur Lining: Spell Power" }, //Reuqer SKILL_LEATHERWORKING 450
-	{ 11, 0, 2, 8, 165, 450, 0, 3763, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tFur Lining: Arcane Resist" }, //Reuqer SKILL_LEATHERWORKING 450
-	{ 11, 0, 2, 8, 165, 450, 0, 3762, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tFur Lining: Nature Resist" }, //Reuqer SKILL_LEATHERWORKING 450
-	{ 11, 0, 2, 8, 165, 450, 0, 3761, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tFur Lining: Shadow Resist" }, //Reuqer SKILL_LEATHERWORKING 450
-	{ 11, 0, 2, 8, 165, 450, 0, 3760, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tFur Lining: Frost Resist" }, //Reuqer SKILL_LEATHERWORKING 450
-	{ 11, 0, 2, 8, 165, 450, 0, 3759, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tFur Lining: Fire Resist" }, //Reuqer SKILL_LEATHERWORKING 450
-	{ 11, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 11, 0, 2, 8, 0, 0, 0, 3845, "Greater Assault - 50 Attack Power" },
+	{ 11, 0, 2, 8, 0, 0, 0, 3458, "Exceptional Intellect - 16 Intellect" },
+	{ 11, 0, 2, 8, 0, 0, 0, 1147, "Major Spirit - 18 Spirit" },
+	{ 11, 0, 2, 8, 0, 0, 0, 3231, "Expertise - 15 Expertise" },
+	{ 11, 0, 2, 8, 0, 0, 0, 2661, "Greater Stats - 6 all stats" },
+	{ 11, 0, 2, 8, 0, 0, 0, 2332, "Superior Spellpower - 30 Spell Power" },
+	{ 11, 0, 2, 8, 0, 0, 0, 3850, "Major Stamina - 40 Stamina" },
+	{ 11, 0, 2, 8, 164, 450, 0, 3717, "Socket Bracer" }, //Reuqer SKILL_BLACKSMITHING 450	
+	{ 11, 0, 2, 8, 165, 450, 0, 3756, "Fur Lining: Attack Power" }, //Reuqer SKILL_LEATHERWORKING 450
+	{ 11, 0, 2, 8, 165, 450, 0, 3757, "Fur Lining: Stamina" }, //Reuqer SKILL_LEATHERWORKING 450
+	{ 11, 0, 2, 8, 165, 450, 0, 3758, "Fur Lining: Spell Power" }, //Reuqer SKILL_LEATHERWORKING 450
+	{ 11, 0, 2, 8, 165, 450, 0, 3763, "Fur Lining: Arcane Resist" }, //Reuqer SKILL_LEATHERWORKING 450
+	{ 11, 0, 2, 8, 165, 450, 0, 3762, "Fur Lining: Nature Resist" }, //Reuqer SKILL_LEATHERWORKING 450
+	{ 11, 0, 2, 8, 165, 450, 0, 3761, "Fur Lining: Shadow Resist" }, //Reuqer SKILL_LEATHERWORKING 450
+	{ 11, 0, 2, 8, 165, 450, 0, 3760, "Fur Lining: Frost Resist" }, //Reuqer SKILL_LEATHERWORKING 450
+	{ 11, 0, 2, 8, 165, 450, 0, 3759, "Fur Lining: Fire Resist" }, //Reuqer SKILL_LEATHERWORKING 450
+	{ 11, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	//ShowGlovesMenu		EQUIPMENT_SLOT_HANDS
-	{ 12, 0, 2, 9, 0, 0, 0, 3253, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tArmsman - 2% Threat 10 Parry" },
-	{ 12, 0, 2, 9, 0, 0, 0, 2330, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tExceptional Spellpower -- 23 Spell Power" },
-	{ 12, 0, 2, 9, 0, 0, 0, 3231, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tExpertise - 15 Expertise" },
-	{ 12, 0, 2, 9, 0, 0, 0, 1603, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tGreater Assault - 44 Attack Power" },
-	{ 12, 0, 2, 9, 0, 0, 0, 1097, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tMajor Agility - 20 Agility" },
-	{ 12, 0, 2, 9, 0, 0, 0, 3234, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tPrecision - 20 Hit Rating" },
-	{ 12, 0, 2, 9, 164, 450, 0, 3723, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tSocket Gloves" }, //Requer SKILL_BLACKSMITHING 450
-	{ 12, 0, 2, 9, 202, 450, 0, 3603, "|TInterface\\icons\\inv_misc_enggizmos_01:18:18:-15:0|tHand-Mounted Pyro Rocket" }, //Requer SKILL_ENGINEERING 450
-	{ 12, 0, 2, 9, 202, 450, 0, 3604, "|TInterface\\icons\\inv_misc_enggizmos_01:18:18:-15:0|tHyperspeed Accelerators" }, //Requer SKILL_ENGINEERING 450
-	{ 12, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 12, 0, 2, 9, 0, 0, 0, 3253, "Armsman - 2% Threat 10 Parry" },
+	{ 12, 0, 2, 9, 0, 0, 0, 2330, "Exceptional Spellpower -- 23 Spell Power" },
+	{ 12, 0, 2, 9, 0, 0, 0, 3231, "Expertise - 15 Expertise" },
+	{ 12, 0, 2, 9, 0, 0, 0, 1603, "Greater Assault - 44 Attack Power" },
+	{ 12, 0, 2, 9, 0, 0, 0, 1097, "Major Agility - 20 Agility" },
+	{ 12, 0, 2, 9, 0, 0, 0, 3234, "Precision - 20 Hit Rating" },
+	{ 12, 0, 2, 9, 164, 450, 0, 3723, "Socket Gloves" }, //Requer SKILL_BLACKSMITHING 450
+	{ 12, 0, 2, 9, 202, 450, 0, 3603, "Hand-Mounted Pyro Rocket" }, //Requer SKILL_ENGINEERING 450
+	{ 12, 0, 2, 9, 202, 450, 0, 3604, "Hyperspeed Accelerators" }, //Requer SKILL_ENGINEERING 450
+	{ 12, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	//ShowBeltMenu			EQUIPMENT_SLOT_WAIST
-	{ 13, 0, 4, 5, 0, 0, 0, 3729, "|TInterface\\icons\\inv_belt_36:18:18:-15:0|tEternal Belt Buckle" },
-	{ 13, 0, 4, 5, 202, 450, 0, 3601, "|TInterface\\icons\\trade_engineering:18:18:-15:0|tFrag Belt" }, //Requer SKILL_ENGINEERING 450
-	{ 13, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 13, 0, 4, 5, 0, 0, 0, 3729, "Eternal Belt Buckle" },
+	{ 13, 0, 4, 5, 202, 450, 0, 3601, "Frag Belt" }, //Requer SKILL_ENGINEERING 450
+	{ 13, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	//ShowLegsMenu			EQUIPMENT_SLOT_LEGS
-	{ 14, 0, 4, 6, 0, 0, 0, 3822, "|TInterface\\icons\\inv_misc_armorkit_32:18:18:-15:0|tLeg Armor - 55 Stam 22 Agil" },
-	{ 14, 0, 4, 6, 0, 0, 0, 3823, "|TInterface\\icons\\inv_misc_armorkit_33:18:18:-15:0|tLeg Armor - 75 AP 22 Crit" },
-	{ 14, 0, 4, 6, 0, 0, 0, 3853, "|TInterface\\icons\\inv_misc_armorkit_18:18:18:-15:0|tLeg Armor - 40 Resil 28 Stam" },
-	{ 14, 0, 4, 6, 0, 0, 0, 3873, "|TInterface\\icons\\spell_nature_astralrecalgroup:18:18:-15:0|tSpellthread - 50 SP 30 Stam" },
-	{ 14, 0, 4, 6, 0, 0, 0, 3872, "|TInterface\\icons\\spell_nature_astralrecalgroup:18:18:-15:0|tSpellthread - 50 SP 22 Spirit" },
-	{ 14, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 14, 0, 4, 6, 0, 0, 0, 3822, "Leg Armor - 55 Stam 22 Agil" },
+	{ 14, 0, 4, 6, 0, 0, 0, 3823, "Leg Armor - 75 AP 22 Crit" },
+	{ 14, 0, 4, 6, 0, 0, 0, 3853, "Leg Armor - 40 Resil 28 Stam" },
+	{ 14, 0, 4, 6, 0, 0, 0, 3873, "Spellthread - 50 SP 30 Stam" },
+	{ 14, 0, 4, 6, 0, 0, 0, 3872, "Spellthread - 50 SP 22 Spirit" },
+	{ 14, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	//ShowBootsMenu			EQUIPMENT_SLOT_FEET 
 	{ 15, 15, 4, 0, 0, 0, 0, 0, "" },
-	{ 15, 0, 4, 7, 0, 0, 0, 3826, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tIcewalker - 12 Hit + 12 Crit" },
-	{ 15, 0, 4, 7, 0, 0, 0, 1597, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tGreater Assault - 32 Assult" },
-	{ 15, 0, 4, 7, 0, 0, 0, 3259, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tGreater Fortitude - 22 Stamins" },
-	{ 15, 0, 4, 7, 0, 0, 0, 1147, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tGreater Spirit - 18 Spirit" },
-	{ 15, 0, 4, 7, 202, 450, 0, 3606, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tNitro Boosts" }, //Requer SKILL_ENGINEERING 450
-	{ 15, 0, 4, 7, 202, 450, 0, 983, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tSuperior Agility - 16 Agility" }, //Requer SKILL_ENGINEERING 450
-	{ 15, 0, 4, 7, 202, 450, 0, 3232, "|TInterface\\icons\\inv_enchant_formulagood_01:18:18:-15:0|tVitality - 15 Stam + Speed Increase" }, //Requer SKILL_ENGINEERING 450
-	{ 15, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 15, 0, 4, 7, 0, 0, 0, 3826, "Icewalker - 12 Hit + 12 Crit" },
+	{ 15, 0, 4, 7, 0, 0, 0, 1597, "Greater Assault - 32 Assult" },
+	{ 15, 0, 4, 7, 0, 0, 0, 3259, "Greater Fortitude - 22 Stamins" },
+	{ 15, 0, 4, 7, 0, 0, 0, 1147, "Greater Spirit - 18 Spirit" },
+	{ 15, 0, 4, 7, 202, 450, 0, 3606, "Nitro Boosts" }, //Requer SKILL_ENGINEERING 450
+	{ 15, 0, 4, 7, 202, 450, 0, 983, "Superior Agility - 16 Agility" }, //Requer SKILL_ENGINEERING 450
+	{ 15, 0, 4, 7, 202, 450, 0, 3232, "Vitality - 15 Stam + Speed Increase" }, //Requer SKILL_ENGINEERING 450
+	{ 15, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 
 	//ShowRingsMenu
-	{ 16, 17, 4, 0, 333, 450, 0, 0, "|TInterface/PaperDoll/UI-PaperDoll-Slot-Finger:30:30:-15:0|tFinger 1" },
-	{ 16, 18, 4, 0, 333, 450, 0, 0, "|TInterface/PaperDoll/UI-PaperDoll-Slot-Finger:30:30:-15:0|tFinger 2" },
-	{ 16, 100, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 16, 17, 4, 0, 333, 450, 0, 0, "Finger 1" },
+	{ 16, 18, 4, 0, 333, 450, 0, 0, "Finger 2" },
+	{ 16, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 	//EQUIPMENT_SLOT_FINGER1 = 10
-	{ 17, 0, 4, 10, 0, 0, 0, 3839, "|TInterface\\icons\\inv_enchant_formulasuperior_01:18:18:-15:0|tAssault" },
-	{ 17, 0, 4, 10, 0, 0, 0, 3840, "|TInterface\\icons\\inv_enchant_formulasuperior_01:18:18:-15:0|tGreater Spellpower" },
-	{ 17, 0, 4, 10, 0, 0, 0, 3791, "|TInterface\\icons\\inv_enchant_formulasuperior_01:18:18:-15:0|tStamina" },
-	{ 17, 16, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 17, 0, 4, 10, 0, 0, 0, 3839, "Assault" },
+	{ 17, 0, 4, 10, 0, 0, 0, 3840, "Greater Spellpower" },
+	{ 17, 0, 4, 10, 0, 0, 0, 3791, "Stamina" },
+	{ 17, 16, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 	//EQUIPMENT_SLOT_FINGER2 = 11
-	{ 18, 0, 4, 11, 0, 0, 0, 3839, "|TInterface\\icons\\inv_enchant_formulasuperior_01:18:18:-15:0|tAssault" },
-	{ 18, 0, 4, 11, 0, 0, 0, 3840, "|TInterface\\icons\\inv_enchant_formulasuperior_01:18:18:-15:0|tGreater Spellpower" },
-	{ 18, 0, 4, 11, 0, 0, 0, 3791, "|TInterface\\icons\\inv_enchant_formulasuperior_01:18:18:-15:0|tStamina" },
-	{ 18, 16, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" },
+	{ 18, 0, 4, 11, 0, 0, 0, 3839, "Assault" },
+	{ 18, 0, 4, 11, 0, 0, 0, 3840, "Greater Spellpower" },
+	{ 18, 0, 4, 11, 0, 0, 0, 3791, "Stamina" },
+	{ 18, 16, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 	//Remover encatamentos de rings
-	{ 98, 0, 6, 10, 0, 0, 0, 0, "|TInterface/PaperDoll/UI-PaperDoll-Slot-Finger:30:30:-15:0|tFinger1->" },
-	{ 98, 0, 6, 11, 0, 0, 0, 0, "|TInterface/PaperDoll/UI-PaperDoll-Slot-Finger:30:30:-15:0|tFinger2->"},
-	{ 98, 99, 8, 0, 0, 0, 0, 0, "|cff0000FF|TInterface\\icons\\inv_misc_questionmark:20:20:-15:0|t<< Voltar|r" }
+	{ 98, 0, 6, 10, 0, 0, 0, 0, "Finger1->" },
+	{ 98, 0, 6, 11, 0, 0, 0, 0, "Finger2->"},
+	{ 98, 99, 8, 0, 0, 0, 0, 0, "<< Voltar" }
 };
 uint32 GetText(unsigned int menu, Player* /*pPlayer*/)
 {
