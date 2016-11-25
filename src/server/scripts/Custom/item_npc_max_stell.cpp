@@ -25,8 +25,8 @@ public:
 
 	bool OnUse(Player* player, Item* /*item*/, SpellCastTargets const&) override
 	{
-  		player->SummonCreature(481851,player->GetPositionX() ,player->GetPositionY()+10, player->GetPositionZ(), 0,TEMPSUMMON_TIMED_DESPAWN,30000);
-		ChatHandler(player->GetSession()).SendSysMessage("O teleporter foi criado, você tem 30 segundos para escolher para onde ir!");
+  		player->SummonCreature(77777,player->GetPositionX() ,player->GetPositionY()+10, player->GetPositionZ(), 0,TEMPSUMMON_TIMED_DESPAWN,60000);
+		ChatHandler(player->GetSession()).SendSysMessage("Você sumonou Max Stell, você tem 60 segundos para usa-lo!");
         player->CastSpell(player, 59908);
   		return true;
 	}

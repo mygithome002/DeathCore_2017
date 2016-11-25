@@ -107,7 +107,7 @@ MenusLista mvData[] =
 	{ 100, 11, 4, 0, 0, 0, 0, 0, "[Enchant Bracers]" },
 	{ 100, 12, 4, 0, 0, 0, 0, 0, "[Enchant Gloves]" },
 	//{ 100, 150, 4, 0, 0, 0, 0, 0, "[NULL]" },
-	{ 100, 13, 4, 0, 0, 0, 0, 0, "[Eternal Belt Buckle]" }, //EQUIPMENT_SLOT_WAIST
+	//{ 100, 13, 4, 0, 0, 0, 0, 0, "[Eternal Belt Buckle]" }, //EQUIPMENT_SLOT_WAIST
 	{ 100, 14, 4, 0, 0, 0, 0, 0, "[Enchant Legs]" },	
 	{ 100, 15, 4, 0, 0, 0, 0, 0, "[Enchant Boots]" },
 	{ 100, 16, 4, 0, 333, 450, 0, 0, "Enchant Rings" }, // Requer SKILL_ENCHANTING 450

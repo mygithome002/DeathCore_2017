@@ -43,7 +43,7 @@ public:
 		_Creature->Whisper("Bem vindo querido jogador, por favor escolha o que quiser.", LANG_UNIVERSAL, player);
 
 		AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Chamar o seu treinador de Classe." 	 , GOSSIP_SENDER_MAIN, 1);
-		AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Chamar o Max Payne." 	 	 	 , GOSSIP_SENDER_MAIN, 7);
+		AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Chamar o Max Stell." 	 	 	 , GOSSIP_SENDER_MAIN, 7);
 		AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Talvez mais tarde."               	 , GOSSIP_SENDER_MAIN, 2);
 		player->PlayerTalkClass->SendGossipMenu(85004, _Creature->GetGUID());
 		return true;
@@ -133,7 +133,7 @@ public:
 		case 7:
 				player->PlayerTalkClass->SendCloseGossip();
 				player->SummonCreature(77777,player->GetPositionX() ,player->GetPositionY()+1, player->GetPositionZ(), 0,TEMPSUMMON_TIMED_DESPAWN,45000);
-				_Creature->Whisper("Max Payne is here, i must say farewell..", LANG_UNIVERSAL, player);
+				_Creature->Whisper("Max Stell está aqui, devo dizer adeus..", LANG_UNIVERSAL, player);
 				_Creature->DisappearAndDie();
 				break;
 		case 2:
