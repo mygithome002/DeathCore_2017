@@ -472,7 +472,7 @@ bool CobrarEncantos(Player* player)
 				return true;
 			}
 			else{
-				ChatHandler(player->GetSession()).PSendSysMessage("|cffFF4500Você não tem o valor suficiente para encantar este item. Valor necessário:|cffFF4500%u|r |cffffcc00 Emblem Of Frost|r", vEncanto);
+				ChatHandler(player->GetSession()).PSendSysMessage("|cffFF4500Você não tem o valor suficiente para encantar este item. |cffffcc00Valor necessário:|r |cffffcc00%u|r |cffffcc00 Emblem Of Frost|r", vEncanto);
 				return false;
 			}
 		}
@@ -484,7 +484,7 @@ bool CobrarEncantos(Player* player)
 					return true;
 				}
 				else{
-					ChatHandler(player->GetSession()).PSendSysMessage("|cffFF4500Você não tem Gold sufuciente para encantar este item. Valor necessário:|cffFF4500%u|r G |cffffcc00de Gold|r", vEncanto);
+					ChatHandler(player->GetSession()).PSendSysMessage("|cffFF4500Você não tem Gold sufuciente para encantar este item. |cffffcc00Valor necessário:|r |cffffcc00%u G |r |cffffcc00de Gold|r", vEncanto);
 					return false;
 				}
 			}
