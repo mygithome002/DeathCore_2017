@@ -69,195 +69,175 @@ public:
 						}
 						player->GetSession()->SendAreaTriggerMessage("Você recebeu a promoção com sucesso.");
                         player->GiveLevel(80);
-						player->SetMoney(100000);
+						player->SetMoney(800000000);
 						switch(actions)
                               {								  
 								  case GOSSIP_ACTION_INFO_DEF+30: // Druid Balance
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 								  
 								  case GOSSIP_ACTION_INFO_DEF+44: // Druid Feral
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 								  
 								  case GOSSIP_ACTION_INFO_DEF+45: // Druid Restoration
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 
 								  case GOSSIP_ACTION_INFO_DEF+31: // Shaman Elemental
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 								  
 								  case GOSSIP_ACTION_INFO_DEF+46: // Shaman Enhancement
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 								  
 								  case GOSSIP_ACTION_INFO_DEF+47: // Shaman Restoration
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 
 								  case GOSSIP_ACTION_INFO_DEF+32: // Paladin Retribution
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 								  
 								  case GOSSIP_ACTION_INFO_DEF+40: // Paladin Holy
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 								  
 								  case GOSSIP_ACTION_INFO_DEF+41: // Paladin Protection
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 
 								  case GOSSIP_ACTION_INFO_DEF+33: // Warrior Fury
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 								  
 								  case GOSSIP_ACTION_INFO_DEF+48: // Warrior Arms
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 								  
 								  case GOSSIP_ACTION_INFO_DEF+50: // Warrior Protection
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 								  
 								  case GOSSIP_ACTION_INFO_DEF+49: // Priest Dicipline
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 
 								  case GOSSIP_ACTION_INFO_DEF+34: // Priest Shadow
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 								  
 								  case GOSSIP_ACTION_INFO_DEF+42: // Priest Holy
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 
 								  case GOSSIP_ACTION_INFO_DEF+35: // Death Knight DPS
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 								  
 								  case GOSSIP_ACTION_INFO_DEF+43: // Death Knight Tank
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;								  
 
 								  case GOSSIP_ACTION_INFO_DEF+36: // Rogue
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 
 								  case GOSSIP_ACTION_INFO_DEF+37: // Hunter
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
+								  player->AddItem(800058, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 
 								  case GOSSIP_ACTION_INFO_DEF+38: // Mage
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 
 								  case GOSSIP_ACTION_INFO_DEF+39: // Warlock
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
-								  player->AddItem(200000, 1);
+								  player->AddItem(49284, 1);
+								  player->AddItem(800049, 1);
+								  player->AddItem(800059, 1);
+								  player->AddItem(800034, 1);
 								  CloseGossipMenuFor(player);
 								  break;
 	                          }
