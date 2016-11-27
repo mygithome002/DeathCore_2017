@@ -53,7 +53,7 @@ public:
 			return true;
         }
 		
-        if (player->getLevel() == 1) 
+        if (player->getLevel() > 1) 
         {
             uint32 accountID = player->GetSession()->GetAccountId();
             QueryResult result = CharacterDatabase.PQuery("SELECT COUNT(`guid`) FROM `characters` WHERE `account`=%u", accountID);

@@ -145,7 +145,7 @@ void CheckMessage(Player* player, std::string& msg, uint32 /*lang*/, Player* /*r
 	checks[76] ="heavenwow";
 	checks[77] ="undead-wow";
 	checks[78] ="linebr";
-	checks[79] ="azralon";
+	checks[79] ="fine";
 	checks[80] ="black-wow";
 	checks[81] ="trevonwow";
 	
@@ -163,7 +163,7 @@ void CheckMessage(Player* player, std::string& msg, uint32 /*lang*/, Player* /*r
 	checks[93] ="h e a v e n w o w";
 	checks[94] ="u n d e a d - w o w";
 	checks[95] ="l i n e b r";
-	checks[96] ="a z r a l o n";
+	checks[96] ="f i n e";
 	checks[97] ="b l a c k - w o w";
 	checks[98] ="t r e v o n w o w";
 	
