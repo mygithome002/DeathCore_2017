@@ -40,7 +40,6 @@ public:
         if(ARENA_1V1_MIN_LEVEL > player->getLevel())
             return false;
 
-        uint64 guid = player->GetGUID();
         uint8 arenaslot = ArenaTeam::GetSlotByType(ARENA_TEAM_1v1);
         uint8 arenatype = ARENA_TYPE_1v1;
         uint32 arenaRating = 0;
