@@ -167,7 +167,7 @@ public:
 
     bool OnGossipHello(Player* player, Creature* me)
     {
-        if(player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_1v1)) == NULL)
+        if(player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_1v1)) == 0)
             AddGossipItemFor(player, 7, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Criar Time Arena 1v1", GOSSIP_SENDER_MAIN, 1, "Deseja criar um time de Arena 1v1?", ARENA_1V1_COST, false);
         else
         {
