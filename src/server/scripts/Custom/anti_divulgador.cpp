@@ -181,7 +181,7 @@ void CheckMessage(Player* player, std::string& msg, uint32 /*lang*/, Player* /*r
 	checks[110] ="h  e  a  v  e  n  w  o  w";
 	checks[111] ="u  n  d  e  a  d  -  w  o  w";
 	checks[112] ="l  i  n  e  b  r";
-	checks[113] ="a  z  r  a  l  o  n";
+	checks[113] ="f i n e";
 	checks[114] ="b  l  a  c  k  -  w  o  w";
 	checks[115] ="t  r  e  v  o  n  w  o  w";
 	

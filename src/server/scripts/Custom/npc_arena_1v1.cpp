@@ -40,6 +40,7 @@ public:
         if(ARENA_1V1_MIN_LEVEL > player->getLevel())
             return false;
 
+        //uint64 guid = player->GetGUID();
         uint8 arenaslot = ArenaTeam::GetSlotByType(ARENA_TEAM_1v1);
         uint8 arenatype = ARENA_TYPE_1v1;
         uint32 arenaRating = 0;
@@ -69,6 +70,8 @@ public:
         PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketByLevel(bg->GetMapId(), player->getLevel());
         if (!bracketEntry)
             return false;
+
+        // GroupJoinBattlegroundResult err = ERR_GROUP_JOIN_BATTLEGROUND_FAIL;
 
         // check if already in queue
         if (player->GetBattlegroundQueueIndex(bgQueueTypeId) < PLAYER_MAX_BATTLEGROUND_QUEUES)
@@ -113,7 +116,7 @@ public:
     }
 
 
-    bool CreateArenateam(Player* player, Creature* me)
+    bool CreateArenateam(Player* player, Creature* /*me*/)
     {
         uint8 slot = ArenaTeam::GetSlotByType(ARENA_TEAM_1v1);
         if (slot >= MAX_ARENA_SLOT)
