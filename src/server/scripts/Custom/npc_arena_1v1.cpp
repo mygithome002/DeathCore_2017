@@ -35,7 +35,7 @@ public:
     }
 
 
-    bool JoinQueueArena(Player* player, Creature* me)
+    bool JoinQueueArena(Player* player, Creature* /*me*/)
     {
         if(ARENA_1V1_MIN_LEVEL > player->getLevel())
             return false;
