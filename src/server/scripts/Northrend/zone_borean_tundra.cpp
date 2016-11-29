@@ -41,6 +41,7 @@ EndContentData */
 #include "SpellInfo.h"
 #include "WorldSession.h"
 #include "SpellScript.h"
+#include "SpellAuraEffects.h"
 
 /*######
 ## npc_sinkhole_kill_credit
