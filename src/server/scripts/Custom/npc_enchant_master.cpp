@@ -89,9 +89,9 @@ MenusLista mvData[] =
 {
 	//{ Menu, subMenu, Icone, Slot, Skill, SkillValor, Classe, AcaoID, Nome },
 	
-	{ 1, 100, 4, 0, 0, 0, 0, 0, "[Aplicar Encantamentos]" },
+	{ 1, 100, 4, 0, 0, 0, 0, 0, "[Aplicar Encantamentos?]" },
 	//Remover Encantamentos
-	{ 1, 99, 6, 0, 0, 0, 0, 0, "[Remover Encantamentos]" },
+	{ 1, 99, 6, 0, 0, 0, 0, 0, "[Remover Encantamentos?]" },
 
 	{ 100, 2, 4, 0, 0, 0, 0, 0, "[Enchant Weapon]" },
 	{ 100, 111, 4, 0, 0, 0, 0, 0, "[Enchant OffHand]" },
@@ -106,11 +106,11 @@ MenusLista mvData[] =
 	{ 100, 10, 4, 0, 0, 0, 0, 0, "[Enchant Chest]" },
 	{ 100, 11, 4, 0, 0, 0, 0, 0, "[Enchant Bracers]" },
 	{ 100, 12, 4, 0, 0, 0, 0, 0, "[Enchant Gloves]" },
-	//{ 100, 150, 4, 0, 0, 0, 0, 0, "[NULL]" },
-	//{ 100, 13, 4, 0, 0, 0, 0, 0, "[Eternal Belt Buckle]" }, //EQUIPMENT_SLOT_WAIST
+	/*{ 100, 150, 4, 0, 0, 0, 0, 0, "[NULL]" },
+	{ 100, 13, 4, 0, 0, 0, 0, 0, "[Eternal Belt Buckle]" }, //EQUIPMENT_SLOT_WAIST */
 	{ 100, 14, 4, 0, 0, 0, 0, 0, "[Enchant Legs]" },	
 	{ 100, 15, 4, 0, 0, 0, 0, 0, "[Enchant Boots]" },
-	{ 100, 16, 4, 0, 333, 450, 0, 0, "Enchant Rings" }, // Requer SKILL_ENCHANTING 450
+	{ 100, 16, 4, 0, 333, 450, 0, 0, "[Enchant Rings]" }, // Requer SKILL_ENCHANTING 450
 	{ 100, 1, 8, 99, 0, 0, 0, 0, "<< Voltar" },
 	
 	{ 99, 0, 6, 15, 0, 0, 0, 0, "[Enchant Weapon]" },
@@ -145,7 +145,7 @@ MenusLista mvData[] =
 	{ 2, 0, 2, 15, 0, 0, 0, 2675, "Battlemaster -- Chance of heal on hit" },
 	{ 2, 0, 2, 15, 0, 0, 0, 3789, "Berserking -- 400 Attack Power Proc" },
 	{ 2, 0, 2, 15, 0, 0, 0, 1103, "Exceptional Agility -- 26 Agility" },
-	{ 2, 5, 2, 0, 0, 0, 0, 0, "Próximo>>" }, //Proxima tela
+	{ 2, 5, 2, 0, 0, 0, 0, 0, "Próximo >>" }, //Proxima tela
 	{ 2, 100, 8, 0, 0, 0, 0, 0, "<< Voltar" },
 	
 	{ 5, 0, 2, 15, 0, 0, 0, 3844, "Exceptional Spirit -- 45 Spirit" },
@@ -502,6 +502,7 @@ void Enchant(Player* player, Creature* creature, Item* item, uint32 enchantid)
 	if (!CobrarEncantos(player))
 		return;
 
+	//uint32 item_id = 0;
 	switch (enchantid)
 	{
 	case ENCHANT_WEP_GREATER_SPELL_POWER:
