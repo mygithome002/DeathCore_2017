@@ -698,7 +698,7 @@ public:
 			MenusLista = mvData[action].Menu;
 		}
 		else{
-			if (int direct = MenusLista == 0)
+			if (MenusLista == 0)
 			{
 				Enchant(player, creature, ItemSlot, mvData[action].AcaoID);
 				MenusLista = mvData[action].Menu;
