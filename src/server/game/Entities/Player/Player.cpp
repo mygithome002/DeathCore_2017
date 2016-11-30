@@ -16948,7 +16948,7 @@ void Player::_LoadArenaTeamInfo(PreparedQueryResult result)
     // arenateamid, played_week, played_season, personal_rating
     memset((void*)&m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1], 0, sizeof(uint32) * MAX_ARENA_SLOT * ARENA_TEAM_END);
 
-    uint16 personalRatingCache[] = {0, 0, 0};
+    uint16 personalRating[] = {0, 0, 0};
 
     if (result)
     {
@@ -16967,7 +16967,7 @@ void Player::_LoadArenaTeamInfo(PreparedQueryResult result)
 
             uint8 arenaSlot = arenaTeam->GetSlot();
 
-            personalRatingCache[arenaSlot] = fields[4].GetUInt16();
+            personalRating[arenaSlot] = fields[4].GetUInt16();
 
             SetArenaTeamInfoField(arenaSlot, ARENA_TEAM_ID, arenaTeamId);
             SetArenaTeamInfoField(arenaSlot, ARENA_TEAM_TYPE, arenaTeam->GetType());
@@ -16981,7 +16981,7 @@ void Player::_LoadArenaTeamInfo(PreparedQueryResult result)
 
     for (uint8 slot = 0; slot <= 2; ++slot)
     {
-        SetArenaTeamInfoField(slot, ARENA_TEAM_PERSONAL_RATING, uint32(personalRatingCache[slot]));
+        SetArenaTeamInfoField(slot, ARENA_TEAM_PERSONAL_RATING, uint32(personalRating[slot]));
     }
 }
 

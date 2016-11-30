@@ -65,7 +65,7 @@ enum Enchants
 	ENCHANT_WEP_FALLEN_CRUSADER = 3368,
 	ENCHANT_WEP_NERUBIAN_CARAPACE = 3883,
 	ENCHANT_WEP_TITANIUM_CHAIN = 3731,
-	ENCHANT_BELT_ETERNAL_BELT_BUCKLE = 3729,
+	//ENCHANT_BELT_ETERNAL_BELT_BUCKLE = 3729,
 	ENCHANT_GLOVES_SOCKET_GLOVES = 3723,
 	ENCHANT_BRACER_SOCKET_BRACER = 3717,
 };
@@ -106,8 +106,7 @@ MenusLista mvData[] =
 	{ 100, 10, 4, 0, 0, 0, 0, 0, "[Enchant Chest]" },
 	{ 100, 11, 4, 0, 0, 0, 0, 0, "[Enchant Bracers]" },
 	{ 100, 12, 4, 0, 0, 0, 0, 0, "[Enchant Gloves]" },
-	/*{ 100, 150, 4, 0, 0, 0, 0, 0, "[NULL]" },
-	{ 100, 13, 4, 0, 0, 0, 0, 0, "[Eternal Belt Buckle]" }, //EQUIPMENT_SLOT_WAIST */
+	//{ 100, 13, 4, 0, 0, 0, 0, 0, "[Eternal Belt Buckle]" }, //EQUIPMENT_SLOT_WAIST 
 	{ 100, 14, 4, 0, 0, 0, 0, 0, "[Enchant Legs]" },	
 	{ 100, 15, 4, 0, 0, 0, 0, 0, "[Enchant Boots]" },
 	{ 100, 16, 4, 0, 333, 450, 0, 0, "[Enchant Rings]" }, // Requer SKILL_ENCHANTING 450
@@ -122,7 +121,7 @@ MenusLista mvData[] =
 	{ 99, 0, 6, 4, 0, 0, 0, 0, "[Enchant Chest]" },
 	{ 99, 0, 6, 8, 0, 0, 0, 0, "[Enchant Bracers]" },
 	{ 99, 0, 6, 9, 0, 0, 0, 0, "[Enchant Gloves]" },
-	{ 99, 0, 6, 5, 0, 0, 0, 0, "[Eternal Belt Buckle]" },
+	//{ 99, 0, 6, 5, 0, 0, 0, 0, "[Eternal Belt Buckle]" },
 	{ 99, 0, 6, 6, 0, 0, 0, 0, "[Enchant Legs]" },
 	{ 99, 0, 6, 7, 0, 0, 0, 0, "[Enchant Boots]" },
 	{ 99, 98, 6, 0, 333, 450, 0, 0, "[Enchant Rings]" },
@@ -574,9 +573,9 @@ void Enchant(Player* player, Creature* creature, Item* item, uint32 enchantid)
 	player->ApplyEnchantment(item, PERM_ENCHANTMENT_SLOT, true);
 	switch (enchantid)
 	{
-	case ENCHANT_BELT_ETERNAL_BELT_BUCKLE: //EQUIPMENT_SLOT_WAIST
+	/*case ENCHANT_BELT_ETERNAL_BELT_BUCKLE: //EQUIPMENT_SLOT_WAIST
 		EnchantWithItem(player, 41611, item); 
-		break;
+		break;*/
 	case ENCHANT_BRACER_SOCKET_BRACER: //EQUIPMENT_SLOT_WAIST
 		PlayerAddItem(player, 5956); // Blacksmith hammer
 		EnchantWithSpell(player, 55628, item);
@@ -683,29 +682,29 @@ public:
 	bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
 	{
 		player->PlayerTalkClass->ClearMenus();
-		uint32 menuLista;
+		uint32 MenusLista;
 		Item* ItemSlot = player->GetItemByPos(INVENTORY_SLOT_BAG_0, mvData[action].Slot);
 		switch (action)
 		{
 		case EQUIPMENT_SLOT_MAINHAND:
 			break;
 		default:
-			menuLista = mvData[action].Submenu;
+			MenusLista = mvData[action].Submenu;
 			break;
 		}
 		if ((mvData[action].Menu == 99 && mvData[action].Submenu == 0) || (mvData[action].Menu == 98 && mvData[action].Submenu == 0))
 		{
 			RemoveEnchantS(player, ItemSlot);
-			menuLista = mvData[action].Menu;
+			MenusLista = mvData[action].Menu;
 		}
 		else{
-			if (menuLista == 0)
+			if (int direct = MenusLista == 0)
 			{
 				Enchant(player, creature, ItemSlot, mvData[action].AcaoID);
-				menuLista = mvData[action].Menu;
+				MenusLista = mvData[action].Menu;
 			}
 		}
-		GetMenuIDs(player, creature, menuLista);		
+		GetMenuIDs(player, creature, MenusLista);		
 		return true;
 	}
 };
