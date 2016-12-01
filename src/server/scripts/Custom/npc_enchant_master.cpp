@@ -682,7 +682,7 @@ public:
 	bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
 	{
 		player->PlayerTalkClass->ClearMenus();
-		uint32 MenusLista;
+		uint32 MenusLista = 14;
 		Item* ItemSlot = player->GetItemByPos(INVENTORY_SLOT_BAG_0, mvData[action].Slot);
 		switch (action)
 		{
