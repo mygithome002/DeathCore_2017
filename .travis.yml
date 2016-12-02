@@ -38,13 +38,13 @@ install:
 
 script:
   - $CXX --version
-  - mysql -uroot < sql/create/create_mysql.sql
-  - mysql -udeathcore -pdeathcore auth < sql/base/auth_database.sql
-  - cat sql/updates/auth/4.3.4/*_auth.sql | mysql -udeathcore -pdeathcore auth
-  - mysql -udeathcore -pdeathcore characters < sql/base/characters_database.sql
+  - mysql -u root -h 127.0.0.1 < sql/create/create_mysql.sql
+  - mysql -udeathcore -pdeathcore auth -h 127.0.0.1 < sql/base/auth_database.sql
+  - cat sql/updates/auth/4.3.4/*_auth.sql -h 127.0.0.1 | mysql -udeathcore -pdeathcore auth
+  - mysql -udeathcore -pdeathcore characters -h 127.0.0.1 < sql/base/characters_database.sql
   - cat sql/updates/characters/4.3.4/*_characters.sql | mysql -udeathcore -pdeathcore characters
-  - mysql -udeathcore -pdeathcore world < sql/base/dev/world_database.sql
-  - cat sql/updates/world/4.3.4/*_world.sql | mysql -udeathcore -pdeathcore world
+  - mysql -udeathcore -pdeathcore world -h 127.0.0.1 < sql/base/dev/world_database.sql
+  - cat sql/updates/world/4.3.4/*_world.sql -h 127.0.0.1 | mysql -udeathcore -pdeathcore world
   - mysql -uroot < sql/create/drop_mysql.sql
   - cd bin
   - make -j 8 -k && make install
