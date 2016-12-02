@@ -42,12 +42,12 @@ install:
 script:
   - $CXX --version
   - mysql -uroot < sql/create/create_mysql.sql
-  - mysql -udeathcore -pdeathcore auth < sql/base/auth_database.sql
-  - cat sql/updates/world/3.3.5/*_auth.sql | mysql -udeathcore -pdeathcore world
-  - mysql -udeathcore -pdeathcore characters < sql/base/characters_database.sql
-  - cat sql/updates/world/3.3.5/*_characters.sql | mysql -udeathcore -pdeathcore world
+  - mysql -u deathcore -p deathcore auth < sql/base/auth_database.sql
+  - cat sql/updates/world/3.3.5/*_auth.sql | mysql -u deathcore -p deathcore world
+  - mysql -u deathcore -p deathcore characters < sql/base/characters_database.sql
+  - cat sql/updates/world/3.3.5/*_characters.sql | mysql -u deathcore -p deathcore world
   - mysql -udeathcore -pdeathcore world < sql/base/dev/world_database.sql
-  - cat sql/updates/world/3.3.5/*_world.sql | mysql -udeathcore -pdeathcore world
+  - cat sql/updates/world/3.3.5/*_world.sql | mysql -u deathcore -p deathcore world
   - mysql -uroot < sql/create/drop_mysql.sql
   - cd bin
   - make -j 8 -k && make install
