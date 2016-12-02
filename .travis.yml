@@ -41,12 +41,12 @@ install:
 script:
   - $CXX --version
   - mysql -u root -h 127.0.0.1 < sql/create/create_mysql.sql
-  - mysql -u deathcore -p deathcore auth -h 127.0.0.1 < sql/base/auth_database.sql
-  - cat sql/updates/world/3.3.5/*_auth.sql -h 127.0.0.1 | mysql -u deathcore -p deathcore world -h 127.0.0.1
-  - mysql -u deathcore -p deathcore characters -h 127.0.0.1 < sql/base/characters_database.sql
-  - cat sql/updates/world/3.3.5/*_characters.sql -h 127.0.0.1 | mysql -u deathcore -p deathcore world -h 127.0.0.1
+  - mysql -u deathcore -pdeathcore auth -h 127.0.0.1 < sql/base/auth_database.sql
+  - cat sql/updates/world/3.3.5/*_auth.sql -h 127.0.0.1 | mysql -u deathcore -pdeathcore world -h 127.0.0.1
+  - mysql -u deathcore -pdeathcore characters -h 127.0.0.1 < sql/base/characters_database.sql
+  - cat sql/updates/world/3.3.5/*_characters.sql -h 127.0.0.1 | mysql -u deathcore -pdeathcore world -h 127.0.0.1
   - mysql -udeathcore -pdeathcore world -h 127.0.0.1 < sql/base/dev/world_database.sql
-  - cat sql/updates/world/3.3.5/*_world.sql -h 127.0.0.1 | mysql -u deathcore -p deathcore world -h 127.0.0.1
+  - cat sql/updates/world/3.3.5/*_world.sql -h 127.0.0.1 | mysql -u deathcore -pdeathcore world -h 127.0.0.1
   - mysql -uroot -h 127.0.0.1 < sql/create/drop_mysql.sql
   - cd bin
   - make -j 8 -k && make install
