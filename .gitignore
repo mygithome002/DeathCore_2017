@@ -20,3 +20,4 @@ CMakeLists.txt.user
 .idea/*
 .browse.VC*
 .vscode
+cmake-build-*/
