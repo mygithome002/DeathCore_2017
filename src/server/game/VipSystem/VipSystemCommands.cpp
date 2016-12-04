@@ -46,12 +46,12 @@ public:
         {
             { "info", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipInfoCommand, "" },
             { "buffs", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipBuffCommand, "" },
-            { "teletransportar", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipTeleCommand, "" },
+            //{ "teletransportar", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipTeleCommand, "" },
             { "tamanho", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipScaleCommand, "" },
             { "sala",          RBAC_PERM_COMMAND_CUSTOM_VIP,    true,   &HandleVipMallCommand,          "" },
             { "mudar-visual", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipCustomizeCommand, "" },
-            { "mudar-raça", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipChangeRaceCommand, "" },
-            { "mudar-facção", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipChangeFactionCommand, "" },
+            //{ "mudar-raça", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipChangeRaceCommand, "" },
+            //{ "mudar-facção", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipChangeFactionCommand, "" },
         };
 
         static std::vector<ChatCommand> CommandTable =
