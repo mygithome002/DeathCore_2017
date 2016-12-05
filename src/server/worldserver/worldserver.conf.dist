@@ -3960,7 +3960,6 @@ Transmogrification.NotAllowed = ""
 Transmogrification.ScaledCostModifier = 1.0
 Transmogrification.CopperCost = 0
 
-#
 #    TOKEN COST
 #
 #    Transmogrification.RequireToken

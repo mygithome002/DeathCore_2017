@@ -28,6 +28,7 @@
 #include "SpellMgr.h"
 #include "SpellHistory.h"
 #include "Unit.h"
+#include "Transmogrification.h"
 #include "TradeData.h"
 #include "CinematicMgr.h"
 
@@ -2330,7 +2331,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::string GetCoordsMapAreaAndZoneString() const;
  
         ReforgeMapType reforgeMap; // reforgeMap[iGUID] = ReforgeData
- 
+  
         TransmogMapType transmogMap; // transmogMap[iGUID] = entry
 #ifdef PRESETS
         PresetMapType presetMap; // presetMap[presetId] = presetData

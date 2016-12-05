@@ -19,7 +19,6 @@
 void AddSC_VipSystemCommands();
 void AddSC_System_Censure();
 void AddSC_NoFarming();
-//void AddSC_cs_world_chat();
 void AddSC_fake_commandscript();
 void AddSC_buffcommand();
 void AddSC_XpWeekend();
@@ -40,6 +39,7 @@ void AddSC_REFORGER_NPC();
 void AddSC_transmogriefer();
 void AddSC_Top5_Killers();
 void AddSC_npc_trainer_master();
+void AddSC_Transmogrification();
 void AddSC_NPC_TransmogDisplayVendor();
 void AddSC_VIP_NPC();
 void AddSC_NPC_VisualWeapon();
@@ -57,7 +57,6 @@ void AddCustomScripts()
 {
     AddSC_VipSystemCommands();
     AddSC_System_Censure();
-	//AddSC_cs_world_chat();
     AddSC_NoFarming();
     AddSC_fake_commandscript();
 	AddSC_buffcommand();
@@ -79,6 +78,7 @@ void AddCustomScripts()
     AddSC_transmogriefer();
     AddSC_Top5_Killers();
 	AddSC_npc_trainer_master();
+	AddSC_Transmogrification();
     AddSC_NPC_TransmogDisplayVendor();
     AddSC_VIP_NPC();
     AddSC_NPC_VisualWeapon();

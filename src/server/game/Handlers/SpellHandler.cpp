@@ -26,6 +26,7 @@
 #include "Opcodes.h"
 #include "Spell.h"
 #include "Totem.h"
+#include "Transmogrification.h"
 #include "ScriptMgr.h"
 #include "GameObjectAI.h"
 #include "SpellAuraEffects.h"
@@ -629,7 +630,12 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
                 if (uint32 entry = TransmogDisplayVendorMgr::GetFakeEntry(item))
                     data << uint32(sObjectMgr->GetItemTemplate(entry)->DisplayInfoID);
                 else
+            {
+                if (uint32 entry = sTransmogrification->GetFakeEntry(item))
+                    data << uint32(sObjectMgr->GetItemTemplate(entry)->DisplayInfoID);
+                else
                     data << uint32(item->GetTemplate()->DisplayInfoID);
+            }
             }
             else
                 data << uint32(0);

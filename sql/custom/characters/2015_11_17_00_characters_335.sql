@@ -1,4 +1,4 @@
--- Added System Npc Transmorg Vendor
+-- Added System Npc Transmog Vendor and Npc Transmog
 -- By Bodeguero for DeathCore.
 
 DROP TABLE IF EXISTS `custom_transmogrification`;
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS `custom_transmogrification_sets` (
   `SetName` text COMMENT 'SetName',
   `SetData` text COMMENT 'Slot1 Entry1 Slot2 Entry2',
   PRIMARY KEY (`Owner`,`PresetID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='6_1';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='6_2';
 
 ALTER TABLE `custom_transmogrification`
 	COMMENT='6_2',
