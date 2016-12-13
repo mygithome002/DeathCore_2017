@@ -155,7 +155,7 @@ MaxPingTime = 30
 #        Description: TCP port to reach the world server.
 #        Default:     8085
 
-WorldServerPort = 8095
+WorldServerPort = 8085
 
 #
 #    BindIP
@@ -2764,7 +2764,7 @@ SOAP.IP = "127.0.0.1"
 #        Description: TCP port to reach the SOAP service.
 #        Default:     7878
 
-SOAP.Port = 7898
+SOAP.Port = 7878
 
 #
 ###################################################################################################
