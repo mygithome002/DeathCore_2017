@@ -40,8 +40,8 @@ public:
 	}
 	
 	bool IsInDungeonOrRaid(Player* player);
-	bool CheckForSpawnPoint(Player* player);
-	void DynamicResurrection(Player* player);
+	bool CheckForSpawnPoint(Player* player, Creature * creature);
+	void DynamicResurrection(Player* player, Creature * creature);
 };
 #define sDynRes Dynamic_Resurrection::instance()
 
