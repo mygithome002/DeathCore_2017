@@ -24,15 +24,15 @@ bool Dynamic_Resurrection::IsInDungeonOrRaid(Player* player)
 	return false;
 }
 
-bool Dynamic_Resurrection::CheckForSpawnPoint(Player* player)
+bool Dynamic_Resurrection::CheckForSpawnPoint(Player* player, Creature * creature)
 {
 	// Find Nearest Creature And Teleport.
-	if (Creature* /*creature*/ = player->FindNearestCreature(C_Resurrection_ENTRY, C_DISTANCE_CHECK_RANGE))
+	if (Creature* creature = player->FindNearestCreature(C_Resurrection_ENTRY, C_DISTANCE_CHECK_RANGE))
 		return true;
 	return false;
 }
 
-void Dynamic_Resurrection::DynamicResurrection(Player* player)
+void Dynamic_Resurrection::DynamicResurrection(Player* player, Creature * creature)
 {
 	// Find Nearest Creature And Teleport.
 	if (Creature* creature = player->FindNearestCreature(C_Resurrection_ENTRY, C_DISTANCE_CHECK_RANGE))
