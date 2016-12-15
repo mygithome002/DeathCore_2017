@@ -35,7 +35,7 @@ bool Dynamic_Resurrection::CheckForSpawnPoint(Player* player)
 void Dynamic_Resurrection::DynamicResurrection(Player* player)
 {
 	// Find Nearest Creature And Teleport.
-	if (Creature/* creature*/ = player->FindNearestCreature(C_Resurrection_ENTRY, C_DISTANCE_CHECK_RANGE))
+	if (Creature creature = player->FindNearestCreature(C_Resurrection_ENTRY, C_DISTANCE_CHECK_RANGE))
 		player->TeleportTo(player->GetMapId(), creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), 1);
 	// Revive Player with 70 %
 	player->ResurrectPlayer(0.7);
