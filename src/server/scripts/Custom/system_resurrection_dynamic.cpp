@@ -27,7 +27,7 @@ bool Dynamic_Resurrection::IsInDungeonOrRaid(Player* player)
 bool Dynamic_Resurrection::CheckForSpawnPoint(Player* player)
 {
 	// Find Nearest Creature And Teleport.
-	if (Creature/* creature*/ = player->FindNearestCreature(C_Resurrection_ENTRY, C_DISTANCE_CHECK_RANGE))
+	if (Creature creature = player->FindNearestCreature(C_Resurrection_ENTRY, C_DISTANCE_CHECK_RANGE))
 		return true;
 	return false;
 }
