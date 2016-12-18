@@ -32,7 +32,7 @@ bool Dynamic_Resurrection::CheckForSpawnPoint(Player* player)
 	return false;
 }
 
-void Dynamic_Resurrection::DynamicResurrection(Player* player, Creature* creature)
+void Dynamic_Resurrection::DynamicResurrection(Player* player)
 {
 	// Find Nearest Creature And Teleport.
 	if (Creature* creature = player->FindNearestCreature(C_Resurrection_ENTRY, C_DISTANCE_CHECK_RANGE))
