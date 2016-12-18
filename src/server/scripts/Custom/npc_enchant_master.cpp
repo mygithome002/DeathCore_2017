@@ -89,42 +89,42 @@ MenusLista mvData[] =
 {
 	//{ Menu, subMenu, Icone, Slot, Skill, SkillValor, Classe, AcaoID, Nome },
 	
-	{ 1, 100, 4, 0, 0, 0, 0, 0, "[Aplicar Encantamentos?]" },
+	{ 1, 100, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\spell_holy_greaterheal:35:35:-14|tAplicar Encantamentos" },
 	//Remover Encantamentos
-	{ 1, 99, 6, 0, 0, 0, 0, 0, "[Remover Encantamentos?]" },
+	{ 1, 99, 6, 0, 0, 0, 0, 0, "|TInterface\\icons\\spell_holy_heal35:35:-14|tRemover Encantamentos" },
 
-	{ 100, 2, 4, 0, 0, 0, 0, 0, "[Enchant Weapon]" },
-	{ 100, 111, 4, 0, 0, 0, 0, 0, "[Enchant OffHand]" },
-	{ 100, 3, 4, 0, 0, 0, 0, 0, "[Enchant 2H Weapon]" },
-	{ 100, 112, 4, 0, 0, 0, 1, 0, "[Enchant 2H OffHand]" },
-	{ 100, 4, 4, 0, 0, 0, 3, 0, "[Enchant Ranged Weapon]" }, //Hunter
-	{ 100, 4, 4, 0, 0, 0, 1, 0, "[Enchant Ranged Weapon]" }, //Warrior
-	{ 100, 6, 4, 0, 0, 0, 0, 0, "[Enchant Shield]" },
-	{ 100, 7, 4, 0, 0, 0, 0, 0, "[Enchant Head]" },
-	{ 100, 8, 4, 0, 0, 0, 0, 0, "[Enchant Shoulders]" },
-	{ 100, 9, 4, 0, 0, 0, 0, 0, "[Enchant Cloak]" },
-	{ 100, 10, 4, 0, 0, 0, 0, 0, "[Enchant Chest]" },
-	{ 100, 11, 4, 0, 0, 0, 0, 0, "[Enchant Bracers]" },
-	{ 100, 12, 4, 0, 0, 0, 0, 0, "[Enchant Gloves]" },
-	//{ 100, 13, 4, 0, 0, 0, 0, 0, "[Eternal Belt Buckle]" }, //EQUIPMENT_SLOT_WAIST 
-	{ 100, 14, 4, 0, 0, 0, 0, 0, "[Enchant Legs]" },	
-	{ 100, 15, 4, 0, 0, 0, 0, 0, "[Enchant Boots]" },
-	{ 100, 16, 4, 0, 333, 450, 0, 0, "[Enchant Rings]" }, // Requer SKILL_ENCHANTING 450
+	{ 100, 2, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_sword_04:35:35:-14|tEnchant Weapon" },
+	{ 100, 111, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_sword_33:35:35:-14|tEnchant OffHand" },
+	{ 100, 3, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_sword_26:35:35:-14|tEnchant 2H Weapon" },
+	{ 100, 112, 4, 0, 0, 0, 1, 0, "|TInterface\\icons\\inv_sword_26:35:35:-14|tEnchant 2H OffHand" },
+	{ 100, 4, 4, 0, 0, 0, 3, 0, "|TInterface\\icons\\inv_weapon_bow_01:35:35:-14|tEnchant Ranged Weapon" }, //Hunter
+	{ 100, 4, 4, 0, 0, 0, 1, 0, "|TInterface\\icons\\inv_weapon_bow_01:35:35:-14|tEnchant Ranged Weapon" }, //Warrior
+	{ 100, 6, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_shield_04:35:35:-14|tEnchant Shield" },
+	{ 100, 7, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_platehelm:35:35:-14|tEnchant Head" },
+	{ 100, 8, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_plateshoulder:35:35:-14|tEnchant Shoulders" },
+	{ 100, 9, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_cape_11:35:35:-14|tEnchant Cloak" },
+	{ 100, 10, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_platechest:35:35:-14|tEnchant Chest" },
+	{ 100, 11, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_platebracer:35:35:-14|tEnchant Bracers" },
+	{ 100, 12, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_plategloves:35:35:-14|tEnchant Gloves" },
+	//{ 100, 13, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_platebelt:35:35:-14|tEternal Belt Buckle" }, //EQUIPMENT_SLOT_WAIST 
+	{ 100, 14, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_platepants:35:35:-14|tEnchant Legs" },	
+	{ 100, 15, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_plateboots:35:35:-14|tEnchant Boots" },
+	{ 100, 16, 4, 0, 333, 450, 0, 0, "|TInterface\\icons\\inv_jewelry_ring_22:35:35:-14|tEnchant Rings" }, // Requer SKILL_ENCHANTING 450
 	{ 100, 1, 8, 99, 0, 0, 0, 0, "<< Voltar" },
 	
-	{ 99, 0, 6, 15, 0, 0, 0, 0, "[Enchant Weapon]" },
-	{ 99, 0, 6, 16, 0, 0, 0, 0, "[Enchant OffHand]" },
-	{ 99, 0, 6, 16, 0, 0, 0, 0, "[Enchant Ranged Weapon]" },
-	{ 99, 0, 6, 0, 0, 0, 0, 0, "[Enchant Head]" },
-	{ 99, 0, 6, 2, 0, 0, 0, 0, "[Enchant Shoulders]" },
-	{ 99, 0, 6, 14, 0, 0, 0, 0, "[Enchant Cloak]" },
-	{ 99, 0, 6, 4, 0, 0, 0, 0, "[Enchant Chest]" },
-	{ 99, 0, 6, 8, 0, 0, 0, 0, "[Enchant Bracers]" },
-	{ 99, 0, 6, 9, 0, 0, 0, 0, "[Enchant Gloves]" },
-	//{ 99, 0, 6, 5, 0, 0, 0, 0, "[Eternal Belt Buckle]" },
-	{ 99, 0, 6, 6, 0, 0, 0, 0, "[Enchant Legs]" },
-	{ 99, 0, 6, 7, 0, 0, 0, 0, "[Enchant Boots]" },
-	{ 99, 98, 6, 0, 333, 450, 0, 0, "[Enchant Rings]" },
+	{ 99, 0, 6, 15, 0, 0, 0, 0, "|TInterface\\icons\\inv_sword_04:35:35:-14|tEnchant Weapon" },
+	{ 99, 0, 6, 16, 0, 0, 0, 0, "|TInterface\\icons\\inv_sword_33:35:35:-14|tEnchant OffHand" },
+	{ 99, 0, 6, 16, 0, 0, 0, 0, "|TInterface\\icons\\inv_weapon_bow_01:35:35:-14|tEnchant Ranged Weapon" },
+	{ 99, 0, 6, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_platehelm:35:35:-14|tEnchant Head" },
+	{ 99, 0, 6, 2, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_plateshoulder:35:35:-14|tEnchant Shoulders" },
+	{ 99, 0, 6, 14, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_cape_11:35:35:-14|tEnchant Cloak" },
+	{ 99, 0, 6, 4, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_platechest:35:35:-14|tEnchant Chest" },
+	{ 99, 0, 6, 8, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_platebracer:35:35:-14|tEnchant Bracers" },
+	{ 99, 0, 6, 9, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_plategloves:35:35:-14|tEnchant Gloves" },
+	//{ 99, 0, 6, 5, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_platebelt:35:35:-14|tEternal Belt Buckle" },
+	{ 99, 0, 6, 6, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_platepants:35:35:-14|tEnchant Legs" },
+	{ 99, 0, 6, 7, 0, 0, 0, 0, "|TInterface\\icons\\inv_misc_desecrated_plateboots:35:35:-14|tEnchant Boots" },
+	{ 99, 98, 6, 0, 333, 450, 0, 0, "|TInterface\\icons\\inv_jewelry_ring_22:35:35:-14|tEnchant Rings" },
 	{ 99, 1, 8, 99, 0, 0, 0, 0, "<< Voltar" },
 	
 	// Show1HWeaponMenu			EQUIPMENT_SLOT_MAINHAND		
