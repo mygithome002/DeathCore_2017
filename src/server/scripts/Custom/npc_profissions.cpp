@@ -59,7 +59,7 @@ public:
 
 	bool OnGossipHello(Player *pPlayer, Creature* _creature)
 	{
-		AddGossipItemFor(pPlayer, 9, "[Profissões] ->", GOSSIP_SENDER_MAIN, 196);
+		AddGossipItemFor(pPlayer, 9, "|TInterface\\icons\\inv_inscription_tradeskill01:35:35-15|t Profissões ->", GOSSIP_SENDER_MAIN, 196);
 		SendGossipMenuFor(pPlayer, 907, _creature->GetGUID());
 		return true;
 	}
@@ -192,7 +192,10 @@ public:
 				AddGossipItemFor(pPlayer, GOSSIP_ICON_INTERACT_2, "|TInterface\\icons\\INV_Misc_Herb_07:30|t Herbalism.", GOSSIP_SENDER_MAIN, 9);
 				AddGossipItemFor(pPlayer, GOSSIP_ICON_INTERACT_2, "|TInterface\\icons\\inv_misc_pelt_wolf_01:30|t Skinning.", GOSSIP_SENDER_MAIN, 10);
 				AddGossipItemFor(pPlayer, GOSSIP_ICON_INTERACT_2, "|TInterface\\icons\\trade_mining:30|t Mining.", GOSSIP_SENDER_MAIN, 11);
-				AddGossipItemFor(pPlayer, GOSSIP_ICON_TALK, "|TInterface/ICONS/Thrown_1H_Harpoon_D_01Blue:30|t Sair!", GOSSIP_SENDER_MAIN, 12);
+				AddGossipItemFor(pPlayer, GOSSIP_ICON_INTERACT_2, "|TInterface\\icons\\inv_misc_food_15:30|t Cooking", GOSSIP_SENDER_MAIN, 12);
+                AddGossipItemFor(pPlayer, GOSSIP_ICON_INTERACT_2, "|TInterface\\icons\\spell_holy_sealofsacrifice|t First Aid", GOSSIP_SENDER_MAIN, 13);
+				AddGossipItemFor(pPlayer, GOSSIP_ICON_INTERACT_2, "|TInterface\\icons\\trade_fishing:30|t Fishing", GOSSIP_SENDER_MAIN, 14);
+				AddGossipItemFor(pPlayer, GOSSIP_ICON_TALK, "|TInterface/ICONS/Thrown_1H_Harpoon_D_01Blue:30|t Sair!", GOSSIP_SENDER_MAIN, 15);
 				SendGossipMenuFor(pPlayer, 1, _creature->GetGUID());
 				break;
 			case 1:
@@ -302,11 +305,41 @@ public:
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
-
+				
 				CompleteLearnProfession(pPlayer, _creature, SKILL_MINING);
 				pPlayer->PlayerTalkClass->SendCloseGossip();
 				break;
 			case 12:
+				if(pPlayer->HasSkill(SKILL_COOKING))
+                {
+                    pPlayer->PlayerTalkClass->SendCloseGossip();
+                    break;
+                }
+				
+				CompleteLearnProfession(pPlayer, _creature, SKILL_COOKING);
+                pPlayer->PlayerTalkClass->SendCloseGossip();
+				break;
+			case 13:
+				if(pPlayer->HasSkill(SKILL_FIRST_AID))
+                {
+                    pPlayer->PlayerTalkClass->SendCloseGossip();
+                    break;
+                }
+				
+				CompleteLearnProfession(pPlayer, _creature, SKILL_FIRST_AID);
+                pPlayer->PlayerTalkClass->SendCloseGossip();
+				break;
+			case 14:
+				if(pPlayer->HasSkill(SKILL_FISHING))
+                {
+                    pPlayer->PlayerTalkClass->SendCloseGossip();
+                    break;
+                }
+				
+				CompleteLearnProfession(pPlayer, _creature, SKILL_FISHING);
+                pPlayer->PlayerTalkClass->SendCloseGossip();
+				break;
+			case 15:
 				pPlayer->PlayerTalkClass->SendCloseGossip();
 				break;
 			}

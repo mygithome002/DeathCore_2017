@@ -89,9 +89,9 @@ MenusLista mvData[] =
 {
 	//{ Menu, subMenu, Icone, Slot, Skill, SkillValor, Classe, AcaoID, Nome },
 	
-	{ 1, 100, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\spell_holy_greaterheal:35:35:-14|tAplicar Encantamentos" },
+	{ 1, 100, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\spell_holy_greaterheal:35:35:-14|t  Aplicar Encantamentos" },
 	//Remover Encantamentos
-	{ 1, 99, 6, 0, 0, 0, 0, 0, "|TInterface\\icons\\spell_holy_heal35:35:-14|tRemover Encantamentos" },
+	{ 1, 99, 6, 0, 0, 0, 0, 0, "|TInterface\\icons\\spell_holy_heal35:35:-14|t  Remover Encantamentos" },
 
 	{ 100, 2, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_sword_04:35:35:-14|tEnchant Weapon" },
 	{ 100, 111, 4, 0, 0, 0, 0, 0, "|TInterface\\icons\\inv_sword_33:35:35:-14|tEnchant OffHand" },
