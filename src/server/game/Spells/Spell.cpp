@@ -2978,13 +2978,10 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
             triggeredByAura->GetBase()->SetDuration(0);
         }
 
+        // cleanup after mod system
+        // triggered spell pointer can be not removed in some cases
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        {
-            m_caster->ToPlayer()->RestoreSpellMods(this);
-            // cleanup after mod system
-            // triggered spell pointer can be not removed in some cases
             m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
-        }
 
         if (param1 || param2)
             SendCastResult(result, &param1, &param2);
@@ -3090,8 +3087,6 @@ void Spell::cancel()
     {
         case SPELL_STATE_PREPARING:
             CancelGlobalCooldown();
-            if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                m_caster->ToPlayer()->RestoreSpellMods(this);
             // no break
         case SPELL_STATE_DELAYED:
             SendInterrupted(0);
@@ -3186,14 +3181,12 @@ void Spell::cast(bool skipCheck)
         {
             SendCastResult(castResult, &param1, &param2);
             SendInterrupted(0);
-            //restore spell mods
+
+            // cleanup after mod system
+            // triggered spell pointer can be not removed in some cases
             if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            {
-                m_caster->ToPlayer()->RestoreSpellMods(this);
-                // cleanup after mod system
-                // triggered spell pointer can be not removed in some cases
                 m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
-            }
+
             finish(false);
             SetExecutedCurrently(false);
             return;
@@ -3213,10 +3206,11 @@ void Spell::cast(bool skipCheck)
                         my_trade->SetSpell(m_spellInfo->Id, m_CastItem);
                         SendCastResult(SPELL_FAILED_DONT_REPORT);
                         SendInterrupted(0);
-                        m_caster->ToPlayer()->RestoreSpellMods(this);
+
                         // cleanup after mod system
                         // triggered spell pointer can be not removed in some cases
                         m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
+
                         finish(false);
                         SetExecutedCurrently(false);
                         return;
@@ -3239,14 +3233,12 @@ void Spell::cast(bool skipCheck)
     if (m_spellState == SPELL_STATE_FINISHED)
     {
         SendInterrupted(0);
-        //restore spell mods
+
+        // cleanup after mod system
+        // triggered spell pointer can be not removed in some cases
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        {
-            m_caster->ToPlayer()->RestoreSpellMods(this);
-            // cleanup after mod system
-            // triggered spell pointer can be not removed in some cases
             m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
-        }
+
         finish(false);
         SetExecutedCurrently(false);
         return;
