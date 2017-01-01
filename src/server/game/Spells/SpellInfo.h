@@ -451,6 +451,10 @@ class TC_GAME_API SpellInfo
         bool IsRangedWeaponSpell() const;
         bool IsAutoRepeatRangedSpell() const;
         bool HasInitialAggro() const;
+ 
+        WeaponAttackType GetAttackType() const;
+
+        bool IsItemFitToSpellRequirements(Item const* item) const;
 
         bool IsAffected(uint32 familyName, flag96 const& familyFlags) const;
 
