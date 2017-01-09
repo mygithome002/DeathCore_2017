@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,10 +22,10 @@
 
 const uint32 RANK_VIP = (uint32)SEC_VIP;
 
-class VIP_Item_480d : public ItemScript
+class VIP_Item : public ItemScript
 {
 public:
-    VIP_Item_480d() : ItemScript("VIP_Item_480d") {}
+    VIP_Item() : ItemScript("VIP_Item") {}
 
     void SetAccountVip(Player* player, uint32 accountId, char const* vipTime, char const* vipComment)
     {
@@ -43,12 +43,12 @@ public:
         ChatHandler(player->GetSession()).SendSysMessage("Agora sua conta é V.I.P!");
         player->DestroyItemCount(item->GetEntry(), 1, true, false);
         player->CastSpell(player, 59908);
-        SetAccountVip(player, player->GetSession()->GetAccountId(), "480d", "VIP 480 Dias");
+        SetAccountVip(player, player->GetSession()->GetAccountId(), "30d", "VIP 30 Dias");
         return true;
     }
 };
 
-void AddSC_VIP_Item_480d()
+void AddSC_VIP_Item()
 {
-    new VIP_Item_480d();
+    new VIP_Item();
 }

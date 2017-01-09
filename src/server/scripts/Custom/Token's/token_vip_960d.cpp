@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,17 +15,17 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../../game/Scripting/ScriptMgr.h"
-#include "../../../game/Entities/Player/Player.h"
-#include "../../../game/Server/WorldSession.h"
-#include "../../../game/Chat/Chat.h"
+#include "ScriptMgr.h"
+#include "Player.h"
+#include "WorldSession.h"
+#include "Chat.h"
 
 const uint32 RANK_VIP = (uint32)SEC_VIP;
 
-class VIP_Item_120d : public ItemScript
+class VIP_Item_960d : public ItemScript
 {
 public:
-    VIP_Item_120d() : ItemScript("VIP_Item_120d") {}
+    VIP_Item_960d() : ItemScript("VIP_Item_960d") {}
 
     void SetAccountVip(Player* player, uint32 accountId, char const* vipTime, char const* vipComment)
     {
@@ -43,12 +43,12 @@ public:
         ChatHandler(player->GetSession()).SendSysMessage("Agora sua conta é V.I.P!");
         player->DestroyItemCount(item->GetEntry(), 1, true, false);
         player->CastSpell(player, 59908);
-        SetAccountVip(player, player->GetSession()->GetAccountId(), "120d", "VIP 120 Dias");
+        SetAccountVip(player, player->GetSession()->GetAccountId(), "960d", "VIP 960 Dias");
         return true;
     }
 };
 
-void AddSC_VIP_Item_120d()
+void AddSC_VIP_Item_960d()
 {
-    new VIP_Item_120d();
+    new VIP_Item_960d();
 }

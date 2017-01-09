@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,10 +15,10 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../../game/Scripting/ScriptMgr.h"
-#include "../../../game/Entities/Player/Player.h"
-#include "../../../game/Server/WorldSession.h"
-#include "../../../game/Chat/Chat.h"
+#include "ScriptMgr.h"
+#include "Player.h"
+#include "WorldSession.h"
+#include "Chat.h"
 
 const uint32 RANK_VIP = (uint32)SEC_VIP;
 
