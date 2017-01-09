@@ -40,8 +40,8 @@ For more information about the project, visit our website at project [Noffearr D
 + [Microsoft Visual C++ 2015 Redistributable Package (x64)](https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe)
 + [Microsoft .NET Framework 4.6.2](https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe)
 + [MS Visual Studio = 14 (2015)(Windows only)](http://download.microsoft.com/download/b/e/d/bedddfc4-55f4-4748-90a8-ffe38a40e89f/vs2015.3.com_enu.iso?tduid=(949ee58dc60919a6b205a935fb956e1e)(256380)(2459594)(je6NUbpObpQ-oyyMjHZcfYO9WE5nrP4F5A)())
-+ [OpenSSL x86](http://slproweb.com/download/Win32OpenSSL-1_0_2j.exe)
-+ [OpenSSL x64](http://slproweb.com/download/Win64OpenSSL-1_0_2j.exe)
++ [OpenSSL x86 (32 bits)](http://slproweb.com/download/Win32OpenSSL-1_0_2j.exe)
++ [OpenSSL x64 (64 bits)](http://slproweb.com/download/Win64OpenSSL-1_0_2j.exe)
 
 
 ## Reporting issues
