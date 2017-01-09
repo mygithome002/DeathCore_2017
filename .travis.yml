@@ -13,17 +13,17 @@
  # You should have received a copy of the GNU General Public License along
  # with this program. If not, see <http://www.gnu.org/licenses/>.
  
- sudo: required
- dist: trusty
+sudo: required
+dist: trusty
  
- language: cpp
- compiler:
-   - clang
+language: cpp
+compiler:
+- clang
  
- git:
-    depth: 1
+git:
+  depth: 1
   
-  before_install:
+before_install:
  +  - wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
  +  - echo "yes" | sudo add-apt-repository 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
  +  - sudo apt-get -qq update
@@ -35,15 +35,15 @@
     - git tag -a -m "Travis build" init
  +  - export CC=clang-3.9 CXX=clang++-3.9
   
-  install:
-    - mysql -u root -h 127.0.0.1 -e 'create database test_mysql;'
+install:
+   - mysql -u root -h 127.0.0.1 -e 'create database test_mysql;'
    - mkdir bin
    - cd bin
    - cmake ../ -DWITH_WARNINGS=1 -DWITH_COREDEBUG=0 -DUSE_COREPCH=1 -DUSE_SCRIPTPCH=1 -DTOOLS=1 -DSCRIPTS="dynamic" -DSERVERS=1 -DNOJEM=1 -DWITH_DYNAMIC_LINKING=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Werror" -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=check_install
    - cd ..
    - chmod +x contrib/check_updates.sh
  
- script:
+script:
    - $CXX --version
    - mysql -u root -h 127.0.0.1 < sql/create/create_mysql.sql
    - mysql -u deathcore -pdeathcore auth -h 127.0.0.1 < sql/base/auth_database.sql
