@@ -16,6 +16,7 @@
  */
 
 // This is where scripts' loading functions should be declared:
+
 void AddSC_VipSystemCommands();
 void AddSC_System_Censure();
 void AddSC_NoFarming();
