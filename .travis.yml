@@ -15,14 +15,14 @@
  
 sudo: required
 dist: trusty
- 
+
 language: cpp
 compiler:
   - clang
- 
+
 git:
   depth: 1
-  
+
 before_install:
   - wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
   - echo "yes" | sudo add-apt-repository 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
@@ -34,7 +34,7 @@ before_install:
   - git config user.email "travis@build.bot" && git config user.name "Travis CI"
   - git tag -a -m "Travis build" init
   - export CC=clang-3.9 CXX=clang++-3.9
-  
+
 install:
   - mysql -uroot -e 'create database test_mysql;'
   - mkdir bin
@@ -42,19 +42,19 @@ install:
   - cmake ../ -DWITH_WARNINGS=1 -DWITH_COREDEBUG=0 -DUSE_COREPCH=1 -DUSE_SCRIPTPCH=1 -DTOOLS=1 -DSCRIPTS="dynamic" -DSERVERS=1 -DNOJEM=1 -DWITH_DYNAMIC_LINKING=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Werror" -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_INSTALL_PREFIX=check_install
   - cd ..
   - chmod +x contrib/check_updates.sh
- 
+
 script:
   - $CXX --version
   - mysql -uroot < sql/create/create_mysql.sql
   - mysql -udeathcore -pdeathcore auth < sql/base/auth_database.sql
-  - cat sql/updates/world/3.3.5/*_auth.sql | mysql -udeathcore -pdeathcore world -h 127.0.0.1
+  - ./contrib/check_updates.sh auth 3.3.5 auth
   - mysql -udeathcore -pdeathcore characters < sql/base/characters_database.sql
-  - cat sql/updates/world/3.3.5/*_characters.sql | mysql -udeathcore -pdeathcore world -h 127.0.0.1
+  - ./contrib/check_updates.sh characters 3.3.5 characters
   - mysql -udeathcore -pdeathcore world < sql/base/dev/world_database.sql
-  - cat sql/updates/world/3.3.5/*_world.sql | mysql -udeathcore -pdeathcore world -h 127.0.0.1
+  - cat sql/updates/world/3.3.5/*.sql | mysql -udeathcore -pdeathcore world
   - mysql -uroot < sql/create/drop_mysql.sql
   - cd bin
   - make -j 8 -k && make install
   - cd check_install/bin
   - ./authserver --version
-   - ./worldserver --version
+  - ./worldserver --version
