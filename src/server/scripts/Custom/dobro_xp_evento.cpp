@@ -37,7 +37,7 @@ if(sConfigMgr->GetBoolDefault("DoubleXP.Enable", true))
         amount = amount*2; }
 }
 }
-    void OnLogin(Player* player, bool /*firstLogin*/)
+    void OnLogin(Player* player, bool /*firstLogin*/) override
     {
 if(sConfigMgr->GetBoolDefault("DoubleXP.Enable", true))
 {
