@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,7 +16,6 @@
  */
 
 // This is where scripts' loading functions should be declared:
-
 void AddSC_VipSystemCommands();
 void AddSC_System_Censure();
 void AddSC_NoFarming();

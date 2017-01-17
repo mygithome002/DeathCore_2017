@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,6 +18,7 @@
 #include "Player.h"
 #include "Chat.h"
 #include "World.h"
+#include "boost/date_time.hpp"
 #include "Config.h"
 
 class XpWeekend : public PlayerScript
@@ -37,7 +38,7 @@ if(sConfigMgr->GetBoolDefault("DoubleXP.Enable", true))
         amount = amount*2; }
 }
 }
-    void OnLogin(Player* player, bool /*firstLogin*/) override
+    void OnLogin(Player* player, bool /*firstLogin*/)
     {
 if(sConfigMgr->GetBoolDefault("DoubleXP.Enable", true))
 {
