@@ -39,9 +39,9 @@ public:
 		return &instance;
 	}
 	
-	bool IsInDungeonOrRaid(Player* player);
-	bool CheckForSpawnPoint(Player* player);
-	void DynamicResurrection(Player* player);
+	bool Dynamic_Resurrection::IsInDungeonOrRaid(Player* player);
+	bool Dynamic_Resurrection::CheckForSpawnPoint(Player* player);
+	void Dynamic_Resurrection::DynamicResurrection(Player* player);
 };
 #define sDynRes Dynamic_Resurrection::instance()
 
