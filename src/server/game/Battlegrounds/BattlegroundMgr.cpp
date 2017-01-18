@@ -143,7 +143,7 @@ void BattlegroundMgr::Update(uint32 diff)
         {
             // forced update for rated arenas (scan all, but skipped non rated)
             TC_LOG_TRACE("bg.arena", "BattlegroundMgr: UPDATING ARENA QUEUES");
-            for (int qtype = BATTLEGROUND_QUEUE_2v2; qtype <= BATTLEGROUND_QUEUE_1v1; ++qtype)
+            for (int qtype = BATTLEGROUND_QUEUE_2v2; qtype <= BATTLEGROUND_QUEUE_5v5; ++qtype)
                 for (int bracket = BG_BRACKET_ID_FIRST; bracket < MAX_BATTLEGROUND_BRACKETS; ++bracket)
                     m_BattlegroundQueues[qtype].BattlegroundQueueUpdate(diff,
                         BATTLEGROUND_AA, BattlegroundBracketId(bracket),
@@ -433,9 +433,6 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId original
                 break;
             case ARENA_TYPE_5v5:
                 maxPlayersPerTeam = 5;
-                break;
-            case ARENA_TYPE_1v1:
-                maxPlayersPerTeam = 1;
                 break;
         }
 
@@ -771,8 +768,6 @@ BattlegroundQueueTypeId BattlegroundMgr::BGQueueTypeId(BattlegroundTypeId bgType
                     return BATTLEGROUND_QUEUE_3v3;
                 case ARENA_TYPE_5v5:
                     return BATTLEGROUND_QUEUE_5v5;
-                case ARENA_TYPE_1v1:
-                    return BATTLEGROUND_QUEUE_1v1;
                 default:
                     return BATTLEGROUND_QUEUE_NONE;
             }
@@ -802,7 +797,6 @@ BattlegroundTypeId BattlegroundMgr::BGTemplateId(BattlegroundQueueTypeId bgQueue
         case BATTLEGROUND_QUEUE_2v2:
         case BATTLEGROUND_QUEUE_3v3:
         case BATTLEGROUND_QUEUE_5v5:
-        case BATTLEGROUND_QUEUE_1v1:
             return BATTLEGROUND_AA;
         default:
             return BattlegroundTypeId(0);                   // used for unknown template (it exists and does nothing)
@@ -819,8 +813,6 @@ uint8 BattlegroundMgr::BGArenaType(BattlegroundQueueTypeId bgQueueTypeId)
             return ARENA_TYPE_3v3;
         case BATTLEGROUND_QUEUE_5v5:
             return ARENA_TYPE_5v5;
-        case BATTLEGROUND_QUEUE_1v1:
-            return ARENA_TYPE_1v1;
         default:
             return 0;
     }

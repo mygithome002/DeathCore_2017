@@ -30,7 +30,6 @@ void AddSC_item_spawn_teleporter();
 void AddSC_item_npc_trainerspawn();
 void AddSC_item_res_group();
 void AddSC_example_PlayerGossip();
-void AddSC_npc_1v1arena();
 void AddSC_Tools_NPC();
 void AddSC_NDP_NpcMorph();
 void AddSC_Professions_NPC();
@@ -69,7 +68,6 @@ void AddCustomScripts()
     AddSC_item_npc_trainerspawn();
 	AddSC_item_res_group();
     AddSC_example_PlayerGossip();
-	AddSC_npc_1v1arena();
     AddSC_Tools_NPC();
     AddSC_NDP_NpcMorph();
     AddSC_Professions_NPC();
