@@ -1,22 +1,22 @@
-REVOKE ALL PRIVILEGES ON * . * FROM 'trinity'@'localhost';
+REVOKE ALL PRIVILEGES ON * . * FROM 'deathcore'@'localhost';
 
-REVOKE ALL PRIVILEGES ON `world` . * FROM 'trinity'@'localhost';
+REVOKE ALL PRIVILEGES ON `world` . * FROM 'deathcore'@'localhost';
 
-REVOKE GRANT OPTION ON `world` . * FROM 'trinity'@'localhost';
+REVOKE GRANT OPTION ON `world` . * FROM 'deathcore'@'localhost';
 
-REVOKE ALL PRIVILEGES ON `characters` . * FROM 'trinity'@'localhost';
+REVOKE ALL PRIVILEGES ON `characters` . * FROM 'deathcore'@'localhost';
 
-REVOKE GRANT OPTION ON `characters` . * FROM 'trinity'@'localhost';
+REVOKE GRANT OPTION ON `characters` . * FROM 'deathcore'@'localhost';
 
-REVOKE ALL PRIVILEGES ON `auth` . * FROM 'trinity'@'localhost';
+REVOKE ALL PRIVILEGES ON `auth` . * FROM 'deathcore'@'localhost';
 
-REVOKE GRANT OPTION ON `auth` . * FROM 'trinity'@'localhost';
+REVOKE GRANT OPTION ON `auth` . * FROM 'deathcore'@'localhost';
 
-REVOKE ALL PRIVILEGES ON `hotfixes` . * FROM 'trinity'@'localhost';
+REVOKE ALL PRIVILEGES ON `hotfixes` . * FROM 'deathcore'@'localhost';
 
-REVOKE GRANT OPTION ON `hotfixes` . * FROM 'trinity'@'localhost';
+REVOKE GRANT OPTION ON `hotfixes` . * FROM 'deathcore'@'localhost';
 
-DROP USER 'trinity'@'localhost';
+DROP USER 'deathcore'@'localhost';
 
 DROP DATABASE IF EXISTS `world`;
 

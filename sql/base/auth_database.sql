@@ -706,7 +706,7 @@ DROP TABLE IF EXISTS `realmlist`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `realmlist` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(32) NOT NULL DEFAULT '',
+  `name` varchar(32) NOT NULL DEFAULT 'DeathCore',
   `address` varchar(255) NOT NULL DEFAULT '127.0.0.1',
   `localAddress` varchar(255) NOT NULL DEFAULT '127.0.0.1',
   `localSubnetMask` varchar(255) NOT NULL DEFAULT '255.255.255.0',
@@ -730,7 +730,7 @@ CREATE TABLE `realmlist` (
 
 LOCK TABLES `realmlist` WRITE;
 /*!40000 ALTER TABLE `realmlist` DISABLE KEYS */;
-INSERT INTO `realmlist` VALUES (1,'Trinity','127.0.0.1','127.0.0.1','255.255.255.0',8085,0,2,1,0,0,23222,2,1);
+INSERT INTO `realmlist` VALUES (1,'DeathCore 7.x.x','127.0.0.1','127.0.0.1','255.255.255.0',8085,0,2,1,0,0,23222,2,1);
 /*!40000 ALTER TABLE `realmlist` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -797,7 +797,7 @@ CREATE TABLE `uptime` (
   `starttime` int(10) unsigned NOT NULL DEFAULT '0',
   `uptime` int(10) unsigned NOT NULL DEFAULT '0',
   `maxplayers` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `revision` varchar(255) NOT NULL DEFAULT 'Trinitycore',
+  `revision` varchar(255) NOT NULL DEFAULT 'DeathCore',
   PRIMARY KEY (`realmid`,`starttime`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Uptime system';
 /*!40101 SET character_set_client = @saved_cs_client */;
