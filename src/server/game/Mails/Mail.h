@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,10 +21,12 @@
 
 #include "Common.h"
 #include "ObjectGuid.h"
+#include "Transaction.h"
 #include <map>
 
 struct AuctionEntry;
 struct CalendarEvent;
+class BlackMarketEntry;
 class Item;
 class Object;
 class Player;
@@ -37,7 +40,8 @@ enum MailMessageType
     MAIL_AUCTION        = 2,
     MAIL_CREATURE       = 3,                                // client send CMSG_CREATURE_QUERY on this mailmessagetype
     MAIL_GAMEOBJECT     = 4,                                // client send CMSG_GAMEOBJECT_QUERY on this mailmessagetype
-    MAIL_CALENDAR       = 5
+    MAIL_CALENDAR       = 5,
+    MAIL_BLACKMARKET    = 6
 };
 
 enum MailCheckMask
@@ -88,8 +92,8 @@ class TC_GAME_API MailSender
         MailSender(Object* sender, MailStationery stationery = MAIL_STATIONERY_DEFAULT);
         MailSender(CalendarEvent* sender);
         MailSender(AuctionEntry* sender);
+        MailSender(BlackMarketEntry* sender);
         MailSender(Player* sender);
-        MailSender(uint32 senderEntry);
     public:                                                 // Accessors
         MailMessageType GetMailMessageType() const { return m_messageType; }
         ObjectGuid::LowType GetSenderId() const { return m_senderId; }
@@ -108,10 +112,10 @@ class TC_GAME_API MailReceiver
         MailReceiver(Player* receiver, ObjectGuid::LowType receiver_lowguid);
     public:                                                 // Accessors
         Player* GetPlayer() const { return m_receiver; }
-        ObjectGuid::LowType  GetPlayerGUIDLow() const { return m_receiver_lowguid; }
+        ObjectGuid::LowType GetPlayerGUIDLow() const { return m_receiver_lowguid; }
     private:
         Player* m_receiver;
-        ObjectGuid::LowType  m_receiver_lowguid;
+        ObjectGuid::LowType m_receiver_lowguid;
 };
 
 class TC_GAME_API MailDraft
@@ -127,14 +131,14 @@ class TC_GAME_API MailDraft
     public:                                                 // Accessors
         uint16 GetMailTemplateId() const { return m_mailTemplateId; }
         std::string const& GetSubject() const { return m_subject; }
-        uint32 GetMoney() const { return m_money; }
-        uint32 GetCOD() const { return m_COD; }
+        uint64 GetMoney() const { return m_money; }
+        uint64 GetCOD() const { return m_COD; }
         std::string const& GetBody() const { return m_body; }
 
     public:                                                 // modifiers
         MailDraft& AddItem(Item* item);
-        MailDraft& AddMoney(uint32 money) { m_money = money; return *this; }
-        MailDraft& AddCOD(uint32 COD) { m_COD = COD; return *this; }
+        MailDraft& AddMoney(uint64 money) { m_money = money; return *this; }
+        MailDraft& AddCOD(uint64 COD) { m_COD = COD; return *this; }
 
     public:                                                 // finishers
         void SendReturnToSender(uint32 sender_acc, ObjectGuid::LowType sender_guid, ObjectGuid::LowType receiver_guid, SQLTransaction& trans);
@@ -151,8 +155,8 @@ class TC_GAME_API MailDraft
 
         MailItemMap m_items;                                // Keep the items in a map to avoid duplicate guids (which can happen), store only low part of guid
 
-        uint32 m_money;
-        uint32 m_COD;
+        uint64 m_money;
+        uint64 m_COD;
 };
 
 struct MailItemInfo
@@ -168,7 +172,7 @@ struct TC_GAME_API Mail
     uint8 messageType;
     uint8 stationery;
     uint16 mailTemplateId;
-    ObjectGuid::LowType sender;
+    ObjectGuid::LowType sender;  // TODO: change to uint64 and store full guids
     ObjectGuid::LowType receiver;
     std::string subject;
     std::string body;
@@ -176,8 +180,8 @@ struct TC_GAME_API Mail
     std::vector<ObjectGuid::LowType> removedItems;
     time_t expire_time;
     time_t deliver_time;
-    uint32 money;
-    uint32 COD;
+    uint64 money;
+    uint64 COD;
     uint32 checked;
     MailState state;
 

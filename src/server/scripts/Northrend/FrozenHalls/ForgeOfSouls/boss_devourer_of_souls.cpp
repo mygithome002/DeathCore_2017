@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -144,7 +144,7 @@ class boss_devourer_of_souls : public CreatureScript
             void Reset() override
             {
                 _Reset();
-                me->SetControlled(false, UNIT_STATE_ROOT);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 me->SetDisplayId(DISPLAY_ANGER);
                 me->SetReactState(REACT_AGGRESSIVE);
 
@@ -297,7 +297,7 @@ class boss_devourer_of_souls : public CreatureScript
                             me->SetTarget(ObjectGuid::Empty);
 
                             me->GetMotionMaster()->Clear();
-                            me->SetControlled(true, UNIT_STATE_ROOT);
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
 
                             wailingSoulTick = 15;
                             events.DelayEvents(18000); // no other events during wailing souls
@@ -306,7 +306,7 @@ class boss_devourer_of_souls : public CreatureScript
 
                         case EVENT_WAILING_SOULS_TICK:
                             beamAngle += beamAngleDiff;
-                            me->SetFacingTo(beamAngle, true);
+                            me->SetFacingTo(beamAngle);
                             me->StopMoving();
 
                             DoCast(me, SPELL_WAILING_SOULS);
@@ -317,15 +317,12 @@ class boss_devourer_of_souls : public CreatureScript
                             {
                                 me->SetReactState(REACT_AGGRESSIVE);
                                 me->SetDisplayId(DISPLAY_ANGER);
-                                me->SetControlled(false, UNIT_STATE_ROOT);
+                                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                                 me->GetMotionMaster()->MoveChase(me->GetVictim());
                                 events.ScheduleEvent(EVENT_WAILING_SOULS, urand(60000, 70000));
                             }
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 DoMeleeAttackIfReady();
@@ -406,11 +403,7 @@ class spell_devourer_of_souls_mirrored_soul_proc : public SpellScriptLoader
             void HandleProc(AuraEffect const* /*aurEff*/, ProcEventInfo& eventInfo)
             {
                 PreventDefaultAction();
-                DamageInfo* damageInfo = eventInfo.GetDamageInfo();
-                if (!damageInfo || !damageInfo->GetDamage())
-                    return;
-
-                int32 damage = CalculatePct(static_cast<int32>(damageInfo->GetDamage()), 45);
+                int32 damage = int32(CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), 45));
                 GetTarget()->CastCustomSpell(SPELL_MIRRORED_SOUL_DAMAGE, SPELLVALUE_BASE_POINT0, damage, GetCaster(), true);
             }
 

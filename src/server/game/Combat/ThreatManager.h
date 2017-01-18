@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -40,8 +41,8 @@ class SpellInfo;
 
 struct TC_GAME_API ThreatCalcHelper
 {
-    static float calcThreat(Unit* hatedUnit, Unit* hatingUnit, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const* threatSpell = nullptr);
-    static bool isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellInfo const* threatSpell = nullptr);
+    static float calcThreat(Unit* hatedUnit, Unit* hatingUnit, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const* threatSpell = NULL);
+    static bool isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellInfo const* threatSpell = NULL);
 };
 
 //==============================================================
@@ -53,11 +54,11 @@ class TC_GAME_API HostileReference : public Reference<Unit, ThreatManager>
         //=================================================
         void addThreat(float modThreat);
 
-        void setThreat(float threat) { addThreat(threat - iThreat); }
+        void setThreat(float threat) { addThreat(threat - getThreat()); }
 
         void addThreatPercent(int32 percent);
 
-        float getThreat() const { return iThreat + iTempThreatModifier; }
+        float getThreat() const { return iThreat; }
 
         bool isOnline() const { return iOnline; }
 
@@ -65,27 +66,27 @@ class TC_GAME_API HostileReference : public Reference<Unit, ThreatManager>
         // in this case online = true, but accessible = false
         bool isAccessible() const { return iAccessible; }
 
-        // used for temporary setting a threat and reducing it later again.
+        // used for temporary setting a threat and reducting it later again.
         // the threat modification is stored
         void setTempThreat(float threat)
         {
-            addTempThreat(threat - iTempThreatModifier);
+            addTempThreat(threat - getThreat());
         }
 
         void addTempThreat(float threat)
         {
-            if (!threat)
-                return;
-
-            iTempThreatModifier += threat;
-
-            ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, this, threat);
-            fireStatusChanged(event);
+            iTempThreatModifier = threat;
+            if (iTempThreatModifier != 0.0f)
+                addThreat(iTempThreatModifier);
         }
 
         void resetTempThreat()
         {
-            addTempThreat(-iTempThreatModifier);
+            if (iTempThreatModifier != 0.0f)
+            {
+                addThreat(-iTempThreatModifier);
+                iTempThreatModifier = 0.0f;
+            }
         }
 
         float getTempThreatModifier() { return iTempThreatModifier; }
@@ -99,7 +100,7 @@ class TC_GAME_API HostileReference : public Reference<Unit, ThreatManager>
         void setAccessibleState(bool isAccessible);
         //=================================================
 
-        bool operator==(HostileReference const& hostileRef) const { return hostileRef.getUnitGuid() == getUnitGuid(); }
+        bool operator == (const HostileReference& hostileRef) const { return hostileRef.getUnitGuid() == getUnitGuid(); }
 
         //=================================================
 
@@ -112,7 +113,7 @@ class TC_GAME_API HostileReference : public Reference<Unit, ThreatManager>
 
         //=================================================
 
-        HostileReference* next() { return static_cast<HostileReference*>(Reference<Unit, ThreatManager>::next()); }
+        HostileReference* next() { return ((HostileReference*) Reference<Unit, ThreatManager>::next()); }
 
         //=================================================
 
@@ -124,17 +125,14 @@ class TC_GAME_API HostileReference : public Reference<Unit, ThreatManager>
 
         // Tell our refFrom (source) object, that the link is cut (Target destroyed)
         void sourceObjectDestroyLink() override;
-
     private:
         // Inform the source, that the status of that reference was changed
         void fireStatusChanged(ThreatRefStatusChangeEvent& threatRefStatusChangeEvent);
 
         Unit* GetSourceUnit();
-
     private:
         float iThreat;
-        float iTempThreatModifier;                          // used for SPELL_AURA_MOD_TOTAL_THREAT
-
+        float iTempThreatModifier;                          // used for taunt
         ObjectGuid iUnitGuid;
         bool iOnline;
         bool iAccessible;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -700,7 +700,7 @@ public:
             Creature* myCoil()
             {
                 Creature* coil = nullptr;
-                if (_myCoil)
+                if (!_myCoil.IsEmpty())
                     coil = ObjectAccessor::GetCreature(*me, _myCoil);
                 if (!coil)
                 {
@@ -717,7 +717,7 @@ public:
             GameObject* myCoilGO()
             {
                 GameObject* coil = nullptr;
-                if (_myCoilGO)
+                if (!_myCoilGO.IsEmpty())
                     coil = ObjectAccessor::GetGameObject(*me, _myCoilGO);
                 if (!coil)
                 {
@@ -971,7 +971,7 @@ public:
             Creature* myCoil()
             {
                 Creature* coil = nullptr;
-                if (_myCoil)
+                if (!_myCoil.IsEmpty())
                     coil = ObjectAccessor::GetCreature(*me, _myCoil);
                 if (!coil)
                 {
@@ -988,7 +988,7 @@ public:
             GameObject* myCoilGO()
             {
                 GameObject* coil = nullptr;
-                if (_myCoilGO)
+                if (!_myCoilGO.IsEmpty())
                     coil = ObjectAccessor::GetGameObject(*me, _myCoilGO);
                 if (!coil)
                 {
@@ -1076,12 +1076,12 @@ class spell_thaddius_polarity_charge : public SpellScriptLoader
 
                 uint8 maxStacks = 0;
                 if (GetCaster())
-                    switch (GetCaster()->GetMap()->GetDifficulty())
+                    switch (GetCaster()->GetMap()->GetDifficultyID())
                     {
-                        case RAID_DIFFICULTY_10MAN_NORMAL:
+                        case DIFFICULTY_10_N:
                             maxStacks = MAX_POLARITY_10M;
                             break;
-                        case RAID_DIFFICULTY_25MAN_NORMAL:
+                        case DIFFICULTY_25_N:
                             maxStacks = MAX_POLARITY_25M;
                             break;
                         default:
@@ -1275,7 +1275,7 @@ class at_thaddius_entrance : public AreaTriggerScript
     public:
         at_thaddius_entrance() : AreaTriggerScript("at_thaddius_entrance") { }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/) override
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/, bool /*entered*/) override
         {
             InstanceScript* instance = player->GetInstanceScript();
             if (!instance || instance->GetData(DATA_HAD_THADDIUS_GREET) || instance->GetBossState(BOSS_THADDIUS) == DONE)

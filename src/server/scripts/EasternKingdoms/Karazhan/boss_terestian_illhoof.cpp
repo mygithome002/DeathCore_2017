@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -61,7 +62,6 @@ enum Creatures
     NPC_FIENDISHIMP             = 17267,
     NPC_PORTAL                  = 17265,
 };
-
 
 class npc_kilrek : public CreatureScript
 {
@@ -159,7 +159,7 @@ public:
 
         void JustDied(Unit* /*killer*/) override
         {
-            if (SacrificeGUID)
+            if (!SacrificeGUID.IsEmpty())
             {
                 Unit* Sacrifice = ObjectAccessor::GetUnit(*me, SacrificeGUID);
                 if (Sacrifice)
@@ -300,7 +300,7 @@ public:
         {
             for (uint8 i = 0; i < 2; ++i)
             {
-                if (PortalGUID[i])
+                if (!PortalGUID[i].IsEmpty())
                 {
                     if (Creature* pPortal = ObjectAccessor::GetCreature(*me, PortalGUID[i]))
                     {
@@ -358,7 +358,7 @@ public:
         {
             for (uint8 i = 0; i < 2; ++i)
             {
-                if (PortalGUID[i])
+                if (!PortalGUID[i].IsEmpty())
                 {
                     if (Creature* pPortal = ObjectAccessor::GetCreature((*me), PortalGUID[i]))
                         pPortal->DespawnOrUnsummon();
@@ -409,7 +409,7 @@ public:
                 if (!PortalGUID[1])
                     DoCastVictim(SPELL_FIENDISH_PORTAL_1, false);
 
-                if (PortalGUID[0] && PortalGUID[1])
+                if (!PortalGUID[0].IsEmpty() && !PortalGUID[1].IsEmpty())
                 {
                     if (Creature* pPortal = ObjectAccessor::GetCreature(*me, PortalGUID[urand(0, 1)]))
                         pPortal->CastSpell(me->GetVictim(), SPELL_SUMMON_FIENDISIMP, false);

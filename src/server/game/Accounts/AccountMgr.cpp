@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -38,13 +39,10 @@ AccountMgr* AccountMgr::instance()
     return &instance;
 }
 
-AccountOpResult AccountMgr::CreateAccount(std::string username, std::string password, std::string email /*= ""*/)
+AccountOpResult AccountMgr::CreateAccount(std::string username, std::string password, std::string email /*= ""*/, uint32 bnetAccountId /*= 0*/, uint8 bnetIndex /*= 0*/)
 {
     if (utf8length(username) > MAX_ACCOUNT_STR)
         return AccountOpResult::AOR_NAME_TOO_LONG;                           // username's too long
-
-    if (utf8length(password) > MAX_PASS_STR)
-        return AccountOpResult::AOR_PASS_TOO_LONG;                           // password's too long
 
     Utf8ToUpperOnlyLatin(username);
     Utf8ToUpperOnlyLatin(password);
@@ -59,6 +57,16 @@ AccountOpResult AccountMgr::CreateAccount(std::string username, std::string pass
     stmt->setString(1, CalculateShaPassHash(username, password));
     stmt->setString(2, email);
     stmt->setString(3, email);
+    if (bnetAccountId && bnetIndex)
+    {
+        stmt->setUInt32(4, bnetAccountId);
+        stmt->setUInt8(5, bnetIndex);
+    }
+    else
+    {
+        stmt->setNull(4);
+        stmt->setNull(5);
+    }
 
     LoginDatabase.DirectExecute(stmt); // Enforce saving, otherwise AddGroup can fail
 
@@ -89,7 +97,7 @@ AccountOpResult AccountMgr::DeleteAccount(uint32 accountId)
     {
         do
         {
-            ObjectGuid guid(HighGuid::Player, (*result)[0].GetUInt32());
+            ObjectGuid guid = ObjectGuid::Create<HighGuid::Player>((*result)[0].GetUInt64());
 
             // Kick if player is online
             if (Player* p = ObjectAccessor::FindConnectedPlayer(guid))

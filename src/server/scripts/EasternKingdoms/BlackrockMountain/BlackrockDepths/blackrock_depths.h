@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,14 +21,14 @@
 
 #define DataHeader "BRD"
 
-enum FactionIds
+enum BRDFactionIds
 {
     FACTION_NEUTRAL            = 734,
     FACTION_HOSTILE            = 754,
     FACTION_FRIEND             = 35
 };
 
-enum DataTypes
+enum BRDDataTypes
 {
     TYPE_RING_OF_LAW        = 1,
     TYPE_VAULT              = 2,
@@ -60,7 +61,6 @@ enum DataTypes
     DATA_SF_BRAZIER_N       = 25,
     DATA_SF_BRAZIER_S       = 26,
     DATA_MOIRA              = 27,
-    DATA_COREN              = 28
 };
 
 #endif

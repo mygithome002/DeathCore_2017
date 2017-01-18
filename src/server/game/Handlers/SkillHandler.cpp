@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,50 +23,45 @@
 #include "Pet.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
+#include "TalentPackets.h"
+#include "SpellPackets.h"
 
-void WorldSession::HandleLearnTalentOpcode(WorldPacket& recvData)
+void WorldSession::HandleLearnTalentsOpcode(WorldPackets::Talent::LearnTalents& packet)
 {
-    uint32 talent_id, requested_rank;
-    recvData >> talent_id >> requested_rank;
-
-    _player->LearnTalent(talent_id, requested_rank);
-    _player->SendTalentsInfoData(false);
-}
-
-void WorldSession::HandleLearnPreviewTalents(WorldPacket& recvPacket)
-{
-    TC_LOG_DEBUG("network", "CMSG_LEARN_PREVIEW_TALENTS");
-
-    uint32 talentsCount;
-    recvPacket >> talentsCount;
-
-    uint32 talentId, talentRank;
-
-    // Client has max 44 talents for tree for 3 trees, rounded up : 150
-    uint32 const MaxTalentsCount = 150;
-
-    for (uint32 i = 0; i < talentsCount && i < MaxTalentsCount; ++i)
+    WorldPackets::Talent::LearnTalentsFailed learnTalentsFailed;
+    bool anythingLearned = false;
+    for (uint32 talentId : packet.Talents)
     {
-        recvPacket >> talentId >> talentRank;
+        if (TalentLearnResult result = _player->LearnTalent(talentId, &learnTalentsFailed.SpellID))
+        {
+            if (!learnTalentsFailed.Reason)
+                learnTalentsFailed.Reason = result;
 
-        _player->LearnTalent(talentId, talentRank);
+            learnTalentsFailed.Talents.push_back(talentId);
+        }
+        else
+            anythingLearned = true;
     }
 
-    _player->SendTalentsInfoData(false);
+    if (learnTalentsFailed.Reason)
+        SendPacket(learnTalentsFailed.Write());
 
-    recvPacket.rfinish();
+    if (anythingLearned)
+        _player->SendTalentsInfoData();
 }
 
-void WorldSession::HandleTalentWipeConfirmOpcode(WorldPacket& recvData)
+void WorldSession::HandleConfirmRespecWipeOpcode(WorldPackets::Talent::ConfirmRespecWipe& confirmRespecWipe)
 {
-    TC_LOG_DEBUG("network", "MSG_TALENT_WIPE_CONFIRM");
-    ObjectGuid guid;
-    recvData >> guid;
-
-    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TRAINER);
+    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(confirmRespecWipe.RespecMaster, UNIT_NPC_FLAG_TRAINER);
     if (!unit)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleTalentWipeConfirmOpcode - %s not found or you can't interact with him.", guid.ToString().c_str());
+        TC_LOG_DEBUG("network", "WORLD: HandleConfirmRespecWipeOpcode - %s not found or you can't interact with him.", confirmRespecWipe.RespecMaster.ToString().c_str());
+        return;
+    }
+
+    if (confirmRespecWipe.RespecType != SPEC_RESET_TALENTS)
+    {
+        TC_LOG_DEBUG("network", "WORLD: HandleConfirmRespecWipeOpcode - reset type %d is not implemented.", confirmRespecWipe.RespecType);
         return;
     }
 
@@ -76,27 +72,21 @@ void WorldSession::HandleTalentWipeConfirmOpcode(WorldPacket& recvData)
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-    if (!(_player->ResetTalents()))
+    if (!_player->ResetTalents())
     {
-        WorldPacket data(MSG_TALENT_WIPE_CONFIRM, 8+4);    //you have not any talent
-        data << uint64(0);
-        data << uint32(0);
-        SendPacket(&data);
+        GetPlayer()->SendRespecWipeConfirm(ObjectGuid::Empty, 0);
         return;
     }
 
-    _player->SendTalentsInfoData(false);
+    _player->SendTalentsInfoData();
     unit->CastSpell(_player, 14867, true);                  //spell: "Untalent Visual Effect"
 }
 
-void WorldSession::HandleUnlearnSkillOpcode(WorldPacket& recvData)
+void WorldSession::HandleUnlearnSkillOpcode(WorldPackets::Spells::UnlearnSkill& packet)
 {
-    uint32 skillId;
-    recvData >> skillId;
-
-    SkillRaceClassInfoEntry const* rcEntry = GetSkillRaceClassInfo(skillId, GetPlayer()->getRace(), GetPlayer()->getClass());
+    SkillRaceClassInfoEntry const* rcEntry = sDB2Manager.GetSkillRaceClassInfo(packet.SkillLine, GetPlayer()->getRace(), GetPlayer()->getClass());
     if (!rcEntry || !(rcEntry->Flags & SKILL_FLAG_UNLEARNABLE))
         return;
 
-    GetPlayer()->SetSkill(skillId, 0, 0, 0);
+    GetPlayer()->SetSkill(packet.SkillLine, 0, 0, 0);
 }

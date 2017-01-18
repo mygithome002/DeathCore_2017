@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -66,12 +67,10 @@ enum BossSpells
     SPELL_SHIVAN_SLASH                  = 67098,
     SPELL_SPINNING_STRIKE               = 66283,
     SPELL_MISTRESS_KISS                 = 66336,
-    SPELL_LORD_HITTIN                   = 66326,   // special effect preventing more specific spells be cast on the same player within 10 seconds
-    SPELL_MISTRESS_KISS_DAMAGE_SILENCE  = 66359,
-
-    // Felflame Infernal
-    SPELL_FEL_STREAK_VISUAL             = 66493,
+    SPELL_FEL_INFERNO                   = 67047,
     SPELL_FEL_STREAK                    = 66494,
+    SPELL_LORD_HITTIN                   = 66326,   // special effect preventing more specific spells be cast on the same player within 10 seconds
+    SPELL_MISTRESS_KISS_DAMAGE_SILENCE  = 66359
 };
 
 enum Events
@@ -117,7 +116,7 @@ class boss_jaraxxus : public CreatureScript
                 _JustReachedHome();
                 instance->SetBossState(BOSS_JARAXXUS, FAIL);
                 DoCast(me, SPELL_JARAXXUS_CHAINS);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             }
 
             void KilledUnit(Unit* who) override
@@ -195,9 +194,6 @@ class boss_jaraxxus : public CreatureScript
                             events.ScheduleEvent(EVENT_SUMMON_INFERNAL_ERUPTION, 2*MINUTE*IN_MILLISECONDS);
                             return;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 DoMeleeAttackIfReady();
@@ -309,17 +305,18 @@ class npc_fel_infernal : public CreatureScript
         {
             npc_fel_infernalAI(Creature* creature) : ScriptedAI(creature)
             {
+                Initialize();
                 _instance = creature->GetInstanceScript();
+            }
+
+            void Initialize()
+            {
+                _felStreakTimer = 30 * IN_MILLISECONDS;
             }
 
             void Reset() override
             {
-                _scheduler.Schedule(Seconds(2), [this](TaskContext context)
-                {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                        DoCast(target, SPELL_FEL_STREAK_VISUAL);
-                    context.Repeat(Seconds(15));
-                });
+                Initialize();
                 me->SetInCombatWithZone();
             }
 
@@ -331,20 +328,23 @@ class npc_fel_infernal : public CreatureScript
                     return;
                 }
 
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
                 if (!UpdateVictim())
                     return;
 
-                _scheduler.Update(diff, [this]
+                if (_felStreakTimer <= diff)
                 {
-                    DoMeleeAttackIfReady();
-                });
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                        DoCast(target, SPELL_FEL_STREAK);
+                    _felStreakTimer = 30*IN_MILLISECONDS;
+                }
+                else
+                    _felStreakTimer -= diff;
+
+                DoMeleeAttackIfReady();
             }
             private:
+                uint32 _felStreakTimer;
                 InstanceScript* _instance;
-                TaskScheduler _scheduler;
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -494,7 +494,7 @@ class spell_mistress_kiss : public SpellScriptLoader
             bool Load() override
             {
                 if (GetCaster())
-                    if (sSpellMgr->GetSpellIdForDifficulty(SPELL_MISTRESS_KISS_DAMAGE_SILENCE, GetCaster()))
+                    if (sSpellMgr->GetSpellInfo(SPELL_MISTRESS_KISS_DAMAGE_SILENCE))
                         return true;
                 return false;
             }
@@ -579,39 +579,6 @@ class spell_mistress_kiss_area : public SpellScriptLoader
         }
 };
 
-class spell_fel_streak_visual : public SpellScriptLoader
-{
-public:
-    spell_fel_streak_visual() : SpellScriptLoader("spell_fel_streak_visual") { }
-
-    class spell_fel_streak_visual_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_fel_streak_visual_SpellScript);
-
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            if (!sSpellMgr->GetSpellInfo(SPELL_FEL_STREAK))
-                return false;
-            return true;
-        }
-
-        void HandleScript(SpellEffIndex /*effIndex*/)
-        {
-            GetCaster()->CastSpell(GetHitUnit(), uint32(GetEffectValue()), true);
-        }
-
-        void Register() override
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_fel_streak_visual_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_fel_streak_visual_SpellScript();
-    }
-};
-
 void AddSC_boss_jaraxxus()
 {
     new boss_jaraxxus();
@@ -623,5 +590,4 @@ void AddSC_boss_jaraxxus()
 
     new spell_mistress_kiss();
     new spell_mistress_kiss_area();
-    new spell_fel_streak_visual();
 }

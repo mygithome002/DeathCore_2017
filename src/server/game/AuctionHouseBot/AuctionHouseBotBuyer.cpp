@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -103,7 +103,7 @@ uint32 AuctionBotBuyer::GetItemInformation(BuyerConfiguration& config)
     {
         AuctionEntry* entry = itr->second;
 
-        if (!entry->owner || sAuctionBotConfig->IsBotChar(entry->owner))
+        if (!entry->owner)
             continue; // Skip auctions owned by AHBot
 
         Item* item = sAuctionMgr->GetAItem(entry->itemGUIDLow);
@@ -162,7 +162,7 @@ bool AuctionBotBuyer::RollBuyChance(const BuyerItemInfo* ahInfo, const Item* ite
         return false;
 
     float itemBuyPrice = float(auction->buyout / item->GetCount());
-    float itemPrice = float(item->GetTemplate()->SellPrice ? item->GetTemplate()->SellPrice : GetVendorPrice(item->GetTemplate()->Quality));
+    float itemPrice = float(item->GetTemplate()->GetSellPrice() ? item->GetTemplate()->GetSellPrice() : GetVendorPrice(item->GetTemplate()->GetQuality()));
     // The AH cut needs to be added to the price, but we dont want a 100% chance to buy if the price is exactly AH default
     itemPrice *= 1.4f;
 
@@ -186,7 +186,7 @@ bool AuctionBotBuyer::RollBuyChance(const BuyerItemInfo* ahInfo, const Item* ite
     }
 
     // Add config weigh in for quality
-    chance *= GetChanceMultiplier(item->GetTemplate()->Quality) / 100.0f;
+    chance *= GetChanceMultiplier(item->GetTemplate()->GetQuality()) / 100.0f;
 
     float rand = frand(0.f, 100.f);
     bool win = rand <= chance;
@@ -198,7 +198,7 @@ bool AuctionBotBuyer::RollBuyChance(const BuyerItemInfo* ahInfo, const Item* ite
 bool AuctionBotBuyer::RollBidChance(const BuyerItemInfo* ahInfo, const Item* item, const AuctionEntry* auction, uint32 bidPrice)
 {
     float itemBidPrice = float(bidPrice / item->GetCount());
-    float itemPrice = float(item->GetTemplate()->SellPrice ? item->GetTemplate()->SellPrice : GetVendorPrice(item->GetTemplate()->Quality));
+    float itemPrice = float(item->GetTemplate()->GetSellPrice() ? item->GetTemplate()->GetSellPrice() : GetVendorPrice(item->GetTemplate()->GetQuality()));
     // The AH cut needs to be added to the price, but we dont want a 100% chance to buy if the price is exactly AH default
     itemPrice *= 1.4f;
 
@@ -218,11 +218,11 @@ bool AuctionBotBuyer::RollBidChance(const BuyerItemInfo* ahInfo, const Item* ite
     }
 
     // If a player has bidded on item, have fifth of normal chance
-    if (auction->bidder && !sAuctionBotConfig->IsBotChar(auction->bidder))
+    if (auction->bidder)
         chance = chance / 5.f;
 
     // Add config weigh in for quality
-    chance *= GetChanceMultiplier(item->GetTemplate()->Quality) / 100.0f;
+    chance *= GetChanceMultiplier(item->GetTemplate()->GetQuality()) / 100.0f;
 
     float rand = frand(0.f, 100.f);
     bool win = rand <= chance;
@@ -391,11 +391,11 @@ void AuctionBotBuyer::BuyEntry(AuctionEntry* auction, AuctionHouseObject* auctio
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
     // Send mail to previous bidder if any
-    if (auction->bidder && !sAuctionBotConfig->IsBotChar(auction->bidder))
+    if (auction->bidder)
         sAuctionMgr->SendAuctionOutbiddedMail(auction, auction->buyout, NULL, trans);
 
     // Set bot as bidder and set new bid amount
-    auction->bidder = sAuctionBotConfig->GetRandCharExclude(auction->owner);
+    auction->bidder = 0;
     auction->bid = auction->buyout;
 
     // Mails must be under transaction control too to prevent data loss
@@ -422,16 +422,16 @@ void AuctionBotBuyer::PlaceBidToEntry(AuctionEntry* auction, uint32 bidPrice)
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
     // Send mail to previous bidder if any
-    if (auction->bidder && !sAuctionBotConfig->IsBotChar(auction->bidder))
+    if (auction->bidder)
         sAuctionMgr->SendAuctionOutbiddedMail(auction, bidPrice, NULL, trans);
 
     // Set bot as bidder and set new bid amount
-    auction->bidder = sAuctionBotConfig->GetRandCharExclude(auction->owner);
+    auction->bidder = 0;
     auction->bid = bidPrice;
 
     // Update auction to DB
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_AUCTION_BID);
-    stmt->setUInt32(0, auction->bidder);
+    stmt->setUInt64(0, auction->bidder);
     stmt->setUInt32(1, auction->bid);
     stmt->setUInt32(2, auction->Id);
     trans->Append(stmt);

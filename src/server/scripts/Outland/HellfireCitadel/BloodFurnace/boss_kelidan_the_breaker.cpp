@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,6 +19,7 @@
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "SpellAuras.h"
+#include "Spell.h"
 #include "blood_furnace.h"
 
 enum Kelidan
@@ -230,7 +232,9 @@ class boss_kelidan_the_breaker : public CreatureScript
 
                     Talk(SAY_NOVA);
 
-                    me->AddAura(SPELL_BURNING_NOVA, me);
+                    if (SpellInfo const* nova = sSpellMgr->GetSpellInfo(SPELL_BURNING_NOVA))
+                        if (Aura* aura = Aura::TryRefreshStackOrCreate(nova, ObjectGuid::Create<HighGuid::Cast>(SPELL_CAST_SOURCE_NORMAL, me->GetMapId(), nova->Id, me->GetMap()->GenerateLowGuid<HighGuid::Cast>()), MAX_EFFECT_MASK, me, me))
+                            aura->ApplyForTargets();
 
                     if (IsHeroic())
                         DoTeleportAll(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());

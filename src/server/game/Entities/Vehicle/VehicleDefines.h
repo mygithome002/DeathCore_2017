@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,7 +32,29 @@ enum PowerType
     POWER_HEAT                                   = 101,
     POWER_OOZE                                   = 121,
     POWER_BLOOD                                  = 141,
-    POWER_WRATH                                  = 142
+    POWER_WRATH                                  = 142,
+    POWER_ARCANE_ENERGY                          = 143,
+    POWER_LIFE_ENERGY                            = 144,
+    POWER_SUN_ENERGY                             = 145,
+    POWER_SWING_VELOCITY                         = 146,
+    POWER_SHADOWFLAME_ENERGY                     = 147,
+    POWER_BLUE_POWER                             = 148,
+    POWER_PURPLE_POWER                           = 149,
+    POWER_GREEN_POWER                            = 150,
+    POWER_ORANGE_POWER                           = 151,
+    POWER_ENERGY_2                               = 153,
+    POWER_ARCANEENERGY                           = 161,
+    POWER_WIND_POWER_1                           = 162,
+    POWER_WIND_POWER_2                           = 163,
+    POWER_WIND_POWER_3                           = 164,
+    POWER_FUEL                                   = 165,
+    POWER_SUN_POWER                              = 166,
+    POWER_TWILIGHT_ENERGY                        = 169,
+    POWER_VENOM                                  = 174,
+    POWER_ORANGE_POWER_2                         = 176,
+    POWER_CONSUMING_FLAME                        = 177,
+    POWER_PYROCLASTIC_FRENZY                     = 178,
+    POWER_FLASHFIRE                              = 179,
 };
 
 enum VehicleFlags
@@ -43,8 +66,7 @@ enum VehicleFlags
     VEHICLE_FLAG_FULLSPEEDPITCHING               = 0x00000020,           // Sets MOVEFLAG2_FULLSPEEDPITCHING
     VEHICLE_FLAG_CUSTOM_PITCH                    = 0x00000040,           // If set use pitchMin and pitchMax from DBC, otherwise pitchMin = -pi/2, pitchMax = pi/2
     VEHICLE_FLAG_ADJUST_AIM_ANGLE                = 0x00000400,           // Lua_IsVehicleAimAngleAdjustable
-    VEHICLE_FLAG_ADJUST_AIM_POWER                = 0x00000800,           // Lua_IsVehicleAimPowerAdjustable
-    VEHICLE_FLAG_FIXED_POSITION                  = 0x00200000            // Used for cannons, when they should be rooted
+    VEHICLE_FLAG_ADJUST_AIM_POWER                = 0x00000800            // Lua_IsVehicleAimPowerAdjustable
 };
 
 enum VehicleSpells
@@ -90,7 +112,8 @@ struct VehicleAccessory
 };
 
 typedef std::vector<VehicleAccessory> VehicleAccessoryList;
-typedef std::map<uint32, VehicleAccessoryList> VehicleAccessoryContainer;
+typedef std::map<ObjectGuid::LowType, VehicleAccessoryList> VehicleAccessoryContainer;
+typedef std::map<uint32, VehicleAccessoryList> VehicleAccessoryTemplateContainer;
 typedef std::map<int8, VehicleSeat> SeatMap;
 
 class TransportBase
@@ -106,7 +129,6 @@ public:
     /// This method transforms supplied global coordinates into local offsets
     virtual void CalculatePassengerOffset(float& x, float& y, float& z, float* o = NULL) const = 0;
 
-protected:
     static void CalculatePassengerPosition(float& x, float& y, float& z, float* o, float transX, float transY, float transZ, float transO)
     {
         float inx = x, iny = y, inz = z;

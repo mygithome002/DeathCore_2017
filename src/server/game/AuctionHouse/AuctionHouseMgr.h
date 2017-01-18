@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,7 +21,8 @@
 
 #include "Common.h"
 #include "DatabaseEnv.h"
-#include "DBCStructure.h"
+#include "ObjectGuid.h"
+#include "AuctionHousePackets.h"
 #include <set>
 
 class Item;
@@ -29,7 +31,6 @@ class WorldPacket;
 
 #define MIN_AUCTION_TIME (12*HOUR)
 #define MAX_AUCTION_ITEMS 160
-#define MAX_GETALL_RETURN 55000
 
 enum AuctionError
 {
@@ -62,17 +63,10 @@ enum MailAuctionAnswers
     AUCTION_SALE_PENDING        = 6
 };
 
-enum AuctionHouses
-{
-    AUCTIONHOUSE_ALLIANCE       = 2,
-    AUCTIONHOUSE_HORDE          = 6,
-    AUCTIONHOUSE_NEUTRAL        = 7
-};
-
 struct TC_GAME_API AuctionEntry
 {
     uint32 Id;
-    uint8 houseId;
+    ObjectGuid::LowType auctioneer;                                      // creature low guid
     ObjectGuid::LowType itemGUIDLow;
     uint32 itemEntry;
     uint32 itemCount;
@@ -84,19 +78,40 @@ struct TC_GAME_API AuctionEntry
     ObjectGuid::LowType bidder;
     uint32 deposit;                                         //deposit can be calculated only when creating auction
     uint32 etime;
+    uint32 houseId;
     AuctionHouseEntry const* auctionHouseEntry;             // in AuctionHouse.dbc
+    uint32 factionTemplateId;
 
     // helpers
-    uint8 GetHouseId() const { return houseId; }
+    uint32 GetHouseId() const { return houseId; }
+    uint32 GetHouseFaction() const { return auctionHouseEntry->FactionID; }
     uint32 GetAuctionCut() const;
     uint32 GetAuctionOutBid() const;
-    bool BuildAuctionInfo(WorldPacket & data, Item* sourceItem = nullptr) const;
+    void BuildAuctionInfo(std::vector<WorldPackets::AuctionHouse::AuctionItem>& items, bool listAuctionItems, Item* sourceItem = nullptr) const;
     void DeleteFromDB(SQLTransaction& trans) const;
     void SaveToDB(SQLTransaction& trans) const;
     bool LoadFromDB(Field* fields);
     std::string BuildAuctionMailSubject(MailAuctionAnswers response) const;
-    static std::string BuildAuctionMailBody(ObjectGuid::LowType lowGuid, uint32 bid, uint32 buyout, uint32 deposit, uint32 cut);
+    static std::string BuildAuctionMailBody(uint64 lowGuid, uint32 bid, uint32 buyout, uint32 deposit, uint32 cut);
 
+};
+
+struct AuctionSearchFilters
+{
+    enum FilterType : uint32
+    {
+        FILTER_SKIP_CLASS = 0,
+        FILTER_SKIP_SUBCLASS = 0xFFFFFFFF,
+        FILTER_SKIP_INVTYPE = 0xFFFFFFFF
+    };
+
+    struct SubclassFilter
+    {
+        uint32 SubclassMask = FILTER_SKIP_CLASS;
+        std::array<uint32, MAX_ITEM_SUBCLASS_TOTAL> InvTypes;
+    };
+
+    std::array<SubclassFilter, MAX_ITEM_CLASS> Classes;
 };
 
 //this class is used as auctionhouse instance
@@ -110,12 +125,23 @@ class TC_GAME_API AuctionHouseObject
     }
 
     typedef std::map<uint32, AuctionEntry*> AuctionEntryMap;
-    typedef std::unordered_map<ObjectGuid, time_t> PlayerGetAllThrottleMap;
 
-    uint32 Getcount() const { return AuctionsMap.size(); }
+    struct PlayerGetAllThrottleData
+    {
+        uint32 Global = 0;
+        uint32 Cursor = 0;
+        uint32 Tombstone = 0;
+        time_t NextAllowedReplication = 0;
 
-    AuctionEntryMap::iterator GetAuctionsBegin() {return AuctionsMap.begin();}
-    AuctionEntryMap::iterator GetAuctionsEnd() {return AuctionsMap.end();}
+        bool IsReplicationInProgress() const { return Cursor != Tombstone && Global != 0; }
+    };
+
+    typedef std::unordered_map<ObjectGuid, PlayerGetAllThrottleData> PlayerGetAllThrottleMap;
+
+    uint32 Getcount() const { return uint32(AuctionsMap.size()); }
+
+    AuctionEntryMap::iterator GetAuctionsBegin() { return AuctionsMap.begin(); }
+    AuctionEntryMap::iterator GetAuctionsEnd() { return AuctionsMap.end(); }
 
     AuctionEntry* GetAuction(uint32 id) const
     {
@@ -129,12 +155,12 @@ class TC_GAME_API AuctionHouseObject
 
     void Update();
 
-    void BuildListBidderItems(WorldPacket& data, Player* player, uint32& count, uint32& totalcount);
-    void BuildListOwnerItems(WorldPacket& data, Player* player, uint32& count, uint32& totalcount);
-    void BuildListAuctionItems(WorldPacket& data, Player* player,
-        std::wstring const& searchedname, uint32 listfrom, uint8 levelmin, uint8 levelmax, uint8 usable,
-        uint32 inventoryType, uint32 itemClass, uint32 itemSubClass, uint32 quality,
-        uint32& count, uint32& totalcount, bool getall = false);
+    void BuildListBidderItems(WorldPackets::AuctionHouse::AuctionListBidderItemsResult& packet, Player* player, uint32& totalcount);
+    void BuildListOwnerItems(WorldPackets::AuctionHouse::AuctionListOwnerItemsResult& packet, Player* player, uint32& totalcount);
+    void BuildListAuctionItems(WorldPackets::AuctionHouse::AuctionListItemsResult& packet, Player* player,
+        std::wstring const& searchedname, uint32 listfrom, uint8 levelmin, uint8 levelmax, bool usable, Optional<AuctionSearchFilters> const& filters, uint32 quality);
+    void BuildReplicate(WorldPackets::AuctionHouse::AuctionReplicateResponse& auctionReplicateResult, Player* player,
+        uint32 global, uint32 cursor, uint32 tombstone, uint32 count);
 
   private:
     AuctionEntryMap AuctionsMap;
@@ -159,7 +185,6 @@ class TC_GAME_API AuctionHouseMgr
         typedef std::pair<PlayerAuctions*, uint32> AuctionPair;
 
         AuctionHouseObject* GetAuctionsMap(uint32 factionTemplateId);
-        AuctionHouseObject* GetAuctionsMapByHouseId(uint8 auctionHouseId);
         AuctionHouseObject* GetBidsMap(uint32 factionTemplateId);
 
         Item* GetAItem(ObjectGuid::LowType id)
@@ -180,8 +205,8 @@ class TC_GAME_API AuctionHouseMgr
         void SendAuctionCancelledToBidderMail(AuctionEntry* auction, SQLTransaction& trans);
 
         static uint32 GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, Item* pItem, uint32 count);
-        static AuctionHouseEntry const* GetAuctionHouseEntry(uint32 factionTemplateId);
-        static AuctionHouseEntry const* GetAuctionHouseEntryFromHouse(uint8 houseId);
+        static AuctionHouseEntry const* GetAuctionHouseEntry(uint32 factionTemplateId, uint32* houseId);
+
     public:
 
         //load first auction items, because of check if item exists, when loading

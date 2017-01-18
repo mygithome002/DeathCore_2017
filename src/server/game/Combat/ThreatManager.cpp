@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,6 +19,7 @@
 #include "ThreatManager.h"
 #include "Unit.h"
 #include "Creature.h"
+#include "Map.h"
 #include "Player.h"
 #include "ObjectAccessor.h"
 #include "UnitEvents.h"
@@ -29,7 +31,7 @@
 //==============================================================
 
 // The hatingUnit is not used yet
-float ThreatCalcHelper::calcThreat(Unit* hatedUnit, Unit* /*hatingUnit*/, float threat, SpellSchoolMask schoolMask, SpellInfo const* threatSpell /*= nullptr*/)
+float ThreatCalcHelper::calcThreat(Unit* hatedUnit, Unit* /*hatingUnit*/, float threat, SpellSchoolMask schoolMask, SpellInfo const* threatSpell)
 {
     if (threatSpell)
     {
@@ -38,18 +40,18 @@ float ThreatCalcHelper::calcThreat(Unit* hatedUnit, Unit* /*hatingUnit*/, float 
                 threat *= threatEntry->pctMod;
 
         // Energize is not affected by Mods
-        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (threatSpell->Effects[i].Effect == SPELL_EFFECT_ENERGIZE || threatSpell->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_ENERGIZE)
+            for (SpellEffectInfo const* effect : threatSpell->GetEffectsForDifficulty(hatedUnit->GetMap()->GetDifficultyID()))
+            if (effect && (effect->Effect == SPELL_EFFECT_ENERGIZE || effect->ApplyAuraName == SPELL_AURA_PERIODIC_ENERGIZE))
                 return threat;
 
         if (Player* modOwner = hatedUnit->GetSpellModOwner())
-            modOwner->ApplySpellMod<SPELLMOD_THREAT>(threatSpell->Id, threat);
+            modOwner->ApplySpellMod(threatSpell->Id, SPELLMOD_THREAT, threat);
     }
 
     return hatedUnit->ApplyTotalThreatModifier(threat, schoolMask);
 }
 
-bool ThreatCalcHelper::isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellInfo const* threatSpell /*= nullptr*/)
+bool ThreatCalcHelper::isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellInfo const* threatSpell)
 {
     //function deals with adding threat and adding players and pets into ThreatList
     //mobs, NPCs, guards have ThreatList and HateOfflineList
@@ -72,7 +74,7 @@ bool ThreatCalcHelper::isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellIn
         return false;
 
     // not in same map or phase
-    if (!hatedUnit->IsInMap(hatingUnit) || !hatedUnit->InSamePhase(hatingUnit))
+    if (!hatedUnit->IsInMap(hatingUnit) || !hatedUnit->IsInPhase(hatingUnit))
         return false;
 
     // spell not causing threat
@@ -133,20 +135,18 @@ void HostileReference::fireStatusChanged(ThreatRefStatusChangeEvent& threatRefSt
 
 void HostileReference::addThreat(float modThreat)
 {
-    if (!modThreat)
-        return;
-
     iThreat += modThreat;
-
     // the threat is changed. Source and target unit have to be available
     // if the link was cut before relink it again
     if (!isOnline())
         updateOnlineStatus();
+    if (modThreat != 0.0f)
+    {
+        ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, this, modThreat);
+        fireStatusChanged(event);
+    }
 
-    ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, this, modThreat);
-    fireStatusChanged(event);
-
-    if (isValid() && modThreat > 0.0f)
+    if (isValid() && modThreat >= 0.0f)
     {
         Unit* victimOwner = getTarget()->GetCharmerOrOwner();
         if (victimOwner && victimOwner->IsAlive())
@@ -156,7 +156,9 @@ void HostileReference::addThreat(float modThreat)
 
 void HostileReference::addThreatPercent(int32 percent)
 {
-    addThreat(CalculatePct(iThreat, percent));
+    float tmpThreat = iThreat;
+    AddPct(tmpThreat, percent);
+    addThreat(tmpThreat - iThreat);
 }
 
 //============================================================
@@ -179,7 +181,7 @@ void HostileReference::updateOnlineStatus()
         && (getTarget()->GetTypeId() != TYPEID_PLAYER || !getTarget()->ToPlayer()->IsGameMaster())
         && !getTarget()->HasUnitState(UNIT_STATE_IN_FLIGHT)
         && getTarget()->IsInMap(GetSourceUnit())
-        && getTarget()->InSamePhase(GetSourceUnit())
+        && getTarget()->IsInPhase(GetSourceUnit())
         )
     {
         Creature* creature = GetSourceUnit()->ToCreature();
@@ -192,7 +194,6 @@ void HostileReference::updateOnlineStatus()
         else
             accessible = true;
     }
-
     setAccessibleState(accessible);
     setOnlineOfflineState(online);
 }
@@ -221,7 +222,7 @@ void HostileReference::setAccessibleState(bool isAccessible)
     {
         iAccessible = isAccessible;
 
-        ThreatRefStatusChangeEvent event(UEV_THREAT_REF_ACCESSIBLE_STATUS, this);
+        ThreatRefStatusChangeEvent event(UEV_THREAT_REF_ASSECCIBLE_STATUS, this);
         fireStatusChanged(event);
     }
 }

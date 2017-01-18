@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -177,10 +177,10 @@ class instance_ulduar : public InstanceMapScript
             bool Unbroken;
             bool IsDriveMeCrazyEligible;
 
-            void FillInitialWorldStates(WorldPacket& packet) override
+            void FillInitialWorldStates(WorldPackets::WorldState::InitWorldStates& packet) override
             {
-                packet << uint32(WORLD_STATE_ALGALON_TIMER_ENABLED) << uint32(_algalonTimer && _algalonTimer <= 60);
-                packet << uint32(WORLD_STATE_ALGALON_DESPAWN_TIMER) << uint32(std::min<uint32>(_algalonTimer, 60));
+                packet.Worldstates.emplace_back(uint32(WORLD_STATE_ALGALON_TIMER_ENABLED), int32(_algalonTimer && _algalonTimer <= 60));
+                packet.Worldstates.emplace_back(uint32(WORLD_STATE_ALGALON_DESPAWN_TIMER), int32(std::min<uint32>(_algalonTimer, 60)));
             }
 
             void OnPlayerEnter(Player* player) override
@@ -660,7 +660,7 @@ class instance_ulduar : public InstanceMapScript
                     case NPC_GUARDIAN_OF_LIFE:
                         if (!conSpeedAtory)
                         {
-                            DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, CRITERIA_CON_SPEED_ATORY);
+                            DoStartCriteriaTimer(CRITERIA_TIMED_TYPE_EVENT, CRITERIA_CON_SPEED_ATORY);
                             conSpeedAtory = true;
                         }
                         break;
@@ -669,7 +669,7 @@ class instance_ulduar : public InstanceMapScript
                     case NPC_BRIGHTLEAF:
                         if (!lumberjacked)
                         {
-                            DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, CRITERIA_LUMBERJACKED);
+                            DoStartCriteriaTimer(CRITERIA_TIMED_TYPE_EVENT, CRITERIA_LUMBERJACKED);
                             lumberjacked = true;
                         }
                         break;
@@ -791,10 +791,10 @@ class instance_ulduar : public InstanceMapScript
                             Map::PlayerList const& players = instance->GetPlayers();
                             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                                 if (Player* player = itr->GetSource())
-                                    for (uint8 slot = EQUIPMENT_SLOT_MAINHAND; slot <= EQUIPMENT_SLOT_RANGED; ++slot)
+                                    for (uint8 slot = EQUIPMENT_SLOT_MAINHAND; slot <= EQUIPMENT_SLOT_OFFHAND; ++slot)
                                         if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-                                            if (item->GetTemplate()->ItemLevel > _maxWeaponItemLevel)
-                                                _maxWeaponItemLevel = item->GetTemplate()->ItemLevel;
+                                            if (item->GetItemLevel(player) > _maxWeaponItemLevel)
+                                                _maxWeaponItemLevel = item->GetItemLevel(player);
                         }
                         else if (state == IN_PROGRESS)
                         {
@@ -811,13 +811,13 @@ class instance_ulduar : public InstanceMapScript
 
                                         if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                                         {
-                                            if (slot >= EQUIPMENT_SLOT_MAINHAND && slot <= EQUIPMENT_SLOT_RANGED)
+                                            if (slot >= EQUIPMENT_SLOT_MAINHAND && slot <= EQUIPMENT_SLOT_OFFHAND)
                                             {
-                                                if (item->GetTemplate()->ItemLevel > _maxWeaponItemLevel)
-                                                    _maxWeaponItemLevel = item->GetTemplate()->ItemLevel;
+                                                if (item->GetItemLevel(player) > _maxWeaponItemLevel)
+                                                    _maxWeaponItemLevel = item->GetItemLevel(player);
                                             }
-                                            else if (item->GetTemplate()->ItemLevel > _maxArmorItemLevel)
-                                                _maxArmorItemLevel = item->GetTemplate()->ItemLevel;
+                                            else if (item->GetItemLevel(player) > _maxArmorItemLevel)
+                                                _maxArmorItemLevel = item->GetItemLevel(player);
                                         }
                                     }
                                 }
@@ -1108,7 +1108,7 @@ class instance_ulduar : public InstanceMapScript
                 data << GetData(DATA_COLOSSUS) << ' ' << _algalonTimer << ' ' << uint32(_algalonSummoned ? 1 : 0);
 
                 for (uint8 i = 0; i < 4; ++i)
-                    data << ' ' << uint32(KeeperGUIDs[i] ? 1 : 0);
+                    data << ' ' << uint32(!KeeperGUIDs[i].IsEmpty() ? 1 : 0);
 
                 data << ' ' << _CoUAchivePlayerDeathMask;
             }
@@ -1265,7 +1265,7 @@ class spell_ulduar_teleporter : public SpellScriptLoader
 
                 if (GetExplTargetUnit()->IsInCombat())
                 {
-                    Spell::SendCastResult(GetExplTargetUnit()->ToPlayer(), GetSpellInfo(), 0, SPELL_FAILED_AFFECTING_COMBAT);
+                    Spell::SendCastResult(GetExplTargetUnit()->ToPlayer(), GetSpellInfo(), GetSpell()->m_SpellVisual, GetSpell()->m_castId, SPELL_FAILED_AFFECTING_COMBAT);
                     return SPELL_FAILED_AFFECTING_COMBAT;
                 }
 

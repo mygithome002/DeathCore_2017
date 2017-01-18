@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -47,33 +48,9 @@ class npc_cairne_bloodhoof : public CreatureScript
 public:
     npc_cairne_bloodhoof() : CreatureScript("npc_cairne_bloodhoof") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
-    {
-        ClearGossipMenuFor(player);
-        if (action == GOSSIP_SENDER_INFO)
-        {
-            player->CastSpell(player, 23123, false);
-            SendGossipMenuFor(player, 7014, creature->GetGUID());
-        }
-        return true;
-    }
-
-    bool OnGossipHello(Player* player, Creature* creature) override
-    {
-        if (creature->IsQuestGiver())
-            player->PrepareQuestMenu(creature->GetGUID());
-
-        if (player->GetQuestStatus(925) == QUEST_STATUS_INCOMPLETE)
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_HCB, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO);
-
-        SendGossipMenuFor(player, 7013, creature->GetGUID());
-
-        return true;
-    }
-
     CreatureAI* GetAI(Creature* creature) const override
     {
-        return new npc_cairne_bloodhoofAI(creature);
+        return new npc_cairne_bloodhoofAI (creature);
     }
 
     struct npc_cairne_bloodhoofAI : public ScriptedAI

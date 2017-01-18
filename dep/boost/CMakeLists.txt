@@ -1,17 +1,12 @@
-# Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+# Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
 #
-# This program is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by the
-# Free Software Foundation; either version 2 of the License, or (at your
-# option) any later version.
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-# more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program. If not, see <http://www.gnu.org/licenses/>.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 if(WIN32)
  set(BOOST_DEBUG ON)
@@ -31,11 +26,20 @@ if(WIN32)
   set(Boost_USE_STATIC_RUNTIME     OFF)
 endif()
 
-find_package(Boost 1.55 REQUIRED system filesystem thread program_options iostreams)
+include (CheckCXXSourceCompiles)
+
+check_cxx_source_compiles("
+  #include <regex>
+  int main() { std::wregex r(L\".*\"); }"
+  STD_HAS_WORKING_WREGEX)
+
+if (STD_HAS_WORKING_WREGEX)
+  find_package(Boost 1.55 REQUIRED system filesystem thread program_options iostreams)
+else()
+  find_package(Boost 1.55 REQUIRED system filesystem thread program_options iostreams regex)
+endif()
 
 # Find if Boost was compiled in C++03 mode because it requires -DBOOST_NO_CXX11_SCOPED_ENUMS
-
-include (CheckCXXSourceCompiles)
 
 set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIR})
 set(CMAKE_REQUIRED_LIBRARIES ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
@@ -59,17 +63,20 @@ target_include_directories(boost
   INTERFACE
     ${Boost_INCLUDE_DIRS})
 
-if (boost_filesystem_copy_links_without_NO_SCOPED_ENUM)
+target_compile_definitions(boost
+  INTERFACE
+    -DBOOST_DATE_TIME_NO_LIB
+    -DBOOST_REGEX_NO_LIB
+    -DBOOST_CHRONO_NO_LIB)
+
+if (NOT boost_filesystem_copy_links_without_NO_SCOPED_ENUM)
   target_compile_definitions(boost
     INTERFACE
-      -DBOOST_DATE_TIME_NO_LIB
-      -DBOOST_REGEX_NO_LIB
-      -DBOOST_CHRONO_NO_LIB)
-else()
-  target_compile_definitions(boost
-    INTERFACE
-      -DBOOST_DATE_TIME_NO_LIB
-      -DBOOST_REGEX_NO_LIB
-      -DBOOST_CHRONO_NO_LIB
       -DBOOST_NO_CXX11_SCOPED_ENUMS)
+endif()
+
+if (NOT STD_HAS_WORKING_WREGEX)
+  target_compile_definitions(boost
+    INTERFACE
+      -DTC_HAS_BROKEN_WSTRING_REGEX)
 endif()

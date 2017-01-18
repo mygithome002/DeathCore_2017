@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -34,19 +34,19 @@ class TC_GAME_API SmartScript
         SmartScript();
         ~SmartScript();
 
-        void OnInitialize(WorldObject* obj, AreaTriggerEntry const* at = nullptr);
+        void OnInitialize(WorldObject* obj, AreaTriggerEntry const* at = NULL);
         void GetScript();
         void FillScript(SmartAIEventList e, WorldObject* obj, AreaTriggerEntry const* at);
 
-        void ProcessEventsFor(SMART_EVENT e, Unit* unit = nullptr, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = nullptr, GameObject* gob = nullptr);
-        void ProcessEvent(SmartScriptHolder& e, Unit* unit = nullptr, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = nullptr, GameObject* gob = nullptr);
+        void ProcessEventsFor(SMART_EVENT e, Unit* unit = NULL, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = NULL, GameObject* gob = NULL);
+        void ProcessEvent(SmartScriptHolder& e, Unit* unit = NULL, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = NULL, GameObject* gob = NULL);
         bool CheckTimer(SmartScriptHolder const& e) const;
         void RecalcTimer(SmartScriptHolder& e, uint32 min, uint32 max);
         void UpdateTimer(SmartScriptHolder& e, uint32 const diff);
         void InitTimer(SmartScriptHolder& e);
-        void ProcessAction(SmartScriptHolder& e, Unit* unit = nullptr, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = nullptr, GameObject* gob = nullptr);
-        void ProcessTimedAction(SmartScriptHolder& e, uint32 const& min, uint32 const& max, Unit* unit = nullptr, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = nullptr, GameObject* gob = nullptr);
-        ObjectList* GetTargets(SmartScriptHolder const& e, Unit* invoker = nullptr);
+        void ProcessAction(SmartScriptHolder& e, Unit* unit = NULL, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = NULL, GameObject* gob = NULL);
+        void ProcessTimedAction(SmartScriptHolder& e, uint32 const& min, uint32 const& max, Unit* unit = NULL, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = NULL, GameObject* gob = NULL);
+        ObjectList* GetTargets(SmartScriptHolder const& e, Unit* invoker = NULL);
         ObjectList* GetWorldObjectsInDist(float dist);
         void InstallTemplate(SmartScriptHolder const& e);
         SmartScriptHolder CreateEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, uint32 phaseMask = 0);
@@ -55,7 +55,7 @@ class TC_GAME_API SmartScript
         uint32 GetPathId() const { return mPathId; }
         WorldObject* GetBaseObject()
         {
-            WorldObject* obj = nullptr;
+            WorldObject* obj = NULL;
             if (me)
                 obj = me;
             else if (go)
@@ -63,33 +63,22 @@ class TC_GAME_API SmartScript
             return obj;
         }
 
-        static bool IsUnit(WorldObject* obj)
+        bool IsUnit(WorldObject* obj)
         {
             return obj && (obj->GetTypeId() == TYPEID_UNIT || obj->GetTypeId() == TYPEID_PLAYER);
         }
 
-        static bool IsPlayer(WorldObject* obj)
+        bool IsPlayer(WorldObject* obj)
         {
             return obj && obj->GetTypeId() == TYPEID_PLAYER;
         }
 
-        static bool IsCreature(WorldObject* obj)
+        bool IsCreature(WorldObject* obj)
         {
             return obj && obj->GetTypeId() == TYPEID_UNIT;
         }
 
-        static bool IsCharmedCreature(WorldObject* obj)
-        {
-            if (!obj)
-                return false;
-
-            if (Creature* creatureObj = obj->ToCreature())
-                return creatureObj->IsCharmed();
-
-            return false;
-        }
-
-        static bool IsGameObject(WorldObject* obj)
+        bool IsGameObject(WorldObject* obj)
         {
             return obj && obj->GetTypeId() == TYPEID_GAMEOBJECT;
         }
@@ -119,7 +108,7 @@ class TC_GAME_API SmartScript
             (*mTargetStorage)[id] = new ObjectGuidList(targets, GetBaseObject());
         }
 
-        bool IsSmart(Creature* c = nullptr)
+        bool IsSmart(Creature* c = NULL)
         {
             bool smart = true;
             if (c && c->GetAIName() != "SmartAI")
@@ -129,12 +118,12 @@ class TC_GAME_API SmartScript
                 smart = false;
 
             if (!smart)
-                TC_LOG_ERROR("sql.sql", "SmartScript: Action target Creature (GUID: %u Entry: %u) is not using SmartAI, action called by Creature (GUID: %u Entry: %u) skipped to prevent crash.", c ? c->GetSpawnId() : 0, c ? c->GetEntry() : 0, me ? me->GetSpawnId() : 0, me ? me->GetEntry() : 0);
+                TC_LOG_ERROR("sql.sql", "SmartScript: Action target Creature (GUID: " UI64FMTD " Entry: %u) is not using SmartAI, action called by Creature (GUID: " UI64FMTD " Entry: %u) skipped to prevent crash.", uint64(c ? c->GetSpawnId() : UI64LIT(0)), c ? c->GetEntry() : 0, uint64(me ? me->GetSpawnId() : UI64LIT(0)), me ? me->GetEntry() : 0);
 
             return smart;
         }
 
-        bool IsSmartGO(GameObject* g = nullptr)
+        bool IsSmartGO(GameObject* g = NULL)
         {
             bool smart = true;
             if (g && g->GetAIName() != "SmartGameObjectAI")
@@ -143,7 +132,7 @@ class TC_GAME_API SmartScript
             if (!go || go->GetAIName() != "SmartGameObjectAI")
                 smart = false;
             if (!smart)
-                TC_LOG_ERROR("sql.sql", "SmartScript: Action target GameObject (GUID: %u Entry: %u) is not using SmartGameObjectAI, action called by GameObject (GUID: %u Entry: %u) skipped to prevent crash.", g ? g->GetSpawnId() : 0, g ? g->GetEntry() : 0, go ? go->GetSpawnId() : 0, go ? go->GetEntry() : 0);
+                TC_LOG_ERROR("sql.sql", "SmartScript: Action target GameObject (GUID: " UI64FMTD " Entry: %u) is not using SmartGameObjectAI, action called by GameObject (GUID: " UI64FMTD " Entry: %u) skipped to prevent crash.", uint64(g ? g->GetSpawnId() : UI64LIT(0)), g ? g->GetEntry() : 0, uint64(go ? go->GetSpawnId() : UI64LIT(0)), go ? go->GetEntry() : 0);
 
             return smart;
         }
@@ -153,7 +142,7 @@ class TC_GAME_API SmartScript
             ObjectListMap::iterator itr = mTargetStorage->find(id);
             if (itr != mTargetStorage->end())
                 return (*itr).second->GetObjectList();
-            return nullptr;
+            return NULL;
         }
 
         void StoreCounter(uint32 id, uint32 value, uint32 reset)
@@ -225,15 +214,14 @@ class TC_GAME_API SmartScript
                     if (Creature* m = ObjectAccessor::GetCreature(*lookupRoot, meOrigGUID))
                     {
                         me = m;
-                        go = nullptr;
+                        go = NULL;
                     }
                 }
-
                 if (!goOrigGUID.IsEmpty())
                 {
                     if (GameObject* o = ObjectAccessor::GetGameObject(*lookupRoot, goOrigGUID))
                     {
-                        me = nullptr;
+                        me = NULL;
                         go = o;
                     }
                 }

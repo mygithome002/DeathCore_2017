@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,10 +20,7 @@
 
 #include "Common.h"
 
-namespace G3D
-{
-    class Vector3;
-}
+#include <G3D/Vector3.h>
 
 class ByteBuffer;
 
@@ -33,10 +30,6 @@ struct TC_GAME_API Position
         : m_positionX(x), m_positionY(y), m_positionZ(z), m_orientation(NormalizeOrientation(o)) { }
 
     Position(Position const& loc) { Relocate(loc); }
-
-    Position(G3D::Vector3 const& vect);
-
-    operator G3D::Vector3() const;
 
     struct PositionXYStreamer
     {
@@ -96,6 +89,11 @@ public:
         m_positionX = pos->m_positionX; m_positionY = pos->m_positionY; m_positionZ = pos->m_positionZ; SetOrientation(pos->m_orientation);
     }
 
+    void Relocate(G3D::Vector3 const& pos)
+    {
+        m_positionX = pos.x; m_positionY = pos.y; m_positionZ = pos.z;
+    }
+
     void RelocateOffset(Position const &offset);
 
     void SetOrientation(float orientation)
@@ -131,7 +129,7 @@ public:
 
     bool IsPositionValid() const;
 
-    float GetExactDist2dSq(const float x, const float y) const
+    float GetExactDist2dSq(float x, float y) const
     {
         float dx = m_positionX - x; float dy = m_positionY - y; return dx*dx + dy*dy;
     }
@@ -139,16 +137,6 @@ public:
     float GetExactDist2d(const float x, const float y) const
     {
         return std::sqrt(GetExactDist2dSq(x, y));
-    }
-
-    float GetExactDist2dSq(Position const& pos) const
-    {
-        float dx = m_positionX - pos.m_positionX; float dy = m_positionY - pos.m_positionY; return dx*dx + dy*dy;
-    }
-
-    float GetExactDist2d(Position const& pos) const
-    {
-        return std::sqrt(GetExactDist2dSq(pos));
     }
 
     float GetExactDist2dSq(Position const* pos) const
@@ -171,16 +159,6 @@ public:
         return std::sqrt(GetExactDistSq(x, y, z));
     }
 
-    float GetExactDistSq(Position const& pos) const
-    {
-        float dx = m_positionX - pos.m_positionX; float dy = m_positionY - pos.m_positionY; float dz = m_positionZ - pos.m_positionZ; return dx*dx + dy*dy + dz*dz;
-    }
-
-    float GetExactDist(Position const& pos) const
-    {
-        return std::sqrt(GetExactDistSq(pos));
-    }
-
     float GetExactDistSq(Position const* pos) const
     {
         float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; float dz = m_positionZ - pos->m_positionZ; return dx*dx + dy*dy + dz*dz;
@@ -195,10 +173,6 @@ public:
     Position GetPositionWithOffset(Position const& offset) const;
 
     float GetAngle(Position const* pos) const;
-    float GetAngle(Position const& pos) const
-    {
-        return GetAngle(pos.m_positionX, pos.m_positionY);
-    }
     float GetAngle(float x, float y) const;
     float GetRelativeAngle(Position const* pos) const
     {
@@ -247,6 +221,39 @@ public:
         }
         return std::fmod(o, 2.0f * static_cast<float>(M_PI));
     }
+};
+
+#define MAPID_INVALID 0xFFFFFFFF
+
+class TC_GAME_API WorldLocation : public Position
+{
+public:
+    explicit WorldLocation(uint32 mapId = MAPID_INVALID, float x = 0.f, float y = 0.f, float z = 0.f, float o = 0.f)
+        : Position(x, y, z, o), m_mapId(mapId) { }
+
+    WorldLocation(WorldLocation const& loc)
+        : Position(loc), m_mapId(loc.GetMapId()) { }
+
+    void WorldRelocate(WorldLocation const& loc)
+    {
+        m_mapId = loc.GetMapId();
+        Relocate(loc);
+    }
+
+    void WorldRelocate(uint32 mapId = MAPID_INVALID, float x = 0.f, float y = 0.f, float z = 0.f, float o = 0.f)
+    {
+        m_mapId = mapId;
+        Relocate(x, y, z, o);
+    }
+
+    WorldLocation GetWorldLocation() const
+    {
+        return *this;
+    }
+
+    uint32 GetMapId() const { return m_mapId; }
+
+    uint32 m_mapId;
 };
 
 TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, Position::PositionXYStreamer const& streamer);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -69,15 +69,15 @@ public:
         }
 
         CreatureTemplate const* creatureTemplate = creatureTarget->GetCreatureTemplate();
-        // Creatures with family CREATURE_FAMILY_NONE crashes the server
-        if (creatureTemplate->family == CREATURE_FAMILY_NONE)
+        // Creatures with family 0 crashes the server
+        if (!creatureTemplate->family)
         {
-            handler->PSendSysMessage("This creature cannot be tamed. Family id: 0 (CREATURE_FAMILY_NONE).");
+            handler->PSendSysMessage("This creature cannot be tamed. (family id: 0).");
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        if (player->GetPetGUID())
+        if (!player->GetPetGUID().IsEmpty())
         {
             handler->PSendSysMessage("You already have a pet");
             handler->SetSentErrorMessage(true);

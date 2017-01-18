@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -100,7 +101,7 @@ namespace VMAP
             VMapManager2();
             ~VMapManager2(void);
 
-            void InitializeThreadUnsafe(const std::vector<uint32>& mapIds);
+            void InitializeThreadUnsafe(std::unordered_map<uint32, std::vector<uint32>> const& mapData);
             int loadMap(const char* pBasePath, unsigned int mapId, int x, int y) override;
 
             void unloadMap(unsigned int mapId, int x, int y) override;

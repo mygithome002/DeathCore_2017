@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,13 +19,6 @@
 /// \addtogroup Trinityd Trinity Daemon
 /// @{
 /// \file
-
-#include <openssl/opensslv.h>
-#include <openssl/crypto.h>
-#include <boost/asio/io_service.hpp>
-#include <boost/asio/deadline_timer.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/program_options.hpp>
 
 #include "Common.h"
 #include "DatabaseEnv.h"
@@ -45,13 +39,21 @@
 #include "BattlegroundMgr.h"
 #include "TCSoap.h"
 #include "CliRunnable.h"
+#include "Banner.h"
 #include "GitRevision.h"
 #include "WorldSocket.h"
 #include "WorldSocketMgr.h"
-#include "Realm/Realm.h"
+#include "RealmList.h"
 #include "DatabaseLoader.h"
 #include "AppenderDB.h"
 #include "Metric.h"
+#include <openssl/opensslv.h>
+#include <openssl/crypto.h>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/deadline_timer.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/program_options.hpp>
+#include <google/protobuf/stubs/common.h>
 
 using namespace boost::program_options;
 namespace fs = boost::filesystem;
@@ -65,8 +67,8 @@ namespace fs = boost::filesystem;
 #ifdef _WIN32
 #include "ServiceWin32.h"
 char serviceName[] = "worldserver";
-char serviceLongName[] = "DeathCore world service";
-char serviceDescription[] = "DeathCore World of Warcraft emulator world service";
+char serviceLongName[] = "TrinityCore world service";
+char serviceDescription[] = "TrinityCore World of Warcraft emulator world service";
 /*
  * -1 - not in service mode
  *  0 - stopped
@@ -107,13 +109,15 @@ extern int main(int argc, char** argv)
     if (vm.count("help") || vm.count("version"))
         return 0;
 
+    GOOGLE_PROTOBUF_VERIFY_VERSION;
+
 #ifdef _WIN32
     if (configService.compare("install") == 0)
-        return WinServiceInstall() == true ? 0 : 1;
+        return WinServiceInstall() ? 0 : 1;
     else if (configService.compare("uninstall") == 0)
-        return WinServiceUninstall() == true ? 0 : 1;
+        return WinServiceUninstall() ? 0 : 1;
     else if (configService.compare("run") == 0)
-        WinServiceRun();
+        return WinServiceRun() ? 0 : 0;
 #endif
 
     std::string configError;
@@ -129,30 +133,18 @@ extern int main(int argc, char** argv)
     // If logs are supposed to be handled async then we need to pass the io_service into the Log singleton
     sLog->Initialize(sConfigMgr->GetBoolDefault("Log.Async.Enable", false) ? &_ioService : nullptr);
 
-    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon)", GitRevision::GetFullVersion());
-    TC_LOG_INFO("server.worldserver", "<Ctrl-C> to stop.\n");
-    TC_LOG_INFO("server.worldserver", " ");
-    TC_LOG_INFO("server.worldserver", "██████╗ ███████╗ █████╗ ████████╗██╗  ██╗");
-    TC_LOG_INFO("server.worldserver", "██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██║  ██║");
-    TC_LOG_INFO("server.worldserver", "██║  ██║█████╗  ███████║   ██║   ███████║");
-    TC_LOG_INFO("server.worldserver", "██║  ██║██╔══╝  ██╔══██║   ██║   ██╔══██║");
-    TC_LOG_INFO("server.worldserver", "██████╔╝███████╗██║  ██║   ██║   ██║  ██║");
-    TC_LOG_INFO("server.worldserver", "╚═════╝ ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝");
-    TC_LOG_INFO("server.worldserver", "   ");                                                        
-    TC_LOG_INFO("server.worldserver", "               ██████╗ ██████╗ ██████╗ ███████╗");             
-    TC_LOG_INFO("server.worldserver", "              ██╔════╝██╔═══██╗██╔══██╗██╔════╝");             
-    TC_LOG_INFO("server.worldserver", "              ██║     ██║   ██║██████╔╝█████╗");               
-    TC_LOG_INFO("server.worldserver", "              ██║     ██║   ██║██╔══██╗██╔══╝");               
-    TC_LOG_INFO("server.worldserver", "              ╚██████╗╚██████╔╝██║  ██║███████╗");             
-    TC_LOG_INFO("server.worldserver", "               ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝"); 
-    TC_LOG_INFO("server.worldserver", "");                                                        
-    TC_LOG_INFO("server.worldserver", "  	Noffearr Death ProjecT 2016(c) Open-Sourced Game Emulation"); 
-    TC_LOG_INFO("server.worldserver", "		       http://www.noffearrdeathproject.org ");
-    TC_LOG_INFO("server.worldserver", "");
-    TC_LOG_INFO("server.worldserver", "");
-    TC_LOG_INFO("server.worldserver", "Using configuration file %s.", sConfigMgr->GetFilename().c_str());
-    TC_LOG_INFO("server.worldserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
-    TC_LOG_INFO("server.worldserver", "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
+    Trinity::Banner::Show("worldserver-daemon",
+        [](char const* text)
+        {
+            TC_LOG_INFO("server.worldserver", "%s", text);
+        },
+        []()
+        {
+            TC_LOG_INFO("server.worldserver", "Using configuration file %s.", sConfigMgr->GetFilename().c_str());
+            TC_LOG_INFO("server.worldserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
+            TC_LOG_INFO("server.worldserver", "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
+        }
+    );
 
     OpenSSLCrypto::threadsSetup();
 
@@ -203,6 +195,8 @@ extern int main(int argc, char** argv)
 
     // Set server offline (not connectable)
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, realm.Id.Realm);
+
+    sRealmList->Initialize(_ioService, sConfigMgr->GetIntDefault("RealmsStateUpdateDelay", 10));
 
     LoadRealmInfo();
 
@@ -290,13 +284,14 @@ extern int main(int argc, char** argv)
     sWorldSocketMgr.StopNetwork();
 
     sInstanceSaveMgr->Unload();
-    sOutdoorPvPMgr->Die();
+    sOutdoorPvPMgr->Die();                    // unload it before MapManager
     sMapMgr->UnloadAll();                     // unload all grids (including locked in memory)
     sScriptMgr->Unload();
     sScriptReloadMgr->Unload();
 
     // set server offline
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, realm.Id.Realm);
+    sRealmList->Close();
 
     // Clean up threads if any
     if (soapThread != nullptr)
@@ -320,6 +315,8 @@ extern int main(int argc, char** argv)
     ShutdownCLIThread(cliThread);
 
     OpenSSLCrypto::threadsCleanup();
+
+    google::protobuf::ShutdownProtobufLibrary();
 
     // 0 - normal shutdown
     // 1 - shutdown at error
@@ -405,6 +402,8 @@ void WorldUpdateLoop()
     uint32 realCurrTime = 0;
     uint32 realPrevTime = getMSTime();
 
+    uint32 prevSleepTime = 0;                               // used for balanced full tick time length near WORLD_SLEEP_CONST
+
     ///- While we have not World::m_stopEvent, update the world
     while (!World::IsStopped())
     {
@@ -416,11 +415,18 @@ void WorldUpdateLoop()
         sWorld->Update(diff);
         realPrevTime = realCurrTime;
 
-        uint32 executionTimeDiff = getMSTimeDiff(realCurrTime, getMSTime());
+        // diff (D0) include time of previous sleep (d0) + tick time (t0)
+        // we want that next d1 + t1 == WORLD_SLEEP_CONST
+        // we can't know next t1 and then can use (t0 + d1) == WORLD_SLEEP_CONST requirement
+        // d1 = WORLD_SLEEP_CONST - t0 = WORLD_SLEEP_CONST - (D0 - d0) = WORLD_SLEEP_CONST + d0 - D0
+        if (diff <= WORLD_SLEEP_CONST + prevSleepTime)
+        {
+            prevSleepTime = WORLD_SLEEP_CONST + prevSleepTime - diff;
 
-        // we know exactly how long it took to update the world, if the update took less than WORLD_SLEEP_CONST, sleep for WORLD_SLEEP_CONST - world update time
-        if (executionTimeDiff < WORLD_SLEEP_CONST)
-            std::this_thread::sleep_for(std::chrono::milliseconds(WORLD_SLEEP_CONST - executionTimeDiff));
+            std::this_thread::sleep_for(std::chrono::milliseconds(prevSleepTime));
+        }
+        else
+            prevSleepTime = 0;
 
 #ifdef _WIN32
         if (m_ServiceStatus == 0)
@@ -477,7 +483,7 @@ bool LoadRealmInfo()
     boost::asio::ip::tcp::resolver resolver(_ioService);
     boost::asio::ip::tcp::resolver::iterator end;
 
-    QueryResult result = LoginDatabase.PQuery("SELECT id, name, address, localAddress, localSubnetMask, port, icon, flag, timezone, allowedSecurityLevel, population, gamebuild FROM realmlist WHERE id = %u", realm.Id.Realm);
+    QueryResult result = LoginDatabase.PQuery("SELECT id, name, address, localAddress, localSubnetMask, port, icon, flag, timezone, allowedSecurityLevel, population, gamebuild, Region, Battlegroup FROM realmlist WHERE id = %u", realm.Id.Realm);
     if (!result)
         return false;
 
@@ -521,6 +527,8 @@ bool LoadRealmInfo()
     realm.Timezone = fields[8].GetUInt8();
     realm.AllowedSecurityLevel = AccountTypes(fields[9].GetUInt8());
     realm.PopulationLevel = fields[10].GetFloat();
+    realm.Id.Region = fields[12].GetUInt8();
+    realm.Id.Site = fields[13].GetUInt8();
     realm.Build = fields[11].GetUInt32();
     return true;
 }
@@ -535,7 +543,8 @@ bool StartDB()
     loader
         .AddDatabase(LoginDatabase, "Login")
         .AddDatabase(CharacterDatabase, "Character")
-        .AddDatabase(WorldDatabase, "World");
+        .AddDatabase(WorldDatabase, "World")
+        .AddDatabase(HotfixDatabase, "Hotfix");
 
     if (!loader.Load())
         return false;
@@ -548,7 +557,7 @@ bool StartDB()
         return false;
     }
 
-    TC_LOG_INFO("server.worldserver", "Realm running as realm ID %d", realm.Id.Realm);
+    TC_LOG_INFO("server.worldserver", "Realm running as realm ID %u", realm.Id.Realm);
 
     ///- Clean the database before starting
     ClearOnlineAccounts();
@@ -612,11 +621,13 @@ variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, s
         store(command_line_parser(argc, argv).options(all).allow_unregistered().run(), vm);
         notify(vm);
     }
-    catch (std::exception& e) {
+    catch (std::exception& e)
+    {
         std::cerr << e.what() << "\n";
     }
 
-    if (vm.count("help")) {
+    if (vm.count("help"))
+    {
         std::cout << all << "\n";
     }
     else if (vm.count("version"))

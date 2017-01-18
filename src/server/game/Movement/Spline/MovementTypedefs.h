@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +31,14 @@ namespace Movement
 {
     using G3D::Vector3;
     using G3D::Vector4;
+
+    enum MonsterMoveType
+    {
+        MONSTER_MOVE_NORMAL         = 0,
+        MONSTER_MOVE_FACING_SPOT    = 1,
+        MONSTER_MOVE_FACING_TARGET  = 2,
+        MONSTER_MOVE_FACING_ANGLE   = 3
+    };
 
     inline uint32 SecToMS(float sec)
     {
@@ -70,6 +79,8 @@ namespace Movement
 
     TC_GAME_API extern float gravity;
     TC_GAME_API extern UInt32Counter splineIdGen;
+    TC_GAME_API extern std::string MovementFlags_ToString(uint32 flags);
+    TC_GAME_API extern std::string MovementFlagsExtra_ToString(uint32 flags);
 }
 
 #endif // TRINITYSERVER_TYPEDEFS_H

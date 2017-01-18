@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
- * Copyright (C) 2006-2008 2 <https://2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -227,7 +227,7 @@ public:
         {
             for (uint8 i = 0; i < 4; ++i)
             {
-                if (AddGUID[i])
+                if (!AddGUID[i].IsEmpty())
                 {
                     if (Creature* temp = ObjectAccessor::GetCreature(*me, AddGUID[i]))
                         temp->DespawnOrUnsummon();
@@ -239,7 +239,7 @@ public:
         {
             for (uint8 i = 0; i < 4; ++i)
             {
-                if (AddGUID[i])
+                if (!AddGUID[i].IsEmpty())
                 {
                     Creature* temp = ObjectAccessor::GetCreature((*me), AddGUID[i]);
                     if (temp && temp->IsAlive())
@@ -267,7 +267,7 @@ public:
             {
                 for (uint8 i = 0; i < 4; ++i)
                 {
-                    if (AddGUID[i])
+                    if (!AddGUID[i].IsEmpty())
                     {
                         Creature* temp = ObjectAccessor::GetCreature((*me), AddGUID[i]);
                         if (temp && temp->IsAlive())
@@ -347,15 +347,20 @@ struct boss_moroes_guestAI : public ScriptedAI
     void AcquireGUID()
     {
         if (Creature* Moroes = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MOROES)))
+        {
             for (uint8 i = 0; i < 4; ++i)
-                if (ObjectGuid GUID = ENSURE_AI(boss_moroes::boss_moroesAI, Moroes->AI())->AddGUID[i])
+            {
+                ObjectGuid GUID = ENSURE_AI(boss_moroes::boss_moroesAI, Moroes->AI())->AddGUID[i];
+                if (!GUID.IsEmpty())
                     GuestGUID[i] = GUID;
+            }
+        }
     }
 
     Unit* SelectGuestTarget()
     {
         ObjectGuid TempGUID = GuestGUID[rand32() % 4];
-        if (TempGUID)
+        if (!TempGUID.IsEmpty())
         {
             Unit* unit = ObjectAccessor::GetUnit(*me, TempGUID);
             if (unit && unit->IsAlive())

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,7 +21,7 @@
 
 enum Spells
 {
-    SPELL_HATEFUL_STRIKE                        = 28308,
+    SPELL_HATEFUL_STRIKE                        = 41926,
     SPELL_FRENZY                                = 28131,
     SPELL_BERSERK                               = 26662,
     SPELL_SLIME_BOLT                            = 32309
@@ -33,7 +33,7 @@ enum Yells
     SAY_SLAY                                    = 1,
     SAY_DEATH                                   = 2,
     EMOTE_BERSERK                               = 3,
-    EMOTE_FRENZY                                = 4
+    EMOTE_ENRAGE                                = 4
 };
 
 enum Events
@@ -77,7 +77,7 @@ public:
         {
             _Reset();
 
-            instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_MAKE_QUICK_WERK_OF_HIM_STARTING_EVENT);
+            instance->DoStopCriteriaTimer(CRITERIA_TIMED_TYPE_EVENT, ACHIEV_MAKE_QUICK_WERK_OF_HIM_STARTING_EVENT);
         }
 
         void KilledUnit(Unit* /*Victim*/) override
@@ -100,7 +100,7 @@ public:
             events.ScheduleEvent(EVENT_HATEFUL, Seconds(1));
             events.ScheduleEvent(EVENT_BERSERK, Minutes(6));
 
-            instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_MAKE_QUICK_WERK_OF_HIM_STARTING_EVENT);
+            instance->DoStartCriteriaTimer(CRITERIA_TIMED_TYPE_EVENT, ACHIEV_MAKE_QUICK_WERK_OF_HIM_STARTING_EVENT);
         }
 
         void UpdateAI(uint32 diff) override
@@ -185,7 +185,7 @@ public:
             if (!Enraged && HealthBelowPct(5))
             {
                 DoCast(me, SPELL_FRENZY, true);
-                Talk(EMOTE_FRENZY);
+                Talk(EMOTE_ENRAGE);
                 Enraged = true;
             }
 

@@ -1,4 +1,4 @@
-﻿[//]: # (***************************************************************)
+[//]: # (***************************************************************)
 [//]: # (** DON'T DELETE THIS TEMPLATE ELSE YOUR ISSUE WILL BE CLOSED **)
 [//]: # (***************************************************************)
 
@@ -14,11 +14,11 @@
 2. 
 3. 
 
-**Branch(es):** 5.4.8 / 4.3.4 / 3.3.5
+**Branch(es):** 3.3.5 / master (Tell us which branch(es) this issue affects.)
 
-**DeathCore rev. hash/commit:**  
+**TC rev. hash/commit:**  
 
-**DCDB version:**  
+**TDB version:**  
 
 **Operating system:**  
 

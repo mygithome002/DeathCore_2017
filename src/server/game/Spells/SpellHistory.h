@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,6 +31,14 @@ class SpellInfo;
 class Unit;
 struct SpellCategoryEntry;
 
+/// Spell cooldown flags sent in SMSG_SPELL_COOLDOWN
+enum SpellCooldownFlags
+{
+    SPELL_COOLDOWN_FLAG_NONE                    = 0x0,
+    SPELL_COOLDOWN_FLAG_INCLUDE_GCD             = 0x1,  ///< Starts GCD in addition to normal cooldown specified in the packet
+    SPELL_COOLDOWN_FLAG_INCLUDE_EVENT_COOLDOWNS = 0x2   ///< Starts GCD for spells that should start their cooldown on events, requires SPELL_COOLDOWN_FLAG_INCLUDE_GCD set
+};
+
 class TC_GAME_API SpellHistory
 {
 public:
@@ -46,14 +54,25 @@ public:
         bool OnHold = false;
     };
 
+    struct ChargeEntry
+    {
+        ChargeEntry() { }
+        ChargeEntry(Clock::time_point startTime, std::chrono::milliseconds rechargeTime) : RechargeStart(startTime), RechargeEnd(startTime + rechargeTime) { }
+        ChargeEntry(Clock::time_point startTime, Clock::time_point endTime) : RechargeStart(startTime), RechargeEnd(endTime) { }
+
+        Clock::time_point RechargeStart;
+        Clock::time_point RechargeEnd;
+    };
+
     typedef std::unordered_map<uint32 /*spellId*/, CooldownEntry> CooldownStorageType;
     typedef std::unordered_map<uint32 /*categoryId*/, CooldownEntry*> CategoryCooldownStorageType;
+    typedef std::unordered_map<uint32 /*categoryId*/, std::deque<ChargeEntry>> ChargeStorageType;
     typedef std::unordered_map<uint32 /*categoryId*/, Clock::time_point> GlobalCooldownStorageType;
 
     explicit SpellHistory(Unit* owner) : _owner(owner), _schoolLockouts() { }
 
     template<class OwnerType>
-    void LoadFromDB(PreparedQueryResult cooldownsResult);
+    void LoadFromDB(PreparedQueryResult cooldownsResult, PreparedQueryResult chargesResult);
 
     template<class OwnerType>
     void SaveToDB(SQLTransaction& trans);
@@ -63,12 +82,11 @@ public:
     void HandleCooldowns(SpellInfo const* spellInfo, Item const* item, Spell* spell = nullptr);
     void HandleCooldowns(SpellInfo const* spellInfo, uint32 itemID, Spell* spell = nullptr);
     bool IsReady(SpellInfo const* spellInfo, uint32 itemId = 0, bool ignoreCategoryCooldown = false) const;
-    template<class OwnerType>
-    void WritePacket(WorldPacket& packet) const;
+    template<class PacketType>
+    void WritePacket(PacketType* packet) const;
 
     // Cooldowns
     static Clock::duration const InfinityCooldownDelay;  // used for set "infinity cooldowns" for spells and check
-    static Clock::duration const InfinityCooldownDelayCheck;
 
     void StartCooldown(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = nullptr, bool onHold = false);
     void SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId = 0, Spell* spell = nullptr, bool startCooldown = true);
@@ -93,7 +111,7 @@ public:
         {
             if (predicate(itr))
             {
-                resetCooldowns.push_back(itr->first);
+                resetCooldowns.push_back(int32(itr->first));
                 ResetCooldown(itr, false);
             }
             else
@@ -113,14 +131,21 @@ public:
     void LockSpellSchool(SpellSchoolMask schoolMask, uint32 lockoutTime);
     bool IsSchoolLocked(SpellSchoolMask schoolMask) const;
 
+    // Charges
+    bool ConsumeCharge(uint32 chargeCategoryId);
+    void RestoreCharge(uint32 chargeCategoryId);
+    void ResetCharges(uint32 chargeCategoryId);
+    void ResetAllCharges();
+    bool HasCharge(uint32 chargeCategoryId) const;
+    int32 GetMaxCharges(uint32 chargeCategoryId) const;
+    int32 GetChargeRecoveryTime(uint32 chargeCategoryId) const;
+
     // Global cooldown
     bool HasGlobalCooldown(SpellInfo const* spellInfo) const;
     void AddGlobalCooldown(SpellInfo const* spellInfo, uint32 duration);
     void CancelGlobalCooldown(SpellInfo const* spellInfo);
 
-    void BuildCooldownPacket(WorldPacket& data, uint8 flags, uint32 spellId, uint32 cooldown) const;
-
-    CooldownStorageType::size_type GetCooldownsSizeForPacket() const { return _spellCooldowns.size(); }
+    uint16 GetArenaCooldownsSize();
     void SaveCooldownStateBeforeDuel();
     void RestoreCooldownStateAfterDuel();
 
@@ -133,9 +158,6 @@ private:
         return _spellCooldowns.erase(itr);
     }
 
-    typedef std::unordered_map<uint32, uint32> PacketCooldowns;
-    void BuildCooldownPacket(WorldPacket& data, uint8 flags, PacketCooldowns const& cooldowns) const;
-
     static void GetCooldownDurations(SpellInfo const* spellInfo, uint32 itemId, int32* cooldown, uint32* categoryId, int32* categoryCooldown);
 
     Unit* _owner;
@@ -143,6 +165,7 @@ private:
     CooldownStorageType _spellCooldownsBeforeDuel;
     CategoryCooldownStorageType _categoryCooldowns;
     Clock::time_point _schoolLockouts[MAX_SPELL_SCHOOL];
+    ChargeStorageType _categoryCharges;
     GlobalCooldownStorageType _globalCooldowns;
 
     template<class T>

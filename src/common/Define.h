@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -109,6 +110,12 @@
 #  define TC_COMMON_API TC_API_IMPORT
 #endif
 
+#ifdef TRINITY_API_EXPORT_PROTO
+#  define TC_PROTO_API TC_API_EXPORT
+#else
+#  define TC_PROTO_API TC_API_IMPORT
+#endif
+
 #ifdef TRINITY_API_EXPORT_DATABASE
 #  define TC_DATABASE_API TC_API_EXPORT
 #else
@@ -143,5 +150,15 @@ typedef uint64_t uint64;
 typedef uint32_t uint32;
 typedef uint16_t uint16;
 typedef uint8_t uint8;
+
+enum DBCFormer
+{
+    FT_STRING = 's',                                        // LocalizedString*
+    FT_STRING_NOT_LOCALIZED = 'S',                          // char*
+    FT_FLOAT = 'f',                                         // float
+    FT_INT = 'i',                                           // uint32
+    FT_BYTE = 'b',                                          // uint8
+    FT_SHORT = 'h'                                          // uint16
+};
 
 #endif //TRINITY_DEFINE_H

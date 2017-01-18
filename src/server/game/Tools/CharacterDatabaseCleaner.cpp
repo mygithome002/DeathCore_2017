@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,12 +17,13 @@
  */
 
 #include "Common.h"
-#include "AchievementMgr.h"
+#include "CriteriaHandler.h"
 #include "CharacterDatabaseCleaner.h"
+#include "DB2Stores.h"
 #include "World.h"
 #include "Database/DatabaseEnv.h"
 #include "SpellMgr.h"
-#include "DBCStores.h"
+#include "SpellInfo.h"
 
 void CharacterDatabaseCleaner::CleanDatabase()
 {
@@ -107,7 +109,7 @@ void CharacterDatabaseCleaner::CheckUnique(const char* column, const char* table
 
 bool CharacterDatabaseCleaner::AchievementProgressCheck(uint32 criteria)
 {
-    return sAchievementMgr->GetAchievementCriteria(criteria) != nullptr;
+    return sCriteriaMgr->GetCriteria(criteria) != nullptr;
 }
 
 void CharacterDatabaseCleaner::CleanCharacterAchievementProgress()
@@ -127,7 +129,8 @@ void CharacterDatabaseCleaner::CleanCharacterSkills()
 
 bool CharacterDatabaseCleaner::SpellCheck(uint32 spell_id)
 {
-    return sSpellMgr->GetSpellInfo(spell_id) && !GetTalentSpellPos(spell_id);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_id);
+    return spellInfo && !spellInfo->HasAttribute(SPELL_ATTR0_CU_IS_TALENT);
 }
 
 void CharacterDatabaseCleaner::CleanCharacterSpell()
@@ -141,12 +144,12 @@ bool CharacterDatabaseCleaner::TalentCheck(uint32 talent_id)
     if (!talentInfo)
         return false;
 
-    return sTalentTabStore.LookupEntry(talentInfo->TalentTab) != nullptr;
+    return sChrSpecializationStore.LookupEntry(talentInfo->SpecID) != nullptr;
 }
 
 void CharacterDatabaseCleaner::CleanCharacterTalent()
 {
-    CharacterDatabase.DirectPExecute("DELETE FROM character_talent WHERE talentGroup > %u", MAX_TALENT_SPECS);
+    CharacterDatabase.DirectPExecute("DELETE FROM character_talent WHERE spec > %u", MAX_SPECIALIZATIONS);
     CheckUnique("spell", "character_talent", &TalentCheck);
 }
 

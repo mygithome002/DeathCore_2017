@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,6 +21,7 @@
 
 #include "Define.h"
 #include <string>
+#include <type_traits>
 #include <openssl/sha.h>
 
 class BigNumber;
@@ -27,6 +29,8 @@ class BigNumber;
 class TC_COMMON_API SHA1Hash
 {
     public:
+        typedef std::integral_constant<uint32, SHA_DIGEST_LENGTH> DigestLength;
+
         SHA1Hash();
         ~SHA1Hash();
 

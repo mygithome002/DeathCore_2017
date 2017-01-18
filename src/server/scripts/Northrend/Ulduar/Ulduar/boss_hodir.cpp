@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -29,8 +29,6 @@
           Storm Cloud (Shaman ability)
           Destroying of Toasty Fires
 */
-
-/* @todo Hodir aggro behavior is wonky. He gets set to _PASSIVE, but never to _AGGRESSIVE unless you kill an ice block which doesn't spawn unless you have*/
 
 enum HodirYells
 {
@@ -186,8 +184,7 @@ class npc_flash_freeze : public CreatureScript
                 Initialize();
                 instance = me->GetInstanceScript();
                 me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
-                me->SetControlled(true, UNIT_STATE_ROOT);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
             }
 
             void Initialize()
@@ -262,8 +259,7 @@ class npc_ice_block : public CreatureScript
             {
                 instance = me->GetInstanceScript();
                 me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
-                me->SetControlled(true, UNIT_STATE_ROOT);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
             }
 
             InstanceScript* instance;
@@ -273,8 +269,7 @@ class npc_ice_block : public CreatureScript
             void IsSummonedBy(Unit* summoner) override
             {
                 targetGUID = summoner->GetGUID();
-                summoner->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
-                summoner->SetControlled(true, UNIT_STATE_ROOT);
+                summoner->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
                 me->SetInCombatWith(summoner);
                 me->AddThreat(summoner, 250.0f);
                 summoner->AddThreat(me, 250.0f);
@@ -290,8 +285,7 @@ class npc_ice_block : public CreatureScript
             {
                 if (Creature* Helper = ObjectAccessor::GetCreature(*me, targetGUID))
                 {
-                    Helper->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
-                    Helper->SetControlled(false, UNIT_STATE_ROOT);
+                    Helper->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
 
                     if (Creature* Hodir = ObjectAccessor::GetCreature(*me, instance->GetGuidData(BOSS_HODIR)))
                     {
@@ -381,7 +375,7 @@ class boss_hodir : public CreatureScript
                     Talk(SAY_SLAY);
             }
 
-            void DamageTaken(Unit* who, uint32& damage) override
+            void DamageTaken(Unit* /*who*/, uint32& damage) override
             {
                 if (damage >= me->GetHealth())
                 {
@@ -394,8 +388,7 @@ class boss_hodir : public CreatureScript
                     me->RemoveAllAttackers();
                     me->AttackStop();
                     me->SetReactState(REACT_PASSIVE);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    me->SetControlled(true, UNIT_STATE_ROOT);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
                     me->InterruptNonMeleeSpells(true);
                     me->StopMoving();
                     me->GetMotionMaster()->Clear();
@@ -409,12 +402,6 @@ class boss_hodir : public CreatureScript
                     me->DespawnOrUnsummon(10000);
 
                     _JustDied();
-                }
-                else if (!me->IsInCombat())
-                {
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    me->AI()->DoZoneInCombat();
-                    me->AI()->AttackStart(who);
                 }
             }
 
@@ -479,9 +466,6 @@ class boss_hodir : public CreatureScript
                             events.CancelEvent(EVENT_BERSERK);
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 if (gettingColdInHereTimer <= diff && gettingColdInHere)
@@ -555,8 +539,7 @@ class npc_icicle : public CreatureScript
             {
                 Initialize();
                 me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE);
-                me->SetControlled(true, UNIT_STATE_ROOT);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_PASSIVE);
             }
 
@@ -610,8 +593,7 @@ class npc_snowpacked_icicle : public CreatureScript
             {
                 Initialize();
                 me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
-                me->SetControlled(true, UNIT_STATE_ROOT);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
                 me->SetReactState(REACT_PASSIVE);
             }
 
@@ -678,9 +660,6 @@ class npc_hodir_priest : public CreatureScript
                 if (HealthBelowPct(30))
                     DoCast(me, SPELL_GREATER_HEAL);
 
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch (eventId)
@@ -704,9 +683,6 @@ class npc_hodir_priest : public CreatureScript
                         default:
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 DoSpellAttackIfReady(SPELL_SMITE);
@@ -769,9 +745,6 @@ class npc_hodir_shaman : public CreatureScript
                         default:
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 DoSpellAttackIfReady(SPELL_LAVA_BURST);
@@ -833,9 +806,6 @@ class npc_hodir_druid : public CreatureScript
                         default:
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 DoSpellAttackIfReady(SPELL_WRATH);
@@ -916,9 +886,6 @@ class npc_hodir_mage : public CreatureScript
                             events.ScheduleEvent(EVENT_MELT_ICE, urand(10000, 15000));
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 DoSpellAttackIfReady(SPELL_FIREBALL);

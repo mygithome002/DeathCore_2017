@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -49,17 +50,15 @@ enum Spells
     SPELL_HAMSTRING         = 26211
 };
 
-enum Misc
-{
-    EMOTE_SPOUT             = 0,     // "The Lurker Below takes a deep breath."
-    SPOUT_DIST              = 100
-};
-
 enum Creatures
 {
     NPC_COILFANG_GUARDIAN   = 21873,
     NPC_COILFANG_AMBUSHER   = 21865
 };
+
+#define EMOTE_SPOUT "The Lurker Below takes a deep breath."
+
+#define SPOUT_DIST  100
 
 float AddPos[9][3] =
 {
@@ -241,7 +240,7 @@ public:
 
                 if (SpoutTimer <= diff)
                 {
-                    Talk(EMOTE_SPOUT);
+                    me->TextEmote(EMOTE_SPOUT, nullptr, true);
                     me->SetReactState(REACT_PASSIVE);
                     me->GetMotionMaster()->MoveRotate(20000, urand(0, 1) ? ROTATE_DIRECTION_LEFT : ROTATE_DIRECTION_RIGHT);
                     SpoutTimer = 45000;

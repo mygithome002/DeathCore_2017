@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -87,12 +88,6 @@ public:
     {
         return storage_.size();
     }
- 
-    // Clear the underlying storage. This does NOT despawn the creatures - use DespawnAll for that!
-    void clear()
-    {
-        storage_.clear();
-    }
 
     void Summon(Creature const* summon) { storage_.push_back(summon->GetGUID()); }
     void Despawn(Creature const* summon) { storage_.remove(summon->GetGUID()); }
@@ -179,9 +174,6 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     // Called when spell hits a target
     void SpellHitTarget(Unit* /*target*/, SpellInfo const* /*spell*/) override { }
 
-    //Called at waypoint reached or PointMovement end
-    void MovementInform(uint32 /*type*/, uint32 /*id*/) override { }
-
     // Called when AI is temporarily replaced or put back when possess is applied or removed
     void OnPossess(bool /*apply*/) { }
 
@@ -240,9 +232,6 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     //Returns friendly unit with the most amount of hp missing from max hp
     Unit* DoSelectLowestHpFriendly(float range, uint32 minHPDiff = 1);
 
-    //Returns friendly unit with hp pct below specified and with specified entry
-    Unit* DoSelectBelowHpPctFriendlyWithEntry(uint32 entry, float range, uint8 hpPct = 1, bool excludeSelf = true);
-
     //Returns a list of friendly CC'd units within range
     std::list<Creature*> DoFindFriendlyCC(float range);
 
@@ -259,7 +248,7 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     bool HealthAbovePct(uint32 pct) const { return me->HealthAbovePct(pct); }
 
     //Returns spells that meet the specified criteria from the creatures spell list
-    SpellInfo const* SelectSpell(Unit* target, uint32 school, uint32 mechanic, SelectTargetType targets, uint32 powerCostMin, uint32 powerCostMax, float rangeMin, float rangeMax, SelectEffect effect);
+    SpellInfo const* SelectSpell(Unit* target, uint32 school, uint32 mechanic, SelectTargetType targets, float rangeMin, float rangeMax, SelectEffect effect);
 
     void SetEquipmentSlots(bool loadDefault, int32 mainHand = EQUIP_NO_CHANGE, int32 offHand = EQUIP_NO_CHANGE, int32 ranged = EQUIP_NO_CHANGE);
 
@@ -282,16 +271,16 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     Difficulty GetDifficulty() const { return _difficulty; }
 
     // return true for 25 man or 25 man heroic mode
-    bool Is25ManRaid() const { return _difficulty & RAID_DIFFICULTY_MASK_25MAN; }
+    bool Is25ManRaid() const { return _difficulty == DIFFICULTY_25_N || _difficulty == DIFFICULTY_25_HC; }
 
     template<class T> inline
     const T& DUNGEON_MODE(const T& normal5, const T& heroic10) const
     {
         switch (_difficulty)
         {
-            case DUNGEON_DIFFICULTY_NORMAL:
+            case DIFFICULTY_NORMAL:
                 return normal5;
-            case DUNGEON_DIFFICULTY_HEROIC:
+            case DIFFICULTY_HEROIC:
                 return heroic10;
             default:
                 break;
@@ -305,9 +294,9 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     {
         switch (_difficulty)
         {
-            case RAID_DIFFICULTY_10MAN_NORMAL:
+            case DIFFICULTY_10_N:
                 return normal10;
-            case RAID_DIFFICULTY_25MAN_NORMAL:
+            case DIFFICULTY_25_N:
                 return normal25;
             default:
                 break;
@@ -321,13 +310,13 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     {
         switch (_difficulty)
         {
-            case RAID_DIFFICULTY_10MAN_NORMAL:
+            case DIFFICULTY_10_N:
                 return normal10;
-            case RAID_DIFFICULTY_25MAN_NORMAL:
+            case DIFFICULTY_25_N:
                 return normal25;
-            case RAID_DIFFICULTY_10MAN_HEROIC:
+            case DIFFICULTY_10_HC:
                 return heroic10;
-            case RAID_DIFFICULTY_25MAN_HEROIC:
+            case DIFFICULTY_25_HC:
                 return heroic25;
             default:
                 break;
@@ -375,8 +364,7 @@ class TC_GAME_API BossAI : public ScriptedAI
         void _EnterCombat();
         void _JustDied();
         void _JustReachedHome() { me->setActive(false); }
-        void _DespawnAtEvade(uint32 delayToRespawn = 30, Creature* who = nullptr);
-        void _DespawnAtEvade(Seconds const& time, Creature* who = nullptr) { _DespawnAtEvade(uint32(time.count()), who); }
+        void _DespawnAtEvade(uint32 delayToRespawn = 30,  Creature* who = nullptr);
 
         void TeleportCheaters();
 
@@ -419,32 +407,10 @@ class TC_GAME_API WorldBossAI : public ScriptedAI
 };
 
 // SD2 grid searchers.
-inline Creature* GetClosestCreatureWithEntry(WorldObject* source, uint32 entry, float maxSearchRange, bool alive = true)
-{
-    return source->FindNearestCreature(entry, maxSearchRange, alive);
-}
-
-inline GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange)
-{
-    return source->FindNearestGameObject(entry, maxSearchRange);
-}
-
-template <typename Container>
-inline void GetCreatureListWithEntryInGrid(Container& container, WorldObject* source, uint32 entry, float maxSearchRange)
-{
-    source->GetCreatureListWithEntryInGrid(container, entry, maxSearchRange);
-}
-
-template <typename Container>
-inline void GetGameObjectListWithEntryInGrid(Container& container, WorldObject* source, uint32 entry, float maxSearchRange)
-{
-    source->GetGameObjectListWithEntryInGrid(container, entry, maxSearchRange);
-}
-
-template <typename Container>
-inline void GetPlayerListInGrid(Container& container, WorldObject* source, float maxSearchRange)
-{
-    source->GetPlayerListInGrid(container, maxSearchRange);
-}
+TC_GAME_API Creature* GetClosestCreatureWithEntry(WorldObject* source, uint32 entry, float maxSearchRange, bool alive = true);
+TC_GAME_API GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange);
+TC_GAME_API void GetCreatureListWithEntryInGrid(std::list<Creature*>& list, WorldObject* source, uint32 entry, float maxSearchRange);
+TC_GAME_API void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& list, WorldObject* source, uint32 entry, float maxSearchRange);
+TC_GAME_API void GetPlayerListInGrid(std::list<Player*>& list, WorldObject* source, float maxSearchRange);
 
 #endif // SCRIPTEDCREATURE_H_

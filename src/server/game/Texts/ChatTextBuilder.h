@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,6 +20,7 @@
 
 #include "Chat.h"
 #include "ObjectMgr.h"
+#include "Packets/ChatPackets.h"
 
 namespace Trinity
 {
@@ -29,16 +30,12 @@ namespace Trinity
             BroadcastTextBuilder(Unit const* obj, ChatMsg msgType, uint32 textId, WorldObject const* target = nullptr, uint32 achievementId = 0)
                 : _source(obj), _msgType(msgType), _textId(textId), _target(target), _achievementId(achievementId) { }
 
-            void operator()(WorldPacket& data, LocaleConstant locale)
+            WorldPackets::Chat::Chat* operator()(LocaleConstant locale) const
             {
-                BroadcastText const* bct = sObjectMgr->GetBroadcastText(_textId);
-                ChatHandler::BuildChatPacket(data, _msgType, bct ? Language(bct->Language) : LANG_UNIVERSAL, _source, _target, bct ? bct->GetText(locale, _source->getGender()) : "", _achievementId, "", locale);
-            }
-
-            size_t operator()(WorldPacket* data, LocaleConstant locale) const
-            {
-                BroadcastText const* bct = sObjectMgr->GetBroadcastText(_textId);
-                return ChatHandler::BuildChatPacket(*data, _msgType, bct ? Language(bct->Language) : LANG_UNIVERSAL, _source, _target, bct ? bct->GetText(locale, _source->getGender()) : "", _achievementId, "", locale);
+                BroadcastTextEntry const* bct = sBroadcastTextStore.LookupEntry(_textId);
+                WorldPackets::Chat::Chat* chat = new WorldPackets::Chat::Chat();
+                chat->Initialize(_msgType, bct ? Language(bct->Language) : LANG_UNIVERSAL, _source, _target, bct ? DB2Manager::GetBroadcastTextValue(bct, locale, _source->getGender()) : "", _achievementId, "", locale);
+                return chat;
             }
 
         private:
@@ -55,9 +52,11 @@ namespace Trinity
             CustomChatTextBuilder(WorldObject const* obj, ChatMsg msgType, std::string const& text, Language language = LANG_UNIVERSAL, WorldObject const* target = nullptr)
                 : _source(obj), _msgType(msgType), _text(text), _language(language), _target(target) { }
 
-            void operator()(WorldPacket& data, LocaleConstant locale)
+            WorldPackets::Chat::Chat* operator()(LocaleConstant locale) const
             {
-                ChatHandler::BuildChatPacket(data, _msgType, _language, _source, _target, _text, 0, "", locale);
+                WorldPackets::Chat::Chat* chat = new WorldPackets::Chat::Chat();
+                chat->Initialize(_msgType, _language, _source, _target, _text, 0, "", locale);
+                return chat;
             }
 
         private:

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -48,7 +49,7 @@ class TC_GAME_API TempSummon : public Creature
         virtual void UnSummon(uint32 msTime = 0);
         void RemoveFromWorld() override;
         void SetTempSummonType(TempSummonType type);
-        void SaveToDB(uint32 /*mapid*/, uint8 /*spawnMask*/, uint32 /*phaseMask*/) override { }
+        void SaveToDB(uint32 /*mapid*/, uint32 /*spawnMask*/, uint32 /*phaseMask*/) override { }
         Unit* GetSummoner() const;
         Creature* GetSummonerCreatureBase() const;
         ObjectGuid GetSummonerGUID() const { return m_summonerGUID; }
@@ -72,10 +73,9 @@ class TC_GAME_API Minion : public TempSummon
         Unit* GetOwner() const { return m_owner; }
         float GetFollowAngle() const override { return m_followAngle; }
         void SetFollowAngle(float angle) { m_followAngle = angle; }
-        bool IsPetGhoul() const { return GetEntry() == 26125; } // Ghoul may be guardian or pet
-        bool IsSpiritWolf() const { return GetEntry() == 29264; } // Spirit wolf from feral spirits
+        bool IsPetGhoul() const {return GetEntry() == 26125;} // Ghoul may be guardian or pet
+        bool IsSpiritWolf() const {return GetEntry() == 29264;} // Spirit wolf from feral spirits
         bool IsGuardianPet() const;
-        bool IsRisenAlly() const { return GetEntry() == 30230; }
     protected:
         Unit* const m_owner;
         float m_followAngle;

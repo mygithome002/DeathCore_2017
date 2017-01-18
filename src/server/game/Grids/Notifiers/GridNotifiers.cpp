@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -264,7 +265,7 @@ void MessageDistDeliverer::Visit(PlayerMapType &m)
     for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         Player* target = iter->GetSource();
-        if (!target->InSamePhase(i_phaseMask))
+        if (!target->IsInPhase(i_source))
             continue;
 
         if (target->GetExactDist2dSq(i_source) > i_distSq)
@@ -289,7 +290,7 @@ void MessageDistDeliverer::Visit(CreatureMapType &m)
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         Creature* target = iter->GetSource();
-        if (!target->InSamePhase(i_phaseMask))
+        if (!target->IsInPhase(i_source))
             continue;
 
         if (target->GetExactDist2dSq(i_source) > i_distSq)
@@ -311,7 +312,7 @@ void MessageDistDeliverer::Visit(DynamicObjectMapType &m)
     for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         DynamicObject* target = iter->GetSource();
-        if (!target->InSamePhase(i_phaseMask))
+        if (!target->IsInPhase(i_source))
             continue;
 
         if (target->GetExactDist2dSq(i_source) > i_distSq)
@@ -379,3 +380,5 @@ bool AnyDeadUnitSpellTargetInRangeCheck::operator()(Creature* u)
 template void ObjectUpdater::Visit<Creature>(CreatureMapType&);
 template void ObjectUpdater::Visit<GameObject>(GameObjectMapType&);
 template void ObjectUpdater::Visit<DynamicObject>(DynamicObjectMapType&);
+template void ObjectUpdater::Visit<AreaTrigger>(AreaTriggerMapType &);
+

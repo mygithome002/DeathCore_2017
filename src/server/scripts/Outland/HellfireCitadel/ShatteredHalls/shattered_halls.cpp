@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -29,7 +29,7 @@ class at_nethekurse_exit : public AreaTriggerScript
     public:
         at_nethekurse_exit() : AreaTriggerScript("at_nethekurse_exit") { };
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const*) override
+        bool OnTrigger(Player* player, AreaTriggerEntry const*, bool /*entered*/) override
         {
             if (InstanceScript* is = player->GetInstanceScript())
             {
@@ -146,8 +146,6 @@ class boss_shattered_executioner : public CreatureScript
                             me->RemoveLootMode(LOOT_MODE_HARD_MODE_2);
                         case 1:
                             me->RemoveLootMode(LOOT_MODE_HARD_MODE_3);
-                        default:
-                            break;
                     }
                 }
             }

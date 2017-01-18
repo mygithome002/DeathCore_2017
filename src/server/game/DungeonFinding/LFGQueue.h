@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -101,8 +101,8 @@ class TC_GAME_API LFGQueue
         void UpdateWaitTimeDps(int32 waitTime, uint32 dungeonId);
 
         // Update Queue timers
-        void UpdateQueueTimers(time_t currTime);
-        time_t GetJoinTime(ObjectGuid guid);
+        void UpdateQueueTimers(uint8 queueId, time_t currTime);
+        time_t GetJoinTime(ObjectGuid guid) const;
 
         // Find new group
         uint8 FindGroups();

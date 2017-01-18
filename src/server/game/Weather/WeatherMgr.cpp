@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,6 +26,7 @@
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "WorldSession.h"
+#include "MiscPackets.h"
 
 namespace WeatherMgr
 {
@@ -141,11 +143,8 @@ void LoadWeatherData()
 
 void SendFineWeatherUpdateToPlayer(Player* player)
 {
-    WorldPacket data(SMSG_WEATHER, (4 + 4 + 1));
-    data << (uint32)WEATHER_STATE_FINE;
-    data << (float)0.0f;
-    data << uint8(0);
-    player->GetSession()->SendPacket(&data);
+    WorldPackets::Misc::Weather weather(WEATHER_STATE_FINE);
+    player->GetSession()->SendPacket(weather.Write());
 }
 
 void Update(uint32 diff)

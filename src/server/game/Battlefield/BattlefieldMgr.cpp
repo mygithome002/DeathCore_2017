@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,6 +17,7 @@
 
 #include "BattlefieldMgr.h"
 #include "BattlefieldWG.h"
+#include "BattlefieldTB.h"
 #include "Player.h"
 
 BattlefieldMgr::BattlefieldMgr()
@@ -53,8 +54,6 @@ void BattlefieldMgr::InitBattlefield()
         TC_LOG_INFO("bg.battlefield", "Battlefield: Wintergrasp successfully initiated.");
     }
 
-    /*
-    For Cataclysm: Tol Barad
     Battlefield* tb = new BattlefieldTB;
     // respawn, init variables
     if (!tb->SetupBattlefield())
@@ -67,7 +66,6 @@ void BattlefieldMgr::InitBattlefield()
         _battlefieldSet.push_back(tb);
         TC_LOG_DEBUG("bg.battlefield", "Battlefield: Tol Barad successfully initiated.");
     }
-    */
 }
 
 void BattlefieldMgr::AddZone(uint32 zoneId, Battlefield* bf)
@@ -86,7 +84,7 @@ void BattlefieldMgr::HandlePlayerEnterZone(Player* player, uint32 zoneId)
         return;
 
     bf->HandlePlayerEnterZone(player, zoneId);
-    TC_LOG_DEBUG("bg.battlefield", "Player %u entered battlefield id %u", player->GetGUID().GetCounter(), bf->GetTypeId());
+    TC_LOG_DEBUG("bg.battlefield", "%s entered battlefield id %u", player->GetGUID().ToString().c_str(), bf->GetTypeId());
 }
 
 void BattlefieldMgr::HandlePlayerLeaveZone(Player* player, uint32 zoneId)
@@ -100,7 +98,7 @@ void BattlefieldMgr::HandlePlayerLeaveZone(Player* player, uint32 zoneId)
         return;
 
     itr->second->HandlePlayerLeaveZone(player, zoneId);
-    TC_LOG_DEBUG("bg.battlefield", "Player %u left battlefield id %u", player->GetGUID().GetCounter(), itr->second->GetTypeId());
+    TC_LOG_DEBUG("bg.battlefield", "Player %s left battlefield id %u", player->GetGUID().ToString().c_str(), itr->second->GetTypeId());
 }
 
 Battlefield* BattlefieldMgr::GetBattlefieldToZoneId(uint32 zoneId)
@@ -109,11 +107,11 @@ Battlefield* BattlefieldMgr::GetBattlefieldToZoneId(uint32 zoneId)
     if (itr == _battlefieldMap.end())
     {
         // no handle for this zone, return
-        return nullptr;
+        return NULL;
     }
 
     if (!itr->second->IsEnabled())
-        return nullptr;
+        return NULL;
 
     return itr->second;
 }
@@ -125,7 +123,16 @@ Battlefield* BattlefieldMgr::GetBattlefieldByBattleId(uint32 battleId)
         if ((*itr)->GetBattleId() == battleId)
             return *itr;
     }
-    return nullptr;
+    return NULL;
+}
+
+Battlefield* BattlefieldMgr::GetBattlefieldByQueueId(uint64 queueId)
+{
+    for (Battlefield* bf : _battlefieldSet)
+        if (bf->GetQueueId() == queueId)
+            return bf;
+
+    return NULL;
 }
 
 ZoneScript* BattlefieldMgr::GetZoneScript(uint32 zoneId)
@@ -134,7 +141,7 @@ ZoneScript* BattlefieldMgr::GetZoneScript(uint32 zoneId)
     if (itr != _battlefieldMap.end())
         return itr->second;
 
-    return nullptr;
+    return NULL;
 }
 
 void BattlefieldMgr::Update(uint32 diff)

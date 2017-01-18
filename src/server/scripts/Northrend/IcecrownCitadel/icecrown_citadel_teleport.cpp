@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -52,15 +52,16 @@ class icecrown_citadel_teleport : public GameObjectScript
                 if (gossipListId >= TeleportSpells.size())
                     return false;
 
-                ClearGossipMenuFor(player);
-                CloseGossipMenuFor(player);
+                player->PlayerTalkClass->ClearMenus();
+                player->CLOSE_GOSSIP_MENU();
                 SpellInfo const* spell = sSpellMgr->GetSpellInfo(TeleportSpells[gossipListId]);
                 if (!spell)
                     return false;
 
                 if (player->IsInCombat())
                 {
-                    Spell::SendCastResult(player, spell, 0, SPELL_FAILED_AFFECTING_COMBAT);
+                    ObjectGuid castId = ObjectGuid::Create<HighGuid::Cast>(SPELL_CAST_SOURCE_NORMAL, player->GetMapId(), spell->Id, player->GetMap()->GenerateLowGuid<HighGuid::Cast>());
+                    Spell::SendCastResult(player, spell, 0, castId, SPELL_FAILED_AFFECTING_COMBAT);
                     return true;
                 }
 
@@ -80,12 +81,15 @@ class at_frozen_throne_teleport : public AreaTriggerScript
     public:
         at_frozen_throne_teleport() : AreaTriggerScript("at_frozen_throne_teleport") { }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/) override
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/, bool /*entered*/) override
         {
             if (player->IsInCombat())
             {
                 if (SpellInfo const* spell = sSpellMgr->GetSpellInfo(FROZEN_THRONE_TELEPORT))
-                    Spell::SendCastResult(player, spell, 0, SPELL_FAILED_AFFECTING_COMBAT);
+                {
+                    ObjectGuid castId = ObjectGuid::Create<HighGuid::Cast>(SPELL_CAST_SOURCE_NORMAL, player->GetMapId(), spell->Id, player->GetMap()->GenerateLowGuid<HighGuid::Cast>());
+                    Spell::SendCastResult(player, spell, 0, castId, SPELL_FAILED_AFFECTING_COMBAT);
+                }
                 return true;
             }
 

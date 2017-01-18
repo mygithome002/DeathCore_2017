@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -164,9 +165,9 @@ void ScriptedAI::DoPlaySoundToSet(WorldObject* source, uint32 soundId)
     if (!source)
         return;
 
-    if (!sSoundEntriesStore.LookupEntry(soundId))
+    if (!sSoundKitStore.LookupEntry(soundId))
     {
-        TC_LOG_ERROR("scripts", "Invalid soundId %u used in DoPlaySoundToSet (Source: TypeId %u, GUID %u)", soundId, source->GetTypeId(), source->GetGUID().GetCounter());
+        TC_LOG_ERROR("scripts", "Invalid soundId %u used in DoPlaySoundToSet (Source: %s)", soundId, source->GetGUID().ToString().c_str());
         return;
     }
 
@@ -178,7 +179,7 @@ Creature* ScriptedAI::DoSpawnCreature(uint32 entry, float offsetX, float offsetY
     return me->SummonCreature(entry, me->GetPositionX() + offsetX, me->GetPositionY() + offsetY, me->GetPositionZ() + offsetZ, angle, TempSummonType(type), despawntime);
 }
 
-SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 school, uint32 mechanic, SelectTargetType targets, uint32 powerCostMin, uint32 powerCostMax, float rangeMin, float rangeMax, SelectEffect effects)
+SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 school, uint32 mechanic, SelectTargetType targets, float rangeMin, float rangeMax, SelectEffect effect)
 {
     //No target so we can't cast
     if (!target)
@@ -211,7 +212,7 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 school, uint32 mec
             continue;
 
         //Check the type of spell if we are looking for a specific spell type
-        if (effects && !(SpellSummary[me->m_spells[i]].Effects & (1 << (effects-1))))
+        if (effect && !(SpellSummary[me->m_spells[i]].Effects & (1 << (effect-1))))
             continue;
 
         //Check for school if specified
@@ -220,17 +221,6 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 school, uint32 mec
 
         //Check for spell mechanic if specified
         if (mechanic && tempSpell->Mechanic != mechanic)
-            continue;
-
-        //Make sure that the spell uses the requested amount of power
-        if (powerCostMin && tempSpell->ManaCost < powerCostMin)
-            continue;
-
-        if (powerCostMax && tempSpell->ManaCost > powerCostMax)
-            continue;
-
-        //Continue if we don't have the mana to actually cast this spell
-        if (tempSpell->ManaCost > me->GetPower(Powers(tempSpell->PowerType)))
             continue;
 
         //Check if the spell meets our range requirements
@@ -334,16 +324,6 @@ Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 minHPDiff)
     return unit;
 }
 
-Unit* ScriptedAI::DoSelectBelowHpPctFriendlyWithEntry(uint32 entry, float range, uint8 minHPDiff, bool excludeSelf)
-{
-    Unit* unit = nullptr;
-    Trinity::FriendlyBelowHpPctEntryInRange u_check(me, entry, range, minHPDiff, excludeSelf);
-    Trinity::UnitLastSearcher<Trinity::FriendlyBelowHpPctEntryInRange> searcher(me, unit, u_check);
-    me->VisitNearbyObject(range, searcher);
-
-    return unit;
-}
-
 std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float range)
 {
     std::list<Creature*> list;
@@ -390,13 +370,13 @@ void ScriptedAI::SetEquipmentSlots(bool loadDefault, int32 mainHand /*= EQUIP_NO
     }
 
     if (mainHand >= 0)
-        me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, uint32(mainHand));
+        me->SetVirtualItem(0, uint32(mainHand));
 
     if (offHand >= 0)
-        me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, uint32(offHand));
+        me->SetVirtualItem(1, uint32(offHand));
 
     if (ranged >= 0)
-        me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, uint32(ranged));
+        me->SetVirtualItem(2, uint32(ranged));
 }
 
 void ScriptedAI::SetCombatMovement(bool allowMovement)
@@ -411,6 +391,54 @@ enum NPCs
     NPC_JAN_ALAI    = 23578,
     NPC_SARTHARION  = 28860
 };
+
+// Hacklike storage used for misc creatures that are expected to evade of outside of a certain area.
+// It is assumed the information is found elswehere and can be handled by the core. So far no luck finding such information/way to extract it.
+/*bool ScriptedAI::EnterEvadeIfOutOfCombatArea(uint32 const diff)
+{
+    if (_evadeCheckCooldown <= diff)
+        _evadeCheckCooldown = 2500;
+    else
+    {
+        _evadeCheckCooldown -= diff;
+        return false;
+    }
+
+    if (me->IsInEvadeMode() || !me->GetVictim())
+        return false;
+
+    float x = me->GetPositionX();
+    float y = me->GetPositionY();
+    float z = me->GetPositionZ();
+
+    switch (me->GetEntry())
+    {
+        case NPC_BROODLORD:                                         // broodlord (not move down stairs)
+            if (z > 448.60f)
+                return false;
+            break;
+        case NPC_VOID_REAVER:                                         // void reaver (calculate from center of room)
+            if (me->GetDistance2d(432.59f, 371.93f) < 105.0f)
+                return false;
+            break;
+        case NPC_JAN_ALAI:                                         // jan'alai (calculate by Z)
+            if (z > 12.0f)
+                return false;
+            break;
+        case NPC_SARTHARION:                                         // sartharion (calculate box)
+            if (x > 3218.86f && x < 3275.69f && y < 572.40f && y > 484.68f)
+                return false;
+            break;
+        default: // For most of creatures that certain area is their home area.
+            TC_LOG_INFO("misc", "TSCR: EnterEvadeIfOutOfCombatArea used for creature entry %u, but does not have any definition. Using the default one.", me->GetEntry());
+            uint32 homeAreaId = me->GetMap()->GetAreaId(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ());
+            if (me->GetAreaId() == homeAreaId)
+                return false;
+    }
+
+    EnterEvadeMode();
+    return true;
+}*/
 
 // BossAI - for instanced bosses
 BossAI::BossAI(Creature* creature, uint32 bossId) : ScriptedAI(creature),
@@ -503,11 +531,7 @@ void BossAI::UpdateAI(uint32 diff)
         return;
 
     while (uint32 eventId = events.ExecuteEvent())
-    {
         ExecuteEvent(eventId);
-        if (me->HasUnitState(UNIT_STATE_CASTING))
-            return;
-    }
 
     DoMeleeAttackIfReady();
 }
@@ -530,7 +554,16 @@ void BossAI::_DespawnAtEvade(uint32 delayToRespawn, Creature* who)
         return;
     }
 
-    who->DespawnOrUnsummon(0, Seconds(delayToRespawn));
+    uint32 corpseDelay = who->GetCorpseDelay();
+    uint32 respawnDelay = who->GetRespawnDelay();
+
+    who->SetCorpseDelay(1);
+    who->SetRespawnDelay(delayToRespawn - 1);
+
+    who->DespawnOrUnsummon();
+
+    who->SetCorpseDelay(corpseDelay);
+    who->SetRespawnDelay(respawnDelay);
 
     if (instance && who == me)
         instance->SetBossState(_bossId, FAIL);
@@ -588,11 +621,33 @@ void WorldBossAI::UpdateAI(uint32 diff)
         return;
 
     while (uint32 eventId = events.ExecuteEvent())
-    {
         ExecuteEvent(eventId);
-        if (me->HasUnitState(UNIT_STATE_CASTING))
-            return;
-    }
 
     DoMeleeAttackIfReady();
+}
+
+// SD2 grid searchers.
+Creature* GetClosestCreatureWithEntry(WorldObject* source, uint32 entry, float maxSearchRange, bool alive /*= true*/)
+{
+    return source->FindNearestCreature(entry, maxSearchRange, alive);
+}
+
+GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    return source->FindNearestGameObject(entry, maxSearchRange);
+}
+
+void GetCreatureListWithEntryInGrid(std::list<Creature*>& list, WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    source->GetCreatureListWithEntryInGrid(list, entry, maxSearchRange);
+}
+
+void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& list, WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    source->GetGameObjectListWithEntryInGrid(list, entry, maxSearchRange);
+}
+
+void GetPlayerListInGrid(std::list<Player*>& list, WorldObject* source, float maxSearchRange)
+{
+    source->GetPlayerListInGrid(list, maxSearchRange);
 }

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,16 +24,20 @@
 #include "Log.h"
 #include "ObjectMgr.h"
 #include "Player.h"
+#include "TaxiPackets.h"
+#include "TaxiPathGraph.h"
 #include "WaypointMovementGenerator.h"
 
-void WorldSession::HandleTaxiNodeStatusQueryOpcode(WorldPacket& recvData)
+void WorldSession::HandleEnableTaxiNodeOpcode(WorldPackets::Taxi::EnableTaxiNode& enableTaxiNode)
 {
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_TAXINODE_STATUS_QUERY");
+    Creature* unit = GetPlayer()->GetMap()->GetCreature(enableTaxiNode.Unit);
+    SendLearnNewTaxiNode(unit);
+}
 
-    ObjectGuid guid;
 
-    recvData >> guid;
-    SendTaxiStatus(guid);
+void WorldSession::HandleTaxiNodeStatusQueryOpcode(WorldPackets::Taxi::TaxiNodeStatusQuery& taxiNodeStatusQuery)
+{
+    SendTaxiStatus(taxiNodeStatusQuery.UnitGUID);
 }
 
 void WorldSession::SendTaxiStatus(ObjectGuid guid)
@@ -47,33 +52,28 @@ void WorldSession::SendTaxiStatus(ObjectGuid guid)
 
     uint32 curloc = sObjectMgr->GetNearestTaxiNode(unit->GetPositionX(), unit->GetPositionY(), unit->GetPositionZ(), unit->GetMapId(), GetPlayer()->GetTeam());
 
-    // not found nearest
-    if (curloc == 0)
-        return;
+    WorldPackets::Taxi::TaxiNodeStatus data;
+    data.Unit = guid;
 
-    TC_LOG_DEBUG("network", "WORLD: current location %u ", curloc);
+    if (!curloc)
+        data.Status = TAXISTATUS_NONE;
+    else if (unit->GetReactionTo(GetPlayer()) >= REP_NEUTRAL)
+        data.Status = GetPlayer()->m_taxi.IsTaximaskNodeKnown(curloc) ? TAXISTATUS_LEARNED : TAXISTATUS_UNLEARNED;
+    else
+        data.Status = TAXISTATUS_NOT_ELIGIBLE;
 
-    WorldPacket data(SMSG_TAXINODE_STATUS, 9);
-    data << guid;
-    data << uint8(GetPlayer()->m_taxi.IsTaximaskNodeKnown(curloc) ? 1 : 0);
-    SendPacket(&data);
+    SendPacket(data.Write());
 }
 
-void WorldSession::HandleTaxiQueryAvailableNodes(WorldPacket& recvData)
+void WorldSession::HandleTaxiQueryAvailableNodesOpcode(WorldPackets::Taxi::TaxiQueryAvailableNodes& taxiQueryAvailableNodes)
 {
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_TAXIQUERYAVAILABLENODES");
-
-    ObjectGuid guid;
-    recvData >> guid;
-
     // cheating checks
-    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_FLIGHTMASTER);
+    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(taxiQueryAvailableNodes.Unit, UNIT_NPC_FLAG_FLIGHTMASTER);
     if (!unit)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleTaxiQueryAvailableNodes - %s not found or you can't interact with him.", guid.ToString().c_str());
+        TC_LOG_DEBUG("network", "WORLD: HandleTaxiQueryAvailableNodes - %s not found or you can't interact with him.", taxiQueryAvailableNodes.Unit.ToString().c_str());
         return;
     }
-
     // remove fake death
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
@@ -90,23 +90,23 @@ void WorldSession::SendTaxiMenu(Creature* unit)
 {
     // find current node
     uint32 curloc = sObjectMgr->GetNearestTaxiNode(unit->GetPositionX(), unit->GetPositionY(), unit->GetPositionZ(), unit->GetMapId(), GetPlayer()->GetTeam());
-
-    if (curloc == 0)
+    if (!curloc)
         return;
 
     bool lastTaxiCheaterState = GetPlayer()->isTaxiCheater();
-    if (unit->GetEntry() == 29480) GetPlayer()->SetTaxiCheater(true); // Grimwing in Ebon Hold, special case. NOTE: Not perfect, Zul'Aman should not be included according to WoWhead, and I think taxicheat includes it.
+    if (unit->GetEntry() == 29480)
+        GetPlayer()->SetTaxiCheater(true); // Grimwing in Ebon Hold, special case. NOTE: Not perfect, Zul'Aman should not be included according to WoWhead, and I think taxicheat includes it.
 
     TC_LOG_DEBUG("network", "WORLD: CMSG_TAXINODE_STATUS_QUERY %u ", curloc);
 
-    WorldPacket data(SMSG_SHOWTAXINODES, (4 + 8 + 4 + 8 * 4));
-    data << uint32(1);
-    data << uint64(unit->GetGUID());
-    data << uint32(curloc);
-    GetPlayer()->m_taxi.AppendTaximaskTo(data, GetPlayer()->isTaxiCheater());
-    SendPacket(&data);
+    WorldPackets::Taxi::ShowTaxiNodes data;
+    data.WindowInfo = boost::in_place();
+    data.WindowInfo->UnitGUID = unit->GetGUID();
+    data.WindowInfo->CurrentNode = curloc;
 
-    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_SHOWTAXINODES");
+    GetPlayer()->m_taxi.AppendTaximaskTo(data, lastTaxiCheaterState);
+
+    SendPacket(data.Write());
 
     GetPlayer()->SetTaxiCheater(lastTaxiCheaterState);
 }
@@ -136,13 +136,12 @@ bool WorldSession::SendLearnNewTaxiNode(Creature* unit)
 
     if (GetPlayer()->m_taxi.SetTaximaskNode(curloc))
     {
-        WorldPacket msg(SMSG_NEW_TAXI_PATH, 0);
-        SendPacket(&msg);
+        SendPacket(WorldPackets::Taxi::NewTaxiPath().Write());
 
-        WorldPacket update(SMSG_TAXINODE_STATUS, 9);
-        update << uint64(unit->GetGUID());
-        update << uint8(1);
-        SendPacket(&update);
+        WorldPackets::Taxi::TaxiNodeStatus data;
+        data.Unit = unit->GetGUID();
+        data.Status = TAXISTATUS_LEARNED;
+        SendPacket(data.Write());
 
         return true;
     }
@@ -153,135 +152,62 @@ bool WorldSession::SendLearnNewTaxiNode(Creature* unit)
 void WorldSession::SendDiscoverNewTaxiNode(uint32 nodeid)
 {
     if (GetPlayer()->m_taxi.SetTaximaskNode(nodeid))
-    {
-        WorldPacket msg(SMSG_NEW_TAXI_PATH, 0);
-        SendPacket(&msg);
-    }
+        SendPacket(WorldPackets::Taxi::NewTaxiPath().Write());
 }
 
-void WorldSession::HandleActivateTaxiExpressOpcode (WorldPacket& recvData)
+void WorldSession::HandleActivateTaxiOpcode(WorldPackets::Taxi::ActivateTaxi& activateTaxi)
 {
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_ACTIVATETAXIEXPRESS");
-
-    ObjectGuid guid;
-    uint32 node_count;
-
-    recvData >> guid >> node_count;
-
-    Creature* npc = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_FLIGHTMASTER);
-    if (!npc)
+    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(activateTaxi.Vendor, UNIT_NPC_FLAG_FLIGHTMASTER);
+    if (!unit)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleActivateTaxiExpressOpcode - %s not found or you can't interact with it.", guid.ToString().c_str());
-        return;
-    }
-    std::vector<uint32> nodes;
-
-    for (uint32 i = 0; i < node_count; ++i)
-    {
-        uint32 node;
-        recvData >> node;
-
-        if (!GetPlayer()->m_taxi.IsTaximaskNodeKnown(node) && !GetPlayer()->isTaxiCheater())
-        {
-            SendActivateTaxiReply(ERR_TAXINOTVISITED);
-            recvData.rfinish();
-            return;
-        }
-
-        nodes.push_back(node);
-    }
-
-    if (nodes.empty())
-        return;
-
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_ACTIVATETAXIEXPRESS from %d to %d", nodes.front(), nodes.back());
-
-    GetPlayer()->ActivateTaxiPathTo(nodes, npc);
-}
-
-void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
-{
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_MOVE_SPLINE_DONE");
-
-    uint64 guid; // used only for proper packet read
-    recvData.readPackGUID(guid);
-
-    MovementInfo movementInfo;                              // used only for proper packet read
-    ReadMovementInfo(recvData, &movementInfo);
-
-    recvData.read_skip<uint32>();                          // spline id
-
-    // in taxi flight packet received in 2 case:
-    // 1) end taxi path in far (multi-node) flight
-    // 2) switch from one map to other in case multim-map taxi path
-    // we need process only (1)
-
-    uint32 curDest = GetPlayer()->m_taxi.GetTaxiDestination();
-    if (curDest)
-    {
-        TaxiNodesEntry const* curDestNode = sTaxiNodesStore.LookupEntry(curDest);
-
-        // far teleport case
-        if (curDestNode && curDestNode->map_id != GetPlayer()->GetMapId())
-        {
-            if (GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE)
-            {
-                // short preparations to continue flight
-                FlightPathMovementGenerator* flight = (FlightPathMovementGenerator*)(GetPlayer()->GetMotionMaster()->top());
-
-                flight->SetCurrentNodeAfterTeleport();
-                TaxiPathNodeEntry const* node = flight->GetPath()[flight->GetCurrentNode()];
-                flight->SkipCurrentNode();
-
-                GetPlayer()->TeleportTo(curDestNode->map_id, node->LocX, node->LocY, node->LocZ, GetPlayer()->GetOrientation());
-            }
-        }
-
+        TC_LOG_DEBUG("network", "WORLD: HandleActivateTaxiOpcode - %s not found or you can't interact with it.", activateTaxi.Vendor.ToString().c_str());
         return;
     }
 
-    // at this point only 1 node is expected (final destination)
-    if (GetPlayer()->m_taxi.GetPath().size() != 1)
+    uint32 curloc = sObjectMgr->GetNearestTaxiNode(unit->GetPositionX(), unit->GetPositionY(), unit->GetPositionZ(), unit->GetMapId(), GetPlayer()->GetTeam());
+    if (!curloc)
         return;
 
-    GetPlayer()->CleanupAfterTaxiFlight();
-    GetPlayer()->SetFallInformation(0, GetPlayer()->GetPositionZ());
-    if (GetPlayer()->pvpInfo.IsHostile)
-        GetPlayer()->CastSpell(GetPlayer(), 2479, true);
-}
-
-void WorldSession::HandleActivateTaxiOpcode(WorldPacket& recvData)
-{
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_ACTIVATETAXI");
-
-    ObjectGuid guid;
-    std::vector<uint32> nodes;
-    nodes.resize(2);
-
-    recvData >> guid >> nodes[0] >> nodes[1];
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_ACTIVATETAXI from %d to %d", nodes[0], nodes[1]);
-    Creature* npc = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_FLIGHTMASTER);
-    if (!npc)
-    {
-        TC_LOG_DEBUG("network", "WORLD: HandleActivateTaxiOpcode - %s not found or you can't interact with it.", guid.ToString().c_str());
+    TaxiNodesEntry const* from = sTaxiNodesStore.LookupEntry(curloc);
+    TaxiNodesEntry const* to = sTaxiNodesStore.LookupEntry(activateTaxi.Node);
+    if (!to)
         return;
-    }
 
     if (!GetPlayer()->isTaxiCheater())
     {
-        if (!GetPlayer()->m_taxi.IsTaximaskNodeKnown(nodes[0]) || !GetPlayer()->m_taxi.IsTaximaskNodeKnown(nodes[1]))
+        if (!GetPlayer()->m_taxi.IsTaximaskNodeKnown(curloc) || !GetPlayer()->m_taxi.IsTaximaskNodeKnown(activateTaxi.Node))
         {
             SendActivateTaxiReply(ERR_TAXINOTVISITED);
             return;
         }
     }
 
-    GetPlayer()->ActivateTaxiPathTo(nodes, npc);
+    uint32 preferredMountDisplay = 0;
+    if (MountEntry const* mount = sMountStore.LookupEntry(activateTaxi.FlyingMountID))
+        if (GetPlayer()->HasSpell(mount->SpellId))
+            preferredMountDisplay = mount->DisplayId;
+
+    std::vector<uint32> nodes;
+    sTaxiPathGraph.GetCompleteNodeRoute(from, to, GetPlayer(), nodes);
+    GetPlayer()->ActivateTaxiPathTo(nodes, unit, 0, preferredMountDisplay);
 }
 
 void WorldSession::SendActivateTaxiReply(ActivateTaxiReply reply)
 {
-    WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
-    data << uint32(reply);
-    SendPacket(&data);
+    WorldPackets::Taxi::ActivateTaxiReply data;
+    data.Reply = reply;
+    SendPacket(data.Write());
+}
+
+void WorldSession::HandleTaxiRequestEarlyLanding(WorldPackets::Taxi::TaxiRequestEarlyLanding& /*taxiRequestEarlyLanding*/)
+{
+    if (GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE)
+    {
+        if (GetPlayer()->m_taxi.RequestEarlyLanding())
+        {
+            FlightPathMovementGenerator* flight = static_cast<FlightPathMovementGenerator*>(GetPlayer()->GetMotionMaster()->top());
+            flight->LoadPath(GetPlayer(), flight->GetPath()[flight->GetCurrentNode()]->NodeIndex);
+            flight->Reset(GetPlayer());
+        }
+    }
 }

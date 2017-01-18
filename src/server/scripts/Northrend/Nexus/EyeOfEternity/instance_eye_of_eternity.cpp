@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -86,12 +86,12 @@ public:
         void SpawnGameObject(uint32 entry, Position const& pos)
         {
             GameObject* go = new GameObject();
-            if (!go->Create(instance->GenerateLowGuid<HighGuid::GameObject>(), entry, instance, PHASEMASK_NORMAL, pos, G3D::Quat(), 255, GO_STATE_READY))
+            if (!go->Create(entry, instance, PHASEMASK_NORMAL, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(),
+                0, 0, 0, 0, 120, GO_STATE_READY))
             {
                 delete go;
                 return;
             }
-
             instance->AddToMap(go);
         }
 
@@ -240,7 +240,7 @@ public:
                     PowerSparksHandling();
                     break;
                 case DATA_RESPAWN_IRIS:
-                    SpawnGameObject(instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL ? GO_FOCUSING_IRIS_10 : GO_FOCUSING_IRIS_25, focusingIrisPosition);
+                    SpawnGameObject(instance->GetDifficultyID() == DIFFICULTY_10_N ? GO_FOCUSING_IRIS_10 : GO_FOCUSING_IRIS_25, focusingIrisPosition);
                     break;
             }
         }

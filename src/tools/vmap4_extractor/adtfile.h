@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,7 +19,7 @@
 #ifndef ADT_H
 #define ADT_H
 
-#include "mpq_libmpq04.h"
+#include "mpqfile.h"
 #include "wmo.h"
 #include "model.h"
 
@@ -118,8 +119,8 @@ public:
     ~ADTFile();
     int nWMO;
     int nMDX;
-    std::string* WmoInstansName;
-    std::string* ModelInstansName;
+    std::vector<std::string> WmoInstanceNames;
+    std::vector<std::string> ModelInstanceNames;
     bool init(uint32 map_num, uint32 tileX, uint32 tileY);
     //void LoadMapChunks();
 
@@ -132,11 +133,11 @@ public:
 */
 };
 
-const char * GetPlainName(const char * FileName);
-char * GetPlainName(char * FileName);
-char * GetExtension(char * FileName);
-void fixnamen(char *name, size_t len);
-void fixname2(char *name, size_t len);
+char const* GetPlainName(char const* FileName);
+char* GetPlainName(char* FileName);
+char* GetExtension(char* FileName);
+void FixNameCase(char* name, size_t len);
+void FixNameSpaces(char* name, size_t len);
 //void fixMapNamen(char *name, size_t len);
 
 #endif

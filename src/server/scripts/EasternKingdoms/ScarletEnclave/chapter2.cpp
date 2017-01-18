@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -708,7 +708,7 @@ public:
         void MoveInLineOfSight(Unit* who) override
 
         {
-            if (PlayerGUID || who->GetTypeId() != TYPEID_PLAYER || !who->IsWithinDist(me, INTERACTION_DISTANCE))
+            if (!PlayerGUID.IsEmpty() || who->GetTypeId() != TYPEID_PLAYER || !who->IsWithinDist(me, INTERACTION_DISTANCE))
                 return;
 
             if (MeetQuestCondition(who->ToPlayer()))
@@ -717,7 +717,7 @@ public:
 
         void UpdateAI(uint32 diff) override
         {
-            if (PlayerGUID && !me->GetVictim() && me->IsAlive())
+            if (!PlayerGUID.IsEmpty() && !me->GetVictim() && me->IsAlive())
             {
                 if (ExecuteSpeech_Timer <= diff)
                 {

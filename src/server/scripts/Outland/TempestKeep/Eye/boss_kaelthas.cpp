@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -374,7 +375,6 @@ struct advisorbase_ai : public ScriptedAI
 
             me->InterruptNonMeleeSpells(false);
             me->SetHealth(0);
-            me->ClearComboPointHolders();
             me->RemoveAllAurasOnDeath();
             me->ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, false);
             me->ModifyAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, false);
@@ -594,7 +594,7 @@ class boss_kaelthas : public CreatureScript
                         events.ScheduleEvent(EVENT_TRANSITION_1, 1000);
                         break;
                     case POINT_TRANSITION_CENTER_ASCENDING:
-                        me->SetFacingTo(float(M_PI), true);
+                        me->SetFacingTo(float(M_PI));
                         Talk(SAY_PHASE5_NUTS);
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         me->SetDisableGravity(true);
@@ -843,9 +843,6 @@ class boss_kaelthas : public CreatureScript
                         default:
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING) && !me->FindCurrentSpellBySpellId(SPELL_KAEL_GAINING_POWER) && !me->FindCurrentSpellBySpellId(SPELL_KAEL_STUNNED))
-                        return;
                 }
 
                 if (events.IsInPhase(PHASE_COMBAT))

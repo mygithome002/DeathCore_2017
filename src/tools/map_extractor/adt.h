@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -44,29 +45,25 @@ enum LiquidType
 //
 // Adt file height map chunk
 //
-class adt_MCVT
+struct adt_MCVT
 {
     union{
         uint32 fcc;
         char   fcc_txt[4];
     };
     uint32 size;
-public:
     float height_map[(ADT_CELL_SIZE+1)*(ADT_CELL_SIZE+1)+ADT_CELL_SIZE*ADT_CELL_SIZE];
-
-    bool  prepareLoadedData();
 };
 
 //
 // Adt file liquid map chunk (old)
 //
-class adt_MCLQ
+struct adt_MCLQ
 {
     union{
         uint32 fcc;
         char   fcc_txt[4];
     };
-public:
     uint32 size;
     float height1;
     float height2;
@@ -83,27 +80,32 @@ public:
     // == 0x0F - not show liquid
     uint8 flags[ADT_CELL_SIZE][ADT_CELL_SIZE];
     uint8 data[84];
-    bool  prepareLoadedData();
 };
 
 //
 // Adt file cell chunk
 //
-class adt_MCNK
+struct adt_MCNK
 {
     union{
         uint32 fcc;
         char   fcc_txt[4];
     };
-public:
     uint32 size;
     uint32 flags;
     uint32 ix;
     uint32 iy;
     uint32 nLayers;
     uint32 nDoodadRefs;
-    uint32 offsMCVT;        // height map
-    uint32 offsMCNR;        // Normal vectors for each vertex
+    union
+    {
+        struct
+        {
+            uint32 offsMCVT;        // height map
+            uint32 offsMCNR;        // Normal vectors for each vertex
+        } offsets;
+        uint8 HighResHoles[8];
+    } union_5_3_0;
     uint32 offsMCLY;        // Texture layer definitions
     uint32 offsMCRF;        // A list of indices into the parent file's MDDF chunk
     uint32 offsMCAL;        // Alpha maps for additional texture layers
@@ -129,54 +131,13 @@ public:
     uint32 offsMCCV;         // offsColorValues in WotLK
     uint32 props;
     uint32 effectId;
-
-    bool   prepareLoadedData();
-    adt_MCVT *getMCVT()
-    {
-        if (offsMCVT)
-            return (adt_MCVT *)((uint8 *)this + offsMCVT);
-        return 0;
-    }
-    adt_MCLQ *getMCLQ()
-    {
-        if (offsMCLQ)
-            return (adt_MCLQ *)((uint8 *)this + offsMCLQ);
-        return 0;
-    }
-};
-
-//
-// Adt file grid chunk
-//
-class adt_MCIN
-{
-    union{
-        uint32 fcc;
-        char   fcc_txt[4];
-    };
-public:
-    uint32 size;
-    struct adt_CELLS{
-        uint32 offsMCNK;
-        uint32 size;
-        uint32 flags;
-        uint32 asyncId;
-    } cells[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
-
-    bool   prepareLoadedData();
-    // offset from begin file (used this-84)
-    adt_MCNK *getMCNK(int x, int y)
-    {
-        if (cells[x][y].offsMCNK)
-            return (adt_MCNK *)((uint8 *)this + cells[x][y].offsMCNK - 84);
-        return 0;
-    }
 };
 
 #define ADT_LIQUID_HEADER_FULL_LIGHT   0x01
 #define ADT_LIQUID_HEADER_NO_HIGHT     0x02
 
-struct adt_liquid_header{
+struct adt_liquid_header
+{
     uint16 liquidType;             // Index from LiquidType.dbc
     uint16 formatFlags;
     float  heightLevel1;
@@ -192,9 +153,8 @@ struct adt_liquid_header{
 //
 // Adt file liquid data chunk (new)
 //
-class adt_MH2O
+struct adt_MH2O
 {
-public:
     union{
         uint32 fcc;
         char   fcc_txt[4];
@@ -206,8 +166,6 @@ public:
         uint32 used;
         uint32 offsData2;
     } liquid[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
-
-    bool   prepareLoadedData();
 
     adt_liquid_header *getLiquidData(int x, int y)
     {
@@ -261,17 +219,13 @@ public:
 
 };
 
-//
-// Adt file min/max height chunk
-//
-class adt_MFBO
+struct adt_MFBO
 {
     union
     {
         uint32 fcc;
         char   fcc_txt[4];
     };
-public:
     uint32 size;
     struct plane
     {
@@ -279,65 +233,6 @@ public:
     };
     plane max;
     plane min;
-
-    bool prepareLoadedData();
-};
-
-//
-// Adt file header chunk
-//
-class adt_MHDR
-{
-    union{
-        uint32 fcc;
-        char   fcc_txt[4];
-    };
-public:
-    uint32 size;
-
-    uint32 flags;
-    uint32 offsMCIN;           // MCIN
-    uint32 offsTex;            // MTEX
-    uint32 offsModels;         // MMDX
-    uint32 offsModelsIds;      // MMID
-    uint32 offsMapObejcts;     // MWMO
-    uint32 offsMapObejctsIds;  // MWID
-    uint32 offsDoodsDef;       // MDDF
-    uint32 offsObjectsDef;     // MODF
-    uint32 offsMFBO;           // MFBO
-    uint32 offsMH2O;           // MH2O
-    uint32 data1;
-    uint32 data2;
-    uint32 data3;
-    uint32 data4;
-    uint32 data5;
-    bool prepareLoadedData();
-    adt_MCIN* getMCIN()
-    {
-        return reinterpret_cast<adt_MCIN*>(reinterpret_cast<uint8*>(&flags) + offsMCIN);
-    }
-    adt_MH2O* getMH2O()
-    {
-        if (offsMH2O)
-            return reinterpret_cast<adt_MH2O*>(reinterpret_cast<uint8*>(&flags) + offsMH2O);
-        return nullptr;
-    }
-    adt_MFBO* getMFBO()
-    {
-        if (flags & 1 && offsMFBO)
-            return reinterpret_cast<adt_MFBO*>(reinterpret_cast<uint8*>(&flags) + offsMFBO);
-        return nullptr;
-    }
-};
-
-class ADT_file : public FileLoader{
-public:
-    bool prepareLoadedData();
-    ADT_file();
-    ~ADT_file();
-    void free();
-
-    adt_MHDR *a_grid;
 };
 
 #pragma pack(pop)

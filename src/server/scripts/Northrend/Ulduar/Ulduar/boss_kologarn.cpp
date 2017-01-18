@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -104,7 +104,7 @@ class boss_kologarn : public CreatureScript
                 left(false), right(false)
             {
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                me->SetControlled(true, UNIT_STATE_ROOT);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
 
                 DoCast(SPELL_KOLOGARN_REDUCE_PARRY);
                 SetCombatMovement(false);
@@ -196,7 +196,7 @@ class boss_kologarn : public CreatureScript
                     if (!right && !left)
                         events.ScheduleEvent(EVENT_STONE_SHOUT, 5000);
 
-                    instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, CRITERIA_DISARMED);
+                    instance->DoStartCriteriaTimer(CRITERIA_TIMED_TYPE_EVENT, CRITERIA_DISARMED);
                 }
                 else
                 {
@@ -229,7 +229,7 @@ class boss_kologarn : public CreatureScript
                 summon->ClearUnitState(UNIT_STATE_CASTING);
 
                 // Victim gets 67351
-                if (eyebeamTarget)
+                if (!eyebeamTarget.IsEmpty())
                 {
                     if (Unit* target = ObjectAccessor::GetUnit(*summon, eyebeamTarget))
                     {
@@ -309,9 +309,6 @@ class boss_kologarn : public CreatureScript
                             events.ScheduleEvent(EVENT_FOCUSED_EYEBEAM, urand(15, 35) * IN_MILLISECONDS);
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 DoMeleeAttackIfReady();
@@ -453,13 +450,13 @@ class spell_ulduar_cancel_stone_grip : public SpellScriptLoader
                 if (!target || !target->GetVehicle())
                     return;
 
-                switch (target->GetMap()->GetDifficulty())
+                switch (target->GetMap()->GetDifficultyID())
                 {
-                    case RAID_DIFFICULTY_10MAN_NORMAL:
-                        target->RemoveAura(GetSpellInfo()->Effects[EFFECT_0].CalcValue());
+                    case DIFFICULTY_10_N:
+                        target->RemoveAura(GetSpellInfo()->GetEffect(EFFECT_0)->CalcValue());
                         break;
-                    case RAID_DIFFICULTY_25MAN_NORMAL:
-                        target->RemoveAura(GetSpellInfo()->Effects[EFFECT_1].CalcValue());
+                    case DIFFICULTY_25_N:
+                        target->RemoveAura(GetSpellInfo()->GetEffect(EFFECT_1)->CalcValue());
                         break;
                     default:
                         break;
@@ -535,7 +532,7 @@ class spell_ulduar_stone_grip_absorb : public SpellScriptLoader
                 if (!GetOwner()->ToCreature())
                     return;
 
-                uint32 rubbleStalkerEntry = (GetOwner()->GetMap()->GetDifficulty() == DUNGEON_DIFFICULTY_NORMAL ? 33809 : 33942);
+                uint32 rubbleStalkerEntry = (GetOwner()->GetMap()->GetDifficultyID() == DIFFICULTY_NORMAL ? 33809 : 33942);
                 Creature* rubbleStalker = GetOwner()->FindNearestCreature(rubbleStalkerEntry, 200.0f, true);
                 if (rubbleStalker)
                     rubbleStalker->CastSpell(rubbleStalker, SPELL_STONE_GRIP_CANCEL, true);
@@ -644,7 +641,7 @@ class spell_kologarn_summon_focused_eyebeam : public SpellScriptLoader
             void HandleForceCast(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                GetCaster()->CastSpell(GetCaster(), GetSpellInfo()->Effects[effIndex].TriggerSpell, true);
+                GetCaster()->CastSpell(GetCaster(), GetSpellInfo()->GetEffect(effIndex)->TriggerSpell, true);
             }
 
             void Register() override

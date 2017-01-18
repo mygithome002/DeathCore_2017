@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -89,7 +89,7 @@ class boss_falric : public CreatureScript
                     || (_hopelessnessCount < 3 && me->HealthBelowPctDamaged(10, damage)))
                 {
                     if (_hopelessnessCount)
-                        me->RemoveOwnedAura(sSpellMgr->GetSpellIdForDifficulty(HopelessnessHelper[_hopelessnessCount - 1], me));
+                        me->RemoveOwnedAura(HopelessnessHelper[_hopelessnessCount - 1]);
                     DoCast(me, HopelessnessHelper[_hopelessnessCount]);
                     ++_hopelessnessCount;
                 }

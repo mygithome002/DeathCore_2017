@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -46,7 +47,7 @@ public:
 
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
     {
-        ClearGossipMenuFor(player);
+        player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_TRADE)
             player->GetSession()->SendListInventory(creature->GetGUID());
 
@@ -59,9 +60,9 @@ public:
             player->PrepareQuestMenu(creature->GetGUID());
 
         if (creature->IsVendor() && player->GetReputationRank(589) == REP_EXALTED)
-            AddGossipItemFor(player, GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
-        SendGossipMenuFor(player, player->GetGossipTextId(creature), creature->GetGUID());
+        player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
 
         return true;
     }
@@ -376,15 +377,15 @@ public:
         void DoSummonPriestess()
         {
             // Summon 2 Elune priestess and make each of them move to a different spot
-            if (Creature* priestess = me->SummonCreature(NPC_PRIESTESS_ELUNE, wingThicketLocations[0].m_positionX, wingThicketLocations[0].m_positionY, wingThicketLocations[0].m_positionZ, wingThicketLocations[0].GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN, 0))
+            if (Creature* priestess = me->SummonCreature(NPC_PRIESTESS_ELUNE, wingThicketLocations[0], TEMPSUMMON_CORPSE_DESPAWN, 0))
             {
-                priestess->GetMotionMaster()->MovePoint(0, wingThicketLocations[3].m_positionX, wingThicketLocations[3].m_positionY, wingThicketLocations[3].m_positionZ);
+                priestess->GetMotionMaster()->MovePoint(0, wingThicketLocations[3]);
                 _firstPriestessGUID = priestess->GetGUID();
             }
-            if (Creature* priestess = me->SummonCreature(NPC_PRIESTESS_ELUNE, wingThicketLocations[1].m_positionX, wingThicketLocations[1].m_positionY, wingThicketLocations[1].m_positionZ, wingThicketLocations[1].GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN, 0))
+            if (Creature* priestess = me->SummonCreature(NPC_PRIESTESS_ELUNE, wingThicketLocations[1], TEMPSUMMON_CORPSE_DESPAWN, 0))
             {
                 // Left priestess should have a distinct move point because she is the one who starts the dialogue at point reach
-                priestess->GetMotionMaster()->MovePoint(1, wingThicketLocations[4].m_positionX, wingThicketLocations[4].m_positionY, wingThicketLocations[4].m_positionZ);
+                priestess->GetMotionMaster()->MovePoint(1, wingThicketLocations[4]);
                 _secondPriestessGUID = priestess->GetGUID();
             }
         }
@@ -475,19 +476,19 @@ public:
                 case SAY_PRIESTESS_ALTAR_9:
                     // move near the escort npc
                     if (Creature* priestess = me->GetMap()->GetCreature(_firstPriestessGUID))
-                        priestess->GetMotionMaster()->MovePoint(0, wingThicketLocations[6].m_positionX, wingThicketLocations[6].m_positionY, wingThicketLocations[6].m_positionZ);
+                        priestess->GetMotionMaster()->MovePoint(0, wingThicketLocations[6]);
                     break;
                 case SAY_PRIESTESS_ALTAR_13:
                     // summon the Guardian of Elune
-                    if (Creature* guard = me->SummonCreature(NPC_GUARDIAN_ELUNE, wingThicketLocations[2].m_positionX, wingThicketLocations[2].m_positionY, wingThicketLocations[2].m_positionZ, wingThicketLocations[2].GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN, 0))
+                    if (Creature* guard = me->SummonCreature(NPC_GUARDIAN_ELUNE, wingThicketLocations[2], TEMPSUMMON_CORPSE_DESPAWN, 0))
                     {
-                        guard->GetMotionMaster()->MovePoint(0, wingThicketLocations[5].m_positionX, wingThicketLocations[5].m_positionY, wingThicketLocations[5].m_positionZ);
+                        guard->GetMotionMaster()->MovePoint(0, wingThicketLocations[5]);
                         _guardEluneGUID = guard->GetGUID();
                     }
                     // summon the Voice of Elune
                     if (GameObject* altar = me->GetMap()->GetGameObject(_altarGUID))
                     {
-                        if (Creature* voice = me->SummonCreature(NPC_VOICE_ELUNE, altar->GetPositionX(), altar->GetPositionY(), altar->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 30000))
+                        if (Creature* voice = me->SummonCreature(NPC_VOICE_ELUNE, *altar, TEMPSUMMON_TIMED_DESPAWN, 30000))
                             _voiceEluneGUID = voice->GetGUID();
                     }
                     break;
@@ -496,14 +497,14 @@ public:
                     if (Creature* priestess = me->GetMap()->GetCreature(_secondPriestessGUID))
                     {
                         priestess->AI()->Talk(SAY_PRIESTESS_ALTAR_14);
-                        priestess->GetMotionMaster()->MovePoint(0, wingThicketLocations[7].m_positionX, wingThicketLocations[7].m_positionY, wingThicketLocations[7].m_positionZ);
+                        priestess->GetMotionMaster()->MovePoint(0, wingThicketLocations[7]);
                     }
                     break;
                 case SAY_PRIESTESS_ALTAR_19:
                     // make the voice of elune leave
                     if (Creature* guard = me->GetMap()->GetCreature(_guardEluneGUID))
                     {
-                        guard->GetMotionMaster()->MovePoint(0, wingThicketLocations[2].m_positionX, wingThicketLocations[2].m_positionY, wingThicketLocations[2].m_positionZ);
+                        guard->GetMotionMaster()->MovePoint(0, wingThicketLocations[2]);
                         guard->DespawnOrUnsummon(4000);
                     }
                     break;
@@ -511,7 +512,7 @@ public:
                     // make the first priestess leave
                     if (Creature* priestess = me->GetMap()->GetCreature(_firstPriestessGUID))
                     {
-                        priestess->GetMotionMaster()->MovePoint(0, wingThicketLocations[0].m_positionX, wingThicketLocations[0].m_positionY, wingThicketLocations[0].m_positionZ);
+                        priestess->GetMotionMaster()->MovePoint(0, wingThicketLocations[0]);
                         priestess->DespawnOrUnsummon(4000);
                     }
                     break;
@@ -519,7 +520,7 @@ public:
                     // make the second priestess leave
                     if (Creature* priestess = me->GetMap()->GetCreature(_secondPriestessGUID))
                     {
-                        priestess->GetMotionMaster()->MovePoint(0, wingThicketLocations[1].m_positionX, wingThicketLocations[1].m_positionY, wingThicketLocations[1].m_positionZ);
+                        priestess->GetMotionMaster()->MovePoint(0, wingThicketLocations[1]);
                         priestess->DespawnOrUnsummon(4000);
                     }
                     break;

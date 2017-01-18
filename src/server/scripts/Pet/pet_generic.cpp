@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -105,7 +105,7 @@ public:
         npc_pet_gen_egbertAI(Creature* creature) : NullCreatureAI(creature)
         {
             if (Unit* owner = me->GetCharmerOrOwner())
-                if (owner->GetMap()->GetEntry()->addon > 1)
+                if (owner->GetMap()->GetEntry()->ExpansionID > 1)
                     me->SetCanFly(true);
         }
 
@@ -295,7 +295,7 @@ class npc_pet_gen_mojo : public CreatureScript
 
                 Talk(SAY_MOJO, player);
 
-                if (_victimGUID)
+                if (!_victimGUID.IsEmpty())
                     if (Player* victim = ObjectAccessor::GetPlayer(*me, _victimGUID))
                         victim->RemoveAura(SPELL_FEELING_FROGGY);
 

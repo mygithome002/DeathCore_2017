@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -67,7 +67,7 @@ class boss_maiden_of_grief : public CreatureScript
                 events.ScheduleEvent(EVENT_SHOCK_OF_SORROW, urand(20000, 25000));
                 events.ScheduleEvent(EVENT_PILLAR_OF_WOE, urand(5000, 15000));
 
-                instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_GOOD_GRIEF_START_EVENT);
+                instance->DoStopCriteriaTimer(CRITERIA_TIMED_TYPE_EVENT, ACHIEV_GOOD_GRIEF_START_EVENT);
             }
 
             void EnterCombat(Unit* /*who*/) override
@@ -75,7 +75,7 @@ class boss_maiden_of_grief : public CreatureScript
                 _EnterCombat();
                 Talk(SAY_AGGRO);
 
-                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_GOOD_GRIEF_START_EVENT);
+                instance->DoStartCriteriaTimer(CRITERIA_TIMED_TYPE_EVENT, ACHIEV_GOOD_GRIEF_START_EVENT);
             }
 
             void KilledUnit(Unit* who) override
@@ -129,9 +129,6 @@ class boss_maiden_of_grief : public CreatureScript
                         default:
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 DoMeleeAttackIfReady();

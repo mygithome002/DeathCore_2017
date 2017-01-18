@@ -28,10 +28,6 @@ jemalloc (a general-purpose scalable concurrent malloc-implementation)
   http://www.canonware.com/jemalloc/
   Version: 3.6.0
 
-libMPQ (a library for reading MPQ files)
-  https://github.com/mbroemme/libmpq/
-  Version: d59b4cf1d107b5f6a0f67d6bc545c6c6ebef3d74
-
 libreadline (command line editing library)
   https://cnswww.cns.cwru.edu/php/chet/readline/rltop.html
   Version: external
@@ -54,8 +50,20 @@ zlib (A Massively Spiffy Yet Delicately Unobtrusive Compression Library)
 
 gSOAP (a portable development toolkit for C and C++ XML Web services and XML data bindings)
   http://gsoap2.sourceforge.net/
-  Version: 2.8.33
+  Version: 2.8.17r
 
 recastnavigation (Recast is state of the art navigation mesh construction toolset for games)
   https://github.com/memononen/recastnavigation
-  Version: 64385e9ed0822427bca5814d03a3f4c4d7a6db9f
+  Version: 1dd5cf1883d61e723fef3d4957cf758c50e7a52b
+
+CascLib (An open-source implementation of library for reading CASC storage from Blizzard games since 2014)
+  https://github.com/ladislav-zezula/CascLib
+  Version: 8f606d1ae0e01338f80e108b8d1b41912d4a3d2f
+
+rapidjson (A fast JSON parser/generator for C++ with both SAX/DOM style API http://rapidjson.org/)
+  https://github.com/miloyip/rapidjson
+  Version: v1.1.0
+
+protobuf (Protocol Buffers - Google's data interchange format https://developers.google.com/protocol-buffers/)
+  https://github.com/google/protobuf
+  Version: v2.6.1

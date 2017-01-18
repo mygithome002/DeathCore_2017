@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,7 +32,6 @@ enum Say
 
 enum Spells
 {
-    // @todo orb uses the wrong spell, this needs sniffs
     SPELL_MINDCONTROL       = 42013,
     SPELL_CHANNEL           = 45537,
     SPELL_EGG_DESTROY       = 19873,
@@ -103,7 +103,7 @@ public:
 
             secondPhase = true;
             me->RemoveAllAuras();
-            me->SetFullHealth();
+            me->SetHealth(me->GetMaxHealth());
         }
 
         void DoAction(int32 action) override
@@ -114,7 +114,6 @@ public:
 
         void DamageTaken(Unit* /*who*/, uint32& damage) override
         {
-            // @todo this is wrong - razorgore should still take damage, he should just nuke the whole room and respawn if he dies during P1
             if (!secondPhase)
                 damage = 0;
         }
@@ -147,16 +146,12 @@ public:
                         break;
                     case EVENT_CONFLAGRATION:
                         DoCastVictim(SPELL_CONFLAGRATION);
-                        // @todo is this even necessary? pretty sure AI ignores targets with disorient by default
                         if (me->GetVictim() && me->EnsureVictim()->HasAura(SPELL_CONFLAGRATION))
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
                                 me->TauntApply(target);
                         events.ScheduleEvent(EVENT_CONFLAGRATION, 30000);
                         break;
                 }
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
             }
             DoMeleeAttackIfReady();
         }
@@ -180,10 +175,10 @@ public:
     {
         if (InstanceScript* instance = go->GetInstanceScript())
             if (instance->GetData(DATA_EGG_EVENT) != DONE)
-                if (Creature* razorgore = instance->GetCreature(DATA_RAZORGORE_THE_UNTAMED))
+                if (Creature* razor = instance->GetCreature(DATA_RAZORGORE_THE_UNTAMED))
                 {
-                    razorgore->Attack(player, true);
-                    player->CastSpell(razorgore, SPELL_MINDCONTROL);
+                    razor->Attack(player, true);
+                    player->CastSpell(razor, SPELL_MINDCONTROL);
                 }
         return true;
     }

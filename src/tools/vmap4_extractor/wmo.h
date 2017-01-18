@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,8 +23,9 @@
 
 #include <string>
 #include <set>
+#include <vector>
 #include "vec3d.h"
-#include "loadlib/loadlib.h"
+#include "mpqfile.h"
 
 // MOPY flags
 #define WMO_MATERIAL_NOCAMCOLLIDE    0x01
@@ -46,10 +48,13 @@ class WMORoot
 private:
     std::string filename;
 public:
-    unsigned int col;
-    uint32 nTextures, nGroups, nP, nLights, nModels, nDoodads, nDoodadSets, RootWMOID, liquidType;
+    unsigned int color;
+    uint32 nTextures, nGroups, nPortals, nLights, nDoodadNames, nDoodadDefs, nDoodadSets, RootWMOID;
     float bbcorn1[3];
     float bbcorn2[3];
+    uint16 flags, numLod;
+
+    std::vector<uint32> groupFileDataIDs;
 
     WMORoot(std::string& filename);
 

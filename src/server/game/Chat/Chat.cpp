@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -30,6 +31,7 @@
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "ChatLink.h"
+#include "Group.h"
 
 // Lazy loading of the command table cache from commands and the
 // ScriptMgr should be thread safe since the player commands,
@@ -85,8 +87,8 @@ bool ChatHandler::HasLowerSecurity(Player* target, ObjectGuid guid, bool strong)
 
     if (target)
         target_session = target->GetSession();
-    else if (guid)
-        target_account = sObjectMgr->GetPlayerAccountIdByGUID(guid);
+    else if (!guid.IsEmpty())
+        target_account = ObjectMgr::GetPlayerAccountIdByGUID(guid);
 
     if (!target_session && !target_account)
     {
@@ -128,7 +130,7 @@ bool ChatHandler::HasLowerSecurityAccount(WorldSession* target, uint32 target_ac
     return false;
 }
 
-bool ChatHandler::hasStringAbbr(char const* name, char const* part)
+bool ChatHandler::hasStringAbbr(const char* name, const char* part)
 {
     // non "" command
     if (*name)
@@ -155,7 +157,7 @@ bool ChatHandler::hasStringAbbr(char const* name, char const* part)
 
 void ChatHandler::SendSysMessage(const char *str, bool escapeCharacters)
 {
-    WorldPacket data;
+    WorldPackets::Chat::Chat packet;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
     char* buf;
@@ -165,7 +167,7 @@ void ChatHandler::SendSysMessage(const char *str, bool escapeCharacters)
     {
         size_t startPos = 0;
         std::ostringstream o;
-        while (char const* charPos = strchr(str + startPos, '|'))
+        while (const char* charPos = strchr(str + startPos, '|'))
         {
             o.write(str + startPos, charPos - str - startPos);
             o << "||";
@@ -183,8 +185,8 @@ void ChatHandler::SendSysMessage(const char *str, bool escapeCharacters)
 
     while (char* line = LineFromMessage(pos))
     {
-        BuildChatPacket(data, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, line);
-        m_session->SendPacket(&data);
+        packet.Initialize(CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, line);
+        m_session->SendPacket(packet.Write());
     }
 
     free(buf);
@@ -193,7 +195,7 @@ void ChatHandler::SendSysMessage(const char *str, bool escapeCharacters)
 void ChatHandler::SendGlobalSysMessage(const char *str)
 {
     // Chat output
-    WorldPacket data;
+    WorldPackets::Chat::Chat packet;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
     char* buf = strdup(str);
@@ -201,8 +203,8 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
 
     while (char* line = LineFromMessage(pos))
     {
-        BuildChatPacket(data, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, line);
-        sWorld->SendGlobalMessage(&data);
+        packet.Initialize(CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, line);
+        sWorld->SendGlobalMessage(packet.Write());
     }
 
     free(buf);
@@ -211,7 +213,7 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
 void ChatHandler::SendGlobalGMSysMessage(const char *str)
 {
     // Chat output
-    WorldPacket data;
+    WorldPackets::Chat::Chat packet;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
     char* buf = strdup(str);
@@ -219,8 +221,8 @@ void ChatHandler::SendGlobalGMSysMessage(const char *str)
 
     while (char* line = LineFromMessage(pos))
     {
-        BuildChatPacket(data, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, line);
-        sWorld->SendGlobalGMMessage(&data);
+        packet.Initialize(CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, line);
+        sWorld->SendGlobalGMMessage(packet.Write());
     }
 
     free(buf);
@@ -231,7 +233,7 @@ void ChatHandler::SendSysMessage(uint32 entry)
     SendSysMessage(GetTrinityString(entry));
 }
 
-bool ChatHandler::ExecuteCommandInTable(std::vector<ChatCommand> const& table, char const* text, std::string const& fullcmd)
+bool ChatHandler::ExecuteCommandInTable(std::vector<ChatCommand> const& table, const char* text, std::string const& fullcmd)
 {
     char const* oldtext = text;
     std::string cmd = "";
@@ -272,9 +274,6 @@ bool ChatHandler::ExecuteCommandInTable(std::vector<ChatCommand> const& table, c
         {
             if (!ExecuteCommandInTable(table[i].ChildCommands, text, fullcmd))
             {
-                if (m_session && !m_session->HasPermission(rbac::RBAC_PERM_COMMANDS_NOTIFY_COMMAND_NOT_FOUND_ERROR))
-                    return false;
-
                 if (text[0] != '\0')
                     SendSysMessage(LANG_NO_SUBCMD);
                 else
@@ -306,10 +305,10 @@ bool ChatHandler::ExecuteCommandInTable(std::vector<ChatCommand> const& table, c
                 std::string zoneName = "Unknown";
                 if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(areaId))
                 {
-                    int locale = GetSessionDbcLocale();
-                    areaName = area->area_name[locale];
-                    if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(area->zone))
-                        zoneName = zone->area_name[locale];
+                    int32 locale = GetSessionDbcLocale();
+                    areaName = area->AreaName->Str[locale];
+                    if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(area->ParentAreaID))
+                        zoneName = zone->AreaName->Str[locale];
                 }
 
                 sLog->outCommand(m_session->GetAccountId(), "Command: %s [Player: %s (%s) (Account: %u) X: %f Y: %f Z: %f Map: %u (%s) Area: %u (%s) Zone: %s Selected: %s (%s)]",
@@ -452,7 +451,7 @@ Valid examples:
     if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_SEVERITY) < 3)
     {
         const char validSequence[6] = "cHhhr";
-        char const* validSequenceIterator = validSequence;
+        const char* validSequenceIterator = validSequence;
         const std::string validCommands = "cHhr|";
 
         while (*message)
@@ -527,7 +526,7 @@ bool ChatHandler::ShowHelpForSubCommands(std::vector<ChatCommand> const& table, 
     return true;
 }
 
-bool ChatHandler::ShowHelpForCommand(std::vector<ChatCommand> const& table, char const* cmd)
+bool ChatHandler::ShowHelpForCommand(std::vector<ChatCommand> const& table, const char* cmd)
 {
     if (*cmd)
     {
@@ -582,115 +581,6 @@ bool ChatHandler::ShowHelpForCommand(std::vector<ChatCommand> const& table, char
     }
 
     return ShowHelpForSubCommands(table, "", cmd);
-}
-
-size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, ObjectGuid senderGUID, ObjectGuid receiverGUID, std::string const& message, uint8 chatTag,
-                                  std::string const& senderName /*= ""*/, std::string const& receiverName /*= ""*/,
-                                  uint32 achievementId /*= 0*/, bool gmMessage /*= false*/, std::string const& channelName /*= ""*/)
-{
-    size_t receiverGUIDPos = 0;
-    data.Initialize(!gmMessage ? SMSG_MESSAGECHAT : SMSG_GM_MESSAGECHAT);
-    data << uint8(chatType);
-    data << int32(language);
-    data << uint64(senderGUID);
-    data << uint32(0);  // some flags
-    switch (chatType)
-    {
-        case CHAT_MSG_MONSTER_SAY:
-        case CHAT_MSG_MONSTER_PARTY:
-        case CHAT_MSG_MONSTER_YELL:
-        case CHAT_MSG_MONSTER_WHISPER:
-        case CHAT_MSG_MONSTER_EMOTE:
-        case CHAT_MSG_RAID_BOSS_EMOTE:
-        case CHAT_MSG_RAID_BOSS_WHISPER:
-        case CHAT_MSG_BATTLENET:
-            data << uint32(senderName.length() + 1);
-            data << senderName;
-            receiverGUIDPos = data.wpos();
-            data << uint64(receiverGUID);
-            if (receiverGUID && !receiverGUID.IsPlayer() && !receiverGUID.IsPet())
-            {
-                data << uint32(receiverName.length() + 1);
-                data << receiverName;
-            }
-            break;
-        case CHAT_MSG_WHISPER_FOREIGN:
-            data << uint32(senderName.length() + 1);
-            data << senderName;
-            receiverGUIDPos = data.wpos();
-            data << uint64(receiverGUID);
-            break;
-        case CHAT_MSG_BG_SYSTEM_NEUTRAL:
-        case CHAT_MSG_BG_SYSTEM_ALLIANCE:
-        case CHAT_MSG_BG_SYSTEM_HORDE:
-            receiverGUIDPos = data.wpos();
-            data << uint64(receiverGUID);
-            if (receiverGUID && !receiverGUID.IsPlayer())
-            {
-                data << uint32(receiverName.length() + 1);
-                data << receiverName;
-            }
-            break;
-        case CHAT_MSG_ACHIEVEMENT:
-        case CHAT_MSG_GUILD_ACHIEVEMENT:
-            receiverGUIDPos = data.wpos();
-            data << uint64(receiverGUID);
-            break;
-        default:
-            if (gmMessage)
-            {
-                data << uint32(senderName.length() + 1);
-                data << senderName;
-            }
-
-            if (chatType == CHAT_MSG_CHANNEL)
-            {
-                ASSERT(channelName.length() > 0);
-                data << channelName;
-            }
-
-            receiverGUIDPos = data.wpos();
-            data << uint64(receiverGUID);
-            break;
-    }
-
-    data << uint32(message.length() + 1);
-    data << message;
-    data << uint8(chatTag);
-
-    if (chatType == CHAT_MSG_ACHIEVEMENT || chatType == CHAT_MSG_GUILD_ACHIEVEMENT)
-        data << uint32(achievementId);
-
-    return receiverGUIDPos;
-}
-
-size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, WorldObject const* sender, WorldObject const* receiver, std::string const& message,
-                                  uint32 achievementId /*= 0*/, std::string const& channelName /*= ""*/, LocaleConstant locale /*= DEFAULT_LOCALE*/)
-{
-    ObjectGuid senderGUID;
-    std::string senderName = "";
-    uint8 chatTag = 0;
-    bool gmMessage = false;
-    ObjectGuid receiverGUID;
-    std::string receiverName = "";
-    if (sender)
-    {
-        senderGUID = sender->GetGUID();
-        senderName = sender->GetNameForLocaleIdx(locale);
-        if (Player const* playerSender = sender->ToPlayer())
-        {
-            chatTag = playerSender->GetChatTag();
-            gmMessage = playerSender->GetSession()->HasPermission(rbac::RBAC_PERM_COMMAND_GM_CHAT);
-        }
-    }
-
-    if (receiver)
-    {
-        receiverGUID = receiver->GetGUID();
-        receiverName = receiver->GetNameForLocaleIdx(locale);
-    }
-
-    return BuildChatPacket(data, chatType, language, senderGUID, receiverGUID, message, chatTag, senderName, receiverName, achievementId, gmMessage, channelName);
 }
 
 Player* ChatHandler::getSelectedPlayer()
@@ -778,28 +668,28 @@ char* ChatHandler::extractKeyFromLink(char* text, char const* linkType, char** s
 
     char* check = strtok(text, "|");                        // skip color
     if (!check)
-        return nullptr;                                        // end of data
+        return nullptr;                                     // end of data
 
-    char* cLinkType = strtok(nullptr, ":");                    // linktype
+    char* cLinkType = strtok(nullptr, ":");                 // linktype
     if (!cLinkType)
-        return nullptr;                                        // end of data
+        return nullptr;                                     // end of data
 
     if (strcmp(cLinkType, linkType) != 0)
     {
-        strtok(nullptr, " ");                                  // skip link tail (to allow continue strtok(nullptr, s) use after retturn from function
+        strtok(nullptr, " ");                               // skip link tail (to allow continue strtok(nullptr, s) use after retturn from function
         SendSysMessage(LANG_WRONG_LINK_TYPE);
         return nullptr;
     }
 
-    char* cKeys = strtok(nullptr, "|");                        // extract keys and values
+    char* cKeys = strtok(nullptr, "|");                     // extract keys and values
     char* cKeysTail = strtok(nullptr, "");
 
     char* cKey = strtok(cKeys, ":|");                       // extract key
     if (something1)
-        *something1 = strtok(nullptr, ":|");                   // extract something
+        *something1 = strtok(nullptr, ":|");                // extract something
 
     strtok(cKeysTail, "]");                                 // restart scan tail and skip name with possible spaces
-    strtok(nullptr, " ");                                      // skip link tail (to allow continue strtok(nullptr, s) use after return from function
+    strtok(nullptr, " ");                                   // skip link tail (to allow continue strtok(nullptr, s) use after return from function
     return cKey;
 }
 
@@ -832,37 +722,37 @@ char* ChatHandler::extractKeyFromLink(char* text, char const* const* linkTypes, 
     {
         char* check = strtok(text, "|");                    // skip color
         if (!check)
-            return nullptr;                                    // end of data
+            return nullptr;                                 // end of data
 
-        tail = strtok(nullptr, "");                            // tail
+        tail = strtok(nullptr, "");                         // tail
     }
     else
         tail = text+1;                                      // skip first |
 
     char* cLinkType = strtok(tail, ":");                    // linktype
     if (!cLinkType)
-        return nullptr;                                        // end of data
+        return nullptr;                                     // end of data
 
     for (int i = 0; linkTypes[i]; ++i)
     {
         if (strcmp(cLinkType, linkTypes[i]) == 0)
         {
-            char* cKeys = strtok(nullptr, "|");                // extract keys and values
+            char* cKeys = strtok(nullptr, "|");             // extract keys and values
             char* cKeysTail = strtok(nullptr, "");
 
             char* cKey = strtok(cKeys, ":|");               // extract key
             if (something1)
-                *something1 = strtok(nullptr, ":|");           // extract something
+                *something1 = strtok(nullptr, ":|");        // extract something
 
             strtok(cKeysTail, "]");                         // restart scan tail and skip name with possible spaces
-            strtok(nullptr, " ");                              // skip link tail (to allow continue strtok(nullptr, s) use after return from function
+            strtok(nullptr, " ");                           // skip link tail (to allow continue strtok(nullptr, s) use after return from function
             if (found_idx)
                 *found_idx = i;
             return cKey;
         }
     }
 
-    strtok(nullptr, " ");                                      // skip link tail (to allow continue strtok(nullptr, s) use after return from function
+    strtok(nullptr, " ");                                   // skip link tail (to allow continue strtok(nullptr, s) use after return from function
     SendSysMessage(LANG_WRONG_LINK_TYPE);
     return nullptr;
 }
@@ -880,30 +770,25 @@ GameObject* ChatHandler::GetNearbyGameObject()
     return obj;
 }
 
-GameObject* ChatHandler::GetObjectFromPlayerMapByDbGuid(ObjectGuid::LowType lowguid)
+GameObject* ChatHandler::GetObjectGlobalyWithGuidOrNearWithDbGuid(ObjectGuid::LowType lowguid, uint32 entry)
 {
     if (!m_session)
         return nullptr;
-    auto bounds = m_session->GetPlayer()->GetMap()->GetGameObjectBySpawnIdStore().equal_range(lowguid);
-    if (bounds.first != bounds.second)
-        return bounds.first->second;
-    return nullptr;
-}
 
-Creature* ChatHandler::GetCreatureFromPlayerMapByDbGuid(ObjectGuid::LowType lowguid)
-{
-    if (!m_session)
-        return nullptr;
-    // Select the first alive creature or a dead one if not found
-    Creature* creature = nullptr;
-    auto bounds = m_session->GetPlayer()->GetMap()->GetCreatureBySpawnIdStore().equal_range(lowguid);
-    for (auto it = bounds.first; it != bounds.second; ++it)
+    Player* pl = m_session->GetPlayer();
+
+    GameObject* obj = pl->GetMap()->GetGameObject(ObjectGuid::Create<HighGuid::GameObject>(pl->GetMapId(), entry, lowguid));
+
+    if (!obj && sObjectMgr->GetGOData(lowguid))                   // guid is DB guid of object
     {
-        creature = it->second;
-        if (it->second->IsAlive())
-            break;
+        auto bounds = pl->GetMap()->GetGameObjectBySpawnIdStore().equal_range(lowguid);
+        if (bounds.first == bounds.second)
+            return nullptr;
+
+        return bounds.first->second;
     }
-    return creature;
+
+    return obj;
 }
 
 enum SpellLinkType
@@ -951,11 +836,7 @@ uint32 ChatHandler::extractSpellIdFromLink(char* text)
             if (!talentEntry)
                 return 0;
 
-            uint32 rank = param1_str ? atol(param1_str) : 0u;
-            if (rank >= MAX_TALENT_RANK)
-                return 0;
-
-            return talentEntry->RankID[rank];
+            return talentEntry->SpellID;
         }
         case SPELL_LINK_ENCHANT:
         case SPELL_LINK_TRADE:
@@ -968,7 +849,7 @@ uint32 ChatHandler::extractSpellIdFromLink(char* text)
             if (!glyphPropEntry)
                 return 0;
 
-            return glyphPropEntry->SpellId;
+            return glyphPropEntry->SpellID;
         }
     }
 
@@ -993,9 +874,9 @@ GameTele const* ChatHandler::extractGameTeleFromLink(char* text)
 
 enum GuidLinkType
 {
-    GUID_LINK_PLAYER     = 0,                              // must be first for selection in not link case
-    GUID_LINK_CREATURE   = 1,
-    GUID_LINK_GAMEOBJECT = 2
+    SPELL_LINK_PLAYER     = 0,                              // must be first for selection in not link case
+    SPELL_LINK_CREATURE   = 1,
+    SPELL_LINK_GAMEOBJECT = 2
 };
 
 static char const* const guidKeys[] =
@@ -1006,7 +887,7 @@ static char const* const guidKeys[] =
     nullptr
 };
 
-ObjectGuid::LowType ChatHandler::extractLowGuidFromLink(char* text, HighGuid& guidHigh)
+ObjectGuid ChatHandler::extractGuidFromLink(char* text)
 {
     int type = 0;
 
@@ -1015,41 +896,43 @@ ObjectGuid::LowType ChatHandler::extractLowGuidFromLink(char* text, HighGuid& gu
     // |color|Hplayer:name|h[name]|h|r
     char* idS = extractKeyFromLink(text, guidKeys, &type);
     if (!idS)
-        return 0;
+        return ObjectGuid::Empty;
 
     switch (type)
     {
-        case GUID_LINK_PLAYER:
+        case SPELL_LINK_PLAYER:
         {
-            guidHigh = HighGuid::Player;
             std::string name = idS;
             if (!normalizePlayerName(name))
-                return 0;
+                return ObjectGuid::Empty;
 
             if (Player* player = ObjectAccessor::FindPlayerByName(name))
-                return player->GetGUID().GetCounter();
+                return player->GetGUID();
 
-            if (ObjectGuid guid = sObjectMgr->GetPlayerGUIDByName(name))
-                return guid.GetCounter();
+            return ObjectMgr::GetPlayerGUIDByName(name);
+        }
+        case SPELL_LINK_CREATURE:
+        {
+            ObjectGuid::LowType lowguid = strtoull(idS, nullptr, 10);
 
-            return 0;
+            if (CreatureData const* data = sObjectMgr->GetCreatureData(lowguid))
+                return ObjectGuid::Create<HighGuid::Creature>(data->mapid, data->id, lowguid);
+            else
+                return ObjectGuid::Empty;
         }
-        case GUID_LINK_CREATURE:
+        case SPELL_LINK_GAMEOBJECT:
         {
-            guidHigh = HighGuid::Unit;
-            ObjectGuid::LowType lowguid = atoul(idS);
-            return lowguid;
-        }
-        case GUID_LINK_GAMEOBJECT:
-        {
-            guidHigh = HighGuid::GameObject;
-            ObjectGuid::LowType lowguid = atoul(idS);
-            return lowguid;
+            ObjectGuid::LowType lowguid = strtoull(idS, nullptr, 10);
+
+            if (GameObjectData const* data = sObjectMgr->GetGOData(lowguid))
+                return ObjectGuid::Create<HighGuid::GameObject>(data->mapid, data->id, lowguid);
+            else
+                return ObjectGuid::Empty;
         }
     }
 
     // unknown type?
-    return 0;
+    return ObjectGuid::Empty;
 }
 
 std::string ChatHandler::extractPlayerNameFromLink(char* text)
@@ -1066,7 +949,7 @@ std::string ChatHandler::extractPlayerNameFromLink(char* text)
     return name;
 }
 
-bool ChatHandler::extractPlayerTarget(char* args, Player** player, ObjectGuid* player_guid /*=nullptr*/, std::string* player_name /*= nullptr*/)
+bool ChatHandler::extractPlayerTarget(char* args, Player** player, ObjectGuid* player_guid /*= nullptr*/, std::string* player_name /*= nullptr*/)
 {
     if (args && *args)
     {
@@ -1085,14 +968,14 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, ObjectGuid* p
             *player = pl;
 
         // if need guid value from DB (in name case for check player existence)
-        ObjectGuid guid = !pl && (player_guid || player_name) ? sObjectMgr->GetPlayerGUIDByName(name) : ObjectGuid::Empty;
+        ObjectGuid guid = !pl && (player_guid || player_name) ? ObjectMgr::GetPlayerGUIDByName(name) : ObjectGuid::Empty;
 
         // if allowed player guid (if no then only online players allowed)
         if (player_guid)
             *player_guid = pl ? pl->GetGUID() : guid;
 
         if (player_name)
-            *player_name = pl || guid ? name : "";
+            *player_name = pl || !guid.IsEmpty() ? name : "";
     }
     else
     {
@@ -1225,7 +1108,7 @@ bool CliHandler::needReportToTarget(Player* /*chr*/) const
     return true;
 }
 
-bool ChatHandler::GetPlayerGroupAndGUIDByName(char const* cname, Player*& player, Group*& group, ObjectGuid& guid, bool offline)
+bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player*& player, Group*& group, ObjectGuid& guid, bool offline)
 {
     player = nullptr;
     guid.Clear();
@@ -1244,7 +1127,7 @@ bool ChatHandler::GetPlayerGroupAndGUIDByName(char const* cname, Player*& player
 
             player = ObjectAccessor::FindPlayerByName(name);
             if (offline)
-                guid = sObjectMgr->GetPlayerGUIDByName(name.c_str());
+                guid = ObjectMgr::GetPlayerGUIDByName(name.c_str());
         }
     }
 

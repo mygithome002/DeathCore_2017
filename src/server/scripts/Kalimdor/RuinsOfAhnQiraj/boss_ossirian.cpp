@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,6 +22,7 @@
 #include "SpellInfo.h"
 #include "WorldPacket.h"
 #include "Opcodes.h"
+#include "Packets/MiscPackets.h"
 
 enum Texts
 {
@@ -144,9 +145,8 @@ class boss_ossirian : public CreatureScript
 
                 Map* map = me->GetMap();
 
-                WorldPacket data(SMSG_WEATHER, (4+4+4));
-                data << uint32(WEATHER_STATE_HEAVY_SANDSTORM) << float(1) << uint8(0);
-                map->SendToPlayers(&data);
+                WorldPackets::Misc::Weather weather(WEATHER_STATE_HEAVY_SANDSTORM, 1.0f);
+                map->SendToPlayers(weather.Write());
 
                 for (uint8 i = 0; i < NUM_TORNADOS; ++i)
                 {
@@ -190,7 +190,11 @@ class boss_ossirian : public CreatureScript
                 if (Creature* Trigger = me->GetMap()->SummonCreature(NPC_OSSIRIAN_TRIGGER, CrystalCoordinates[CrystalIterator]))
                 {
                     TriggerGUID = Trigger->GetGUID();
-                    if (GameObject* Crystal = Trigger->SummonGameObject(GO_OSSIRIAN_CRYSTAL, CrystalCoordinates[CrystalIterator], G3D::Quat(), uint32(-1)))
+                    if (GameObject* Crystal = Trigger->SummonGameObject(GO_OSSIRIAN_CRYSTAL,
+                                                       CrystalCoordinates[CrystalIterator].GetPositionX(),
+                                                       CrystalCoordinates[CrystalIterator].GetPositionY(),
+                                                       CrystalCoordinates[CrystalIterator].GetPositionZ(),
+                                                       0, 0, 0, 0, 0, uint32(-1)))
                     {
                         CrystalGUID = Crystal->GetGUID();
                         ++CrystalIterator;

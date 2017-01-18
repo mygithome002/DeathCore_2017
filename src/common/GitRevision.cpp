@@ -41,6 +41,11 @@ char const* GitRevision::GetFullDatabase()
     return _FULL_DATABASE;
 }
 
+char const* GitRevision::GetHotfixesDatabase()
+{
+    return _HOTFIXES_DATABASE;
+}
+
 #if PLATFORM == PLATFORM_WINDOWS
 #  ifdef _WIN64
 #    define TRINITY_PLATFORM_STR "Win64"
@@ -63,7 +68,7 @@ char const* GitRevision::GetFullDatabase()
 
 char const* GitRevision::GetFullVersion()
 {
-  return "DeathCore rev. " VER_PRODUCTVERSION_STR
+  return "TrinityCore rev. " VER_PRODUCTVERSION_STR
     " (" TRINITY_PLATFORM_STR ", " _BUILD_DIRECTIVE ", " TRINITY_LINKAGE_TYPE_STR ")";
 }
 

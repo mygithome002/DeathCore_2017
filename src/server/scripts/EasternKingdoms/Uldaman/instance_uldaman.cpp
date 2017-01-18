@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
- * Copyright (C) 2006-2007 2 <https://2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2007 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -24,9 +24,9 @@ SDCategory: Uldaman
 EndScriptData */
 
 #include "ScriptMgr.h"
-#include "ScriptedCreature.h"
 #include "InstanceScript.h"
 #include "uldaman.h"
+#include "CreatureAI.h"
 
 enum Spells
 {
@@ -147,7 +147,7 @@ class instance_uldaman : public InstanceMapScript
                 creature->setFaction(35);
                 creature->RemoveAllAuras();
                 creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                creature->SetControlled(true, UNIT_STATE_ROOT);
+                creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 creature->AddAura(SPELL_MINION_FREEZE_ANIM, creature);
             }
 
@@ -178,7 +178,7 @@ class instance_uldaman : public InstanceMapScript
                         Creature* target = instance->GetCreature(*i);
                         if (!target || !target->IsAlive())
                             continue;
-                        target->SetControlled(false, UNIT_STATE_ROOT);
+                        target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                         target->setFaction(14);
                         target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         target->RemoveAura(SPELL_MINION_FREEZE_ANIM);
@@ -202,7 +202,7 @@ class instance_uldaman : public InstanceMapScript
                     Creature* target = instance->GetCreature(*i);
                     if (!target || !target->IsAlive() || target->getFaction() == 14)
                         continue;
-                    target->SetControlled(false, UNIT_STATE_ROOT);
+                    target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                     target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     target->setFaction(14);
                     target->RemoveAura(SPELL_MINION_FREEZE_ANIM);
@@ -268,7 +268,7 @@ class instance_uldaman : public InstanceMapScript
                     return;
 
                 ironaya->setFaction(415);
-                ironaya->SetControlled(false, UNIT_STATE_ROOT);
+                ironaya->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 ironaya->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
                 ironaya->GetMotionMaster()->Clear();

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,16 +23,21 @@
 #include "Common.h"
 #include "ObjectMgr.h"
 #include "World.h"
+#include "WorldSession.h"
 #include "Configuration/Config.h"
 
+#include "AccountMgr.h"
+#include "Chat.h"
 #include "CliRunnable.h"
+#include "Language.h"
 #include "Log.h"
+#include "MapManager.h"
+#include "Player.h"
 #include "Util.h"
 
 #if PLATFORM != PLATFORM_WINDOWS
 #include <readline/readline.h>
 #include <readline/history.h>
-#include "Chat.h"
 
 char* command_finder(const char* text, int state)
 {
@@ -104,7 +110,7 @@ void utf8print(void* /*arg*/, const char* str)
 
 void commandFinished(void*, bool /*success*/)
 {
-    printf("DC> ");
+    printf("TC> ");
     fflush(stdout);
 }
 
@@ -138,7 +144,7 @@ void CliThread()
 
     // print this here the first time
     // later it will be printed after command queue updates
-    printf("DC>");
+    printf("TC>");
 
     ///- As long as the World is running (no World::m_stopEvent), get the command line and handle it
     while (!World::IsStopped())
@@ -151,7 +157,7 @@ void CliThread()
         char commandbuf[256];
         command_str = fgets(commandbuf, sizeof(commandbuf), stdin);
 #else
-        command_str = readline("DC>");
+        command_str = readline("TC>");
         rl_bind_key('\t', rl_complete);
 #endif
 
@@ -167,7 +173,7 @@ void CliThread()
             if (!*command_str)
             {
 #if PLATFORM == PLATFORM_WINDOWS
-                printf("DC>");
+                printf("TC>");
 #else
                 free(command_str);
 #endif
@@ -178,7 +184,7 @@ void CliThread()
             if (!consoleToUtf8(command_str, command))         // convert from console encoding to utf8
             {
 #if PLATFORM == PLATFORM_WINDOWS
-                printf("DC>");
+                printf("TC>");
 #else
                 free(command_str);
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -55,7 +55,7 @@ public:
         if (!achievementId)
         {
             if (char* id = handler->extractKeyFromLink((char*)args, "Hachievement"))
-                achievementId = atoul(id);
+                achievementId = atoi(id);
             if (!achievementId)
                 return false;
         }
@@ -68,7 +68,7 @@ public:
             return false;
         }
 
-        if (AchievementEntry const* achievementEntry = sAchievementMgr->GetAchievement(achievementId))
+        if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(achievementId))
             target->CompletedAchievement(achievementEntry);
 
         return true;

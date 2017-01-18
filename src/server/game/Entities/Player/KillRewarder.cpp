@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,6 +25,7 @@
 #include "InstanceScript.h"
 #include "Pet.h"
 #include "Player.h"
+#include "Scenario.h"
 
  // == KillRewarder ====================================================
  // KillRewarder encapsulates logic of rewarding player upon kill with:
@@ -66,6 +67,8 @@
  // 4.3. Give reputation (player must not be on BG).
  // 4.4. Give kill credit (player must not be in group, or he must be alive or without corpse).
  // 5. Credit instance encounter.
+ // 6. Update guild achievements.
+ // 7. Scenario credit
 
 KillRewarder::KillRewarder(Player* killer, Unit* victim, bool isBattleGround) :
     // 1. Initialize internal variables to default values.
@@ -150,8 +153,9 @@ inline void KillRewarder::_RewardXP(Player* player, float rate)
     }
     if (xp)
     {
-        // 4.2.2. Apply auras modifying rewarded XP (SPELL_AURA_MOD_XP_PCT).
+        // 4.2.2. Apply auras modifying rewarded XP (SPELL_AURA_MOD_XP_PCT and SPELL_AURA_MOD_XP_FROM_CREATURE_TYPE).
         xp *= player->GetTotalAuraMultiplier(SPELL_AURA_MOD_XP_PCT);
+        xp *= player->GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_XP_FROM_CREATURE_TYPE, int32(_victim->GetCreatureType()));
 
         // 4.2.3. Give XP to player.
         player->GiveXP(xp, _victim, _groupRate);
@@ -175,7 +179,7 @@ inline void KillRewarder::_RewardKillCredit(Player* player)
         if (Creature* target = _victim->ToCreature())
         {
             player->KilledMonster(target->GetCreatureTemplate(), target->GetGUID());
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE, target->GetCreatureType(), 1, target);
+            player->UpdateCriteria(CRITERIA_TYPE_KILL_CREATURE_TYPE, target->GetCreatureType(), 1, 0, target);
         }
 }
 
@@ -238,7 +242,7 @@ void KillRewarder::_RewardGroup()
                     if (member->IsAtGroupRewardDistance(_victim))
                     {
                         _RewardPlayer(member, isDungeon);
-                        member->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL, 1, 0, _victim);
+                        member->UpdateCriteria(CRITERIA_TYPE_SPECIAL_PVP_KILL, 1, 0, 0, _victim);
                     }
                 }
             }
@@ -266,8 +270,19 @@ void KillRewarder::Reward()
     }
 
     // 5. Credit instance encounter.
+    // 6. Update guild achievements.
+    // 7. Credit scenario criterias
     if (Creature* victim = _victim->ToCreature())
+    {
         if (victim->IsDungeonBoss())
             if (InstanceScript* instance = _victim->GetInstanceScript())
                 instance->UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, _victim->GetEntry(), _victim);
+
+        if (ObjectGuid::LowType guildId = victim->GetMap()->GetOwnerGuildId())
+            if (Guild* guild = sGuildMgr->GetGuildById(guildId))
+                guild->UpdateCriteria(CRITERIA_TYPE_KILL_CREATURE, victim->GetEntry(), 1, 0, victim, _killer);
+
+        if (Scenario* scenario = victim->GetScenario())
+            scenario->UpdateCriteria(CRITERIA_TYPE_KILL_CREATURE, victim->GetEntry(), 1, 0, victim, _killer);
+    }
 }

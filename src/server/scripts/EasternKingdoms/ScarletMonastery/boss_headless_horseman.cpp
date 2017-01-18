@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -432,7 +433,7 @@ public:
         {
             Initialize();
             DoCast(me, SPELL_HEAD);
-            if (headGUID)
+            if (!headGUID.IsEmpty())
             {
                 if (Creature* Head = ObjectAccessor::GetCreature((*me), headGUID))
                     Head->DespawnOrUnsummon();
@@ -908,7 +909,7 @@ void npc_head::npc_headAI::Disappear()
     if (withbody)
         return;
 
-    if (bodyGUID)
+    if (!bodyGUID.IsEmpty())
     {
         Creature* body = ObjectAccessor::GetCreature((*me), bodyGUID);
         if (body && body->IsAlive())

@@ -1,8 +1,8 @@
 # output generic information about the core and buildtype chosen
 message("")
-message("* DeathCore revision   : ${rev_hash} ${rev_date} (${rev_branch} branch)")
+message("* TrinityCore revision   : ${rev_hash} ${rev_date} (${rev_branch} branch)")
 if( UNIX )
-  message("* DeathCore buildtype  : ${CMAKE_BUILD_TYPE}")
+  message("* TrinityCore buildtype  : ${CMAKE_BUILD_TYPE}")
 endif()
 message("")
 
@@ -20,7 +20,7 @@ message("")
 if( SERVERS )
   message("* Build world/auth       : Yes (default)")
 else()
-  message("* Build world/authserver : No")
+  message("* Build world/bnetserver : No")
 endif()
 
 if(SCRIPTS AND (NOT SCRIPTS STREQUAL "none"))

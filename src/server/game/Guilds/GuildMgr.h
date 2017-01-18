@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,21 +31,31 @@ public:
 
     Guild* GetGuildByLeader(ObjectGuid guid) const;
     Guild* GetGuildById(ObjectGuid::LowType guildId) const;
+    Guild* GetGuildByGuid(ObjectGuid guid) const;
     Guild* GetGuildByName(std::string const& guildName) const;
     std::string GetGuildNameById(ObjectGuid::LowType guildId) const;
+
+    void LoadGuildRewards();
 
     void LoadGuilds();
     void AddGuild(Guild* guild);
     void RemoveGuild(ObjectGuid::LowType guildId);
 
+    void SaveGuilds();
+
+    void ResetReputationCaps();
+
     ObjectGuid::LowType GenerateGuildId();
     void SetNextGuildId(ObjectGuid::LowType Id) { NextGuildId = Id; }
 
-    void ResetTimes();
+    std::vector<GuildReward> const& GetGuildRewards() const { return GuildRewards; }
+
+    void ResetTimes(bool week);
 protected:
     typedef std::unordered_map<ObjectGuid::LowType, Guild*> GuildContainer;
     ObjectGuid::LowType NextGuildId;
     GuildContainer GuildStore;
+    std::vector<GuildReward> GuildRewards;
 };
 
 #define sGuildMgr GuildMgr::instance()

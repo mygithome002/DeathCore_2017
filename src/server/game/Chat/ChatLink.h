@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,6 +22,7 @@
 #include <sstream>
 #include <list>
 #include <cstring>
+#include "Common.h"
 
 struct ItemLocale;
 struct ItemTemplate;
@@ -44,7 +45,7 @@ public:
     void SetBounds(std::istringstream::pos_type startPos, std::istringstream::pos_type endPos) { _startPos = startPos; _endPos = endPos; }
 
     virtual bool Initialize(std::istringstream& iss) = 0;
-    virtual bool ValidateName(char* buffer, char const* context) = 0;
+    virtual bool ValidateName(char* buffer, const char* context) = 0;
 
 protected:
     uint32 _color;
@@ -57,18 +58,29 @@ protected:
 class TC_GAME_API ItemChatLink : public ChatLink
 {
 public:
-    ItemChatLink() : ChatLink(), _item(nullptr), _suffix(nullptr), _property(nullptr)
+    ItemChatLink() : ChatLink(), _item(nullptr), _enchantId(0), _randomPropertyId(0), _randomPropertySeed(0), _reporterLevel(0), _reporterSpec(0), _context(0),
+        _suffix(nullptr), _property(nullptr)
     {
-        memset(_data, 0, sizeof(_data));
+        memset(_gemItemId, 0, sizeof(_gemItemId));
     }
     virtual bool Initialize(std::istringstream& iss) override;
-    virtual bool ValidateName(char* buffer, char const* context) override;
+    virtual bool ValidateName(char* buffer, const char* context) override;
 
 protected:
-    std::string FormatName(uint8 index, ItemLocale const* locale, char* const* suffixStrings) const;
+    std::string FormatName(uint8 index, LocalizedString* suffixStrings) const;
+    bool HasValue(std::istringstream& iss) const;
 
     ItemTemplate const* _item;
-    int32 _data[8];
+    int32 _enchantId;
+    int32 _gemItemId[3];
+    int32 _randomPropertyId;
+    int32 _randomPropertySeed;
+    int32 _reporterLevel;
+    int32 _reporterSpec;
+    int32 _context;
+    std::vector<int32> _bonusListIDs;
+    std::vector<std::pair<uint32, int32>> _modifiers;
+    std::vector<int32> _gemBonusListIDs[3];
     ItemRandomSuffixEntry const* _suffix;
     ItemRandomPropertiesEntry const* _property;
 };
@@ -79,7 +91,7 @@ class TC_GAME_API QuestChatLink : public ChatLink
 public:
     QuestChatLink() : ChatLink(), _quest(nullptr), _questLevel(0) { }
     virtual bool Initialize(std::istringstream& iss) override;
-    virtual bool ValidateName(char* buffer, char const* context) override;
+    virtual bool ValidateName(char* buffer, const char* context) override;
 
 protected:
     Quest const* _quest;
@@ -92,7 +104,7 @@ class TC_GAME_API SpellChatLink : public ChatLink
 public:
     SpellChatLink() : ChatLink(), _spell(nullptr) { }
     virtual bool Initialize(std::istringstream& iss) override;
-    virtual bool ValidateName(char* buffer, char const* context) override;
+    virtual bool ValidateName(char* buffer, const char* context) override;
 
 protected:
     SpellInfo const* _spell;
@@ -102,12 +114,12 @@ protected:
 class TC_GAME_API AchievementChatLink : public ChatLink
 {
 public:
-    AchievementChatLink() : ChatLink(), _guid(0), _achievement(nullptr)
+    AchievementChatLink() : ChatLink(), _guid(0), _achievement(NULL)
     {
         memset(_data, 0, sizeof(_data));
     }
     virtual bool Initialize(std::istringstream& iss) override;
-    virtual bool ValidateName(char* buffer, char const* context) override;
+    virtual bool ValidateName(char* buffer, const char* context) override;
 
 protected:
     uint32 _guid;
@@ -152,7 +164,7 @@ public:
 class TC_GAME_API GlyphChatLink : public SpellChatLink
 {
 public:
-    GlyphChatLink() : SpellChatLink(), _slotId(0), _glyph(nullptr) { }
+    GlyphChatLink() : SpellChatLink(), _slotId(0), _glyph(NULL) { }
     virtual bool Initialize(std::istringstream& iss) override;
 private:
     uint32 _slotId;
@@ -162,7 +174,7 @@ private:
 class TC_GAME_API LinkExtractor
 {
 public:
-    explicit LinkExtractor(char const* msg);
+    explicit LinkExtractor(const char* msg);
     ~LinkExtractor();
 
     bool IsValidMessage();

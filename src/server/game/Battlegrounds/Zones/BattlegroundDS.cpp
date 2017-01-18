@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -120,7 +121,7 @@ void BattlegroundDS::StartingEventOpenDoors()
             player->RemoveAurasDueToSpell(SPELL_WARL_DEMONIC_CIRCLE);
 }
 
-void BattlegroundDS::HandleAreaTrigger(Player* player, uint32 trigger)
+void BattlegroundDS::HandleAreaTrigger(Player* player, uint32 trigger, bool entered)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -138,15 +139,15 @@ void BattlegroundDS::HandleAreaTrigger(Player* player, uint32 trigger)
                 _pipeKnockBackCount = 0;
             break;
         default:
-            Battleground::HandleAreaTrigger(player, trigger);
+            Battleground::HandleAreaTrigger(player, trigger, entered);
             break;
     }
 }
 
-void BattlegroundDS::FillInitialWorldStates(WorldPacket& data)
+void BattlegroundDS::FillInitialWorldStates(WorldPackets::WorldState::InitWorldStates& packet)
 {
-    data << uint32(3610) << uint32(1);      // 9 show
-    Arena::FillInitialWorldStates(data);
+    packet.Worldstates.emplace_back(3610, 1);
+    Arena::FillInitialWorldStates(packet);
 }
 
 bool BattlegroundDS::SetupBattleground()

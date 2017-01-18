@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,6 +31,7 @@ namespace GitRevision
     TC_COMMON_API char const* GetSourceDirectory();
     TC_COMMON_API char const* GetMySQLExecutable();
     TC_COMMON_API char const* GetFullDatabase();
+    TC_COMMON_API char const* GetHotfixesDatabase();
     TC_COMMON_API char const* GetFullVersion();
     TC_COMMON_API char const* GetCompanyNameStr();
     TC_COMMON_API char const* GetLegalCopyrightStr();

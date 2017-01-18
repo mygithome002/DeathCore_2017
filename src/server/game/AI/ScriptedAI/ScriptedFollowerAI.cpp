@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -62,7 +63,7 @@ void FollowerAI::AttackStart(Unit* who)
 //This part provides assistance to a player that are attacked by who, even if out of normal aggro range
 //It will cause me to attack who that are attacking _any_ player (which has been confirmed may happen also on offi)
 //The flag (type_flag) is unconfirmed, but used here for further research and is a good candidate.
-bool FollowerAI::AssistPlayerInCombatAgainst(Unit* who)
+bool FollowerAI::AssistPlayerInCombat(Unit* who)
 {
     if (!who || !who->GetVictim())
         return false;
@@ -103,7 +104,7 @@ void FollowerAI::MoveInLineOfSight(Unit* who)
 {
     if (me->HasReactState(REACT_AGGRESSIVE) && !me->HasUnitState(UNIT_STATE_STUNNED) && who->isTargetableForAttack() && who->isInAccessiblePlaceFor(me))
     {
-        if (HasFollowState(STATE_FOLLOW_INPROGRESS) && AssistPlayerInCombatAgainst(who))
+        if (HasFollowState(STATE_FOLLOW_INPROGRESS) && AssistPlayerInCombat(who))
             return;
 
         if (!me->CanFly() && me->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
@@ -146,11 +147,19 @@ void FollowerAI::JustDied(Unit* /*killer*/)
         if (Group* group = player->GetGroup())
         {
             for (GroupReference* groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
+            {
                 if (Player* member = groupRef->GetSource())
-                    member->FailQuest(m_pQuestForFollow->GetQuestId());
+                {
+                    if (member->GetQuestStatus(m_pQuestForFollow->GetQuestId()) == QUEST_STATUS_INCOMPLETE)
+                        member->FailQuest(m_pQuestForFollow->GetQuestId());
+                }
+            }
         }
         else
-            player->FailQuest(m_pQuestForFollow->GetQuestId());
+        {
+            if (player->GetQuestStatus(m_pQuestForFollow->GetQuestId()) == QUEST_STATUS_INCOMPLETE)
+                player->FailQuest(m_pQuestForFollow->GetQuestId());
+        }
     }
 }
 
@@ -310,7 +319,7 @@ void FollowerAI::StartFollow(Player* player, uint32 factionForFollower, const Qu
         TC_LOG_DEBUG("scripts", "FollowerAI start with WAYPOINT_MOTION_TYPE, set to MoveIdle.");
     }
 
-    me->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
+    me->SetUInt64Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
 
     AddFollowState(STATE_FOLLOW_INPROGRESS);
 

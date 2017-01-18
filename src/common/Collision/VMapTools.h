@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,6 +21,10 @@
 
 #include <G3D/CollisionDetection.h>
 #include <G3D/AABox.h>
+
+#include "Define.h"
+
+#include "NodeValueAccess.h"
 
 /**
 The Class is mainly taken from G3D/AABSPTree.h but modified to be able to use our internal data structure.

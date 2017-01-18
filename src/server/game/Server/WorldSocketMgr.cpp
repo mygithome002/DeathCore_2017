@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008  MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -42,8 +43,13 @@ public:
     }
 };
 
-WorldSocketMgr::WorldSocketMgr() : BaseSocketMgr(), _socketSendBufferSize(-1), m_SockOutUBuff(65536), _tcpNoDelay(true)
+WorldSocketMgr::WorldSocketMgr() : BaseSocketMgr(), _instanceAcceptor(nullptr), _socketSendBufferSize(-1), m_SockOutUBuff(65536), _tcpNoDelay(true)
 {
+}
+
+WorldSocketMgr::~WorldSocketMgr()
+{
+    ASSERT(!_instanceAcceptor, "StopNetwork must be called prior to WorldSocketMgr destruction");
 }
 
 WorldSocketMgr& WorldSocketMgr::Instance()
@@ -71,10 +77,13 @@ bool WorldSocketMgr::StartNetwork(boost::asio::io_service& service, std::string 
     }
 
     BaseSocketMgr::StartNetwork(service, bindIp, port, threadCount);
+    _instanceAcceptor = new AsyncAcceptor(service, bindIp, uint16(sWorld->getIntConfig(CONFIG_PORT_INSTANCE)));
 
     _acceptor->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForAccept, this));
+    _instanceAcceptor->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForAccept, this));
 
     _acceptor->AsyncAcceptWithCallback<&OnSocketAccept>();
+    _instanceAcceptor->AsyncAcceptWithCallback<&OnSocketAccept>();
 
     sScriptMgr->OnNetworkStart();
     return true;
@@ -82,7 +91,11 @@ bool WorldSocketMgr::StartNetwork(boost::asio::io_service& service, std::string 
 
 void WorldSocketMgr::StopNetwork()
 {
+    _instanceAcceptor->Close();
     BaseSocketMgr::StopNetwork();
+
+    delete _instanceAcceptor;
+    _instanceAcceptor = nullptr;
 
     sScriptMgr->OnNetworkStop();
 }

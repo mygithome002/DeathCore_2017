@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -26,10 +27,6 @@ enum TotemType
     TOTEM_ACTIVE     = 1,
     TOTEM_STATUE     = 2 // copied straight from MaNGOS, may need more implementation to work
 };
-// Some Totems cast spells that are not in creature DB
-#define SENTRY_TOTEM_SPELLID  6495
-
-#define SENTRY_TOTEM_ENTRY    3968
 
 class TC_GAME_API Totem : public Minion
 {
@@ -54,7 +51,7 @@ class TC_GAME_API Totem : public Minion
         void UpdateAttackPowerAndDamage(bool /*ranged*/) override { }
         void UpdateDamagePhysical(WeaponAttackType /*attType*/) override { }
 
-        bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Unit* caster) const override;
+        bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) const override;
 
     protected:
         TotemType m_type;

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -143,7 +144,8 @@ public:
             RAdvisors[2] = instance->GetGuidData(DATA_CARIBDIS);
             // Respawn of the 3 Advisors
             for (uint8 i = 0; i < MAX_ADVISORS; ++i)
-                if (RAdvisors[i])
+            {
+                if (!RAdvisors[i].IsEmpty())
                 {
                     Creature* advisor = ObjectAccessor::GetCreature(*me, RAdvisors[i]);
                     if (advisor && !advisor->IsAlive())
@@ -153,6 +155,7 @@ public:
                         advisor->GetMotionMaster()->MoveTargetedHome();
                     }
                 }
+            }
 
             instance->SetData(DATA_KARATHRESSEVENT, NOT_STARTED);
         }
@@ -271,7 +274,8 @@ public:
                 BlessingOfTides = true;
                 bool continueTriggering = false;
                 for (uint8 i = 0; i < MAX_ADVISORS; ++i)
-                    if (Advisors[i])
+                {
+                    if (!Advisors[i].IsEmpty())
                     {
                         Creature* advisor = ObjectAccessor::GetCreature(*me, Advisors[i]);
                         if (advisor && advisor->IsAlive())
@@ -280,6 +284,8 @@ public:
                             break;
                         }
                     }
+                }
+
                 if (continueTriggering)
                 {
                     DoCast(me, SPELL_BLESSING_OF_THE_TIDES);

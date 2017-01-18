@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -472,11 +473,12 @@ class boss_illidan_stormrage : public CreatureScript
 public:
     boss_illidan_stormrage() : CreatureScript("boss_illidan_stormrage") { }
 
-    struct boss_illidan_stormrageAI : public BossAI
+    struct boss_illidan_stormrageAI : public ScriptedAI
     {
-        boss_illidan_stormrageAI(Creature* creature) : BossAI(creature, DATA_ILLIDAN_STORMRAGE)
+        boss_illidan_stormrageAI(Creature* creature) : ScriptedAI(creature), Summons(me)
         {
             Initialize();
+            instance = creature->GetInstanceScript();
             DoCast(me, SPELL_DUAL_WIELD, true);
         }
 
@@ -517,7 +519,7 @@ public:
                     EnterPhase(PHASE_FLIGHT_SEQUENCE);
                 }
             }
-            summons.Despawn(summon);
+            Summons.Despawn(summon);
         }
 
         void MovementInform(uint32 /*MovementType*/, uint32 /*Data*/) override
@@ -537,8 +539,8 @@ public:
 
         void EnterCombat(Unit* /*who*/) override
         {
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
-            _EnterCombat();
+            me->setActive(true);
+            DoZoneInCombat();
         }
 
         void AttackStart(Unit* who) override
@@ -559,7 +561,10 @@ public:
         {
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
-            _JustDied();
+            instance->SetBossState(DATA_ILLIDAN_STORMRAGE, DONE);
+
+            for (uint8 i = DATA_GO_ILLIDAN_DOOR_R; i < DATA_GO_ILLIDAN_DOOR_L + 1; ++i)
+                instance->HandleGameObject(instance->GetGuidData(i), true);
         }
 
         void KilledUnit(Unit* victim) override
@@ -580,9 +585,9 @@ public:
 
         void SpellHit(Unit* /*caster*/, const SpellInfo* spell) override
         {
-            if (spell->Id == SPELL_GLAIVE_RETURNS) // Re-equip our warglaives!
+            if (spell->Id == SPELL_GLAIVE_RETURNS) // Re-equip our warblades!
             {
-                if (!me->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID))
+                if (!me->GetVirtualItemId(0))
                     SetEquipmentSlots(false, EQUIP_ID_MAIN_HAND, EQUIP_UNEQUIP, EQUIP_NO_CHANGE);
                 else
                     SetEquipmentSlots(false, EQUIP_UNEQUIP, EQUIP_ID_OFF_HAND, EQUIP_NO_CHANGE);
@@ -668,7 +673,7 @@ public:
                 Timer[EVENT_TALK_SEQUENCE] = 100;
                 me->RemoveAllAuras();
                 me->InterruptNonMeleeSpells(false);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
                 me->GetMotionMaster()->Clear(false);
                 me->AttackStop();
                 break;
@@ -701,7 +706,7 @@ public:
             default:
                 break;
             }
-            if (MaievGUID)
+            if (!MaievGUID.IsEmpty())
             {
                 if (Creature* maiev = ObjectAccessor::GetCreature(*me, MaievGUID))
                     if (maiev->IsAlive())
@@ -786,99 +791,99 @@ public:
         {
             switch (FlightCount)
             {
-                case 1: // lift off
-                    me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-                    me->SetDisableGravity(true);
-                    me->StopMoving();
-                    Talk(SAY_ILLIDAN_TAKEOFF);
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 3000;
-                    break;
-                case 2: // move to center
-                    me->GetMotionMaster()->MovePoint(0, CENTER_X + 5, CENTER_Y, CENTER_Z); // +5, for SPELL_THROW_GLAIVE bug
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 0;
-                    break;
-                case 3: // throw one glaive
+            case 1: // lift off
+                me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
+                me->SetDisableGravity(true);
+                me->StopMoving();
+                Talk(SAY_ILLIDAN_TAKEOFF);
+                Timer[EVENT_FLIGHT_SEQUENCE] = 3000;
+                break;
+            case 2: // move to center
+                me->GetMotionMaster()->MovePoint(0, CENTER_X + 5, CENTER_Y, CENTER_Z); // +5, for SPELL_THROW_GLAIVE bug
+                Timer[EVENT_FLIGHT_SEQUENCE] = 0;
+                break;
+            case 3: // throw one glaive
+                {
+                    uint8 i=1;
+                    Creature* Glaive = me->SummonCreature(BLADE_OF_AZZINOTH, GlaivePosition[i].x, GlaivePosition[i].y, GlaivePosition[i].z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                    if (Glaive)
                     {
-                        uint8 i=1;
-                        Creature* Glaive = me->SummonCreature(BLADE_OF_AZZINOTH, GlaivePosition[i].x, GlaivePosition[i].y, GlaivePosition[i].z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                        GlaiveGUID[i] = Glaive->GetGUID();
+                        Glaive->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        Glaive->SetDisplayId(MODEL_INVISIBLE);
+                        Glaive->setFaction(me->getFaction());
+                        DoCast(Glaive, SPELL_THROW_GLAIVE2);
+                    }
+                }
+                Timer[EVENT_FLIGHT_SEQUENCE] = 700;
+                break;
+            case 4: // throw another
+                SetEquipmentSlots(false, EQUIP_UNEQUIP, EQUIP_UNEQUIP, EQUIP_NO_CHANGE);
+                {
+                    uint8 i=0;
+                    Creature* Glaive = me->SummonCreature(BLADE_OF_AZZINOTH, GlaivePosition[i].x, GlaivePosition[i].y, GlaivePosition[i].z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                    if (Glaive)
+                    {
+                        GlaiveGUID[i] = Glaive->GetGUID();
+                        Glaive->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        Glaive->SetDisplayId(MODEL_INVISIBLE);
+                        Glaive->setFaction(me->getFaction());
+                        DoCast(Glaive, SPELL_THROW_GLAIVE, true);
+                    }
+                }
+                Timer[EVENT_FLIGHT_SEQUENCE] = 5000;
+                break;
+            case 5: // summon flames
+                SummonFlamesOfAzzinoth();
+                Timer[EVENT_FLIGHT_SEQUENCE] = 3000;
+                break;
+            case 6: // fly to hover point
+                me->GetMotionMaster()->MovePoint(0, HoverPosition[HoverPoint].x, HoverPosition[HoverPoint].y, HoverPosition[HoverPoint].z);
+                Timer[EVENT_FLIGHT_SEQUENCE] = 0;
+                break;
+            case 7: // return to center
+                me->GetMotionMaster()->MovePoint(0, CENTER_X, CENTER_Y, CENTER_Z);
+                Timer[EVENT_FLIGHT_SEQUENCE] = 0;
+                break;
+            case 8: // glaive return
+                for (uint8 i = 0; i < 2; ++i)
+                {
+                    if (!GlaiveGUID[i].IsEmpty())
+                    {
+                        Unit* Glaive = ObjectAccessor::GetUnit(*me, GlaiveGUID[i]);
                         if (Glaive)
                         {
-                            GlaiveGUID[i] = Glaive->GetGUID();
-                            Glaive->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                            Glaive->SetDisplayId(MODEL_INVISIBLE);
-                            Glaive->setFaction(me->getFaction());
-                            DoCast(Glaive, SPELL_THROW_GLAIVE2);
+                            Glaive->CastSpell(me, SPELL_GLAIVE_RETURNS, false); // Make it look like the Glaive flies back up to us
+                            Glaive->SetDisplayId(MODEL_INVISIBLE); // disappear but not die for now
                         }
                     }
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 700;
-                    break;
-                case 4: // throw another
-                    SetEquipmentSlots(false, EQUIP_UNEQUIP, EQUIP_UNEQUIP, EQUIP_NO_CHANGE);
+                }
+                Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
+                break;
+            case 9: // land
+                me->SetDisableGravity(false);
+                me->StopMoving();
+                me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
+                for (uint8 i = 0; i < 2; ++i)
+                {
+                    if (!GlaiveGUID[i].IsEmpty())
                     {
-                        uint8 i=0;
-                        Creature* Glaive = me->SummonCreature(BLADE_OF_AZZINOTH, GlaivePosition[i].x, GlaivePosition[i].y, GlaivePosition[i].z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
-                        if (Glaive)
-                        {
-                            GlaiveGUID[i] = Glaive->GetGUID();
-                            Glaive->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                            Glaive->SetDisplayId(MODEL_INVISIBLE);
-                            Glaive->setFaction(me->getFaction());
-                            DoCast(Glaive, SPELL_THROW_GLAIVE, true);
-                        }
-                    }
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 5000;
-                    break;
-                case 5: // summon flames
-                    SummonFlamesOfAzzinoth();
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 3000;
-                    break;
-                case 6: // fly to hover point
-                    me->GetMotionMaster()->MovePoint(0, HoverPosition[HoverPoint].x, HoverPosition[HoverPoint].y, HoverPosition[HoverPoint].z);
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 0;
-                    break;
-                case 7: // return to center
-                    me->GetMotionMaster()->MovePoint(0, CENTER_X, CENTER_Y, CENTER_Z);
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 0;
-                    break;
-                case 8: // glaive return
-                    for (uint8 i = 0; i < 2; ++i)
-                    {
-                        if (GlaiveGUID[i])
-                        {
-                            Unit* Glaive = ObjectAccessor::GetUnit(*me, GlaiveGUID[i]);
-                            if (Glaive)
-                            {
-                                Glaive->CastSpell(me, SPELL_GLAIVE_RETURNS, false); // Make it look like the Glaive flies back up to us
-                                Glaive->SetDisplayId(MODEL_INVISIBLE); // disappear but not die for now
-                            }
-                        }
-                    }
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
-                    break;
-                case 9: // land
-                    me->SetDisableGravity(false);
-                    me->StopMoving();
-                    me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-                    for (uint8 i = 0; i < 2; ++i)
-                    {
-                        if (GlaiveGUID[i])
-                        {
-                            if (Creature* glaive = ObjectAccessor::GetCreature(*me, GlaiveGUID[i]))
-                                glaive->DespawnOrUnsummon();
+                        if (Creature* glaive = ObjectAccessor::GetCreature(*me, GlaiveGUID[i]))
+                            glaive->DespawnOrUnsummon();
 
-                            GlaiveGUID[i].Clear();
-                        }
+                        GlaiveGUID[i].Clear();
                     }
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
-                    break;
-                case 10: // attack
-                    DoResetThreat();
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
-                    me->SetSheath(SHEATH_STATE_MELEE);
-                    EnterPhase(PHASE_NORMAL_2);
-                    break;
-                default:
-                    break;
+                }
+                Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
+                break;
+            case 10: // attack
+                DoResetThreat();
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
+                me->SetSheath(SHEATH_STATE_MELEE);
+                EnterPhase(PHASE_NORMAL_2);
+                break;
+            default:
+                break;
             }
             ++FlightCount;
         }
@@ -908,23 +913,23 @@ public:
 
             switch (TransformCount)
             {
-                case 2:
-                    DoResetThreat();
-                    break;
-                case 4:
-                    EnterPhase(PHASE_DEMON);
-                    break;
-                case 7:
-                    DoResetThreat();
-                    break;
-                case 9:
-                    if (MaievGUID)
-                        EnterPhase(PHASE_NORMAL_MAIEV); // Depending on whether we summoned Maiev, we switch to either phase 5 or 3
-                    else
-                        EnterPhase(PHASE_NORMAL_2);
-                    break;
-                default:
-                    break;
+            case 2:
+                DoResetThreat();
+                break;
+            case 4:
+                EnterPhase(PHASE_DEMON);
+                break;
+            case 7:
+                DoResetThreat();
+                break;
+            case 9:
+                if (!MaievGUID.IsEmpty())
+                    EnterPhase(PHASE_NORMAL_MAIEV); // Depending on whether we summoned Maiev, we switch to either phase 5 or 3
+                else
+                    EnterPhase(PHASE_NORMAL_2);
+                break;
+            default:
+                break;
             }
             if (Phase == PHASE_TRANSFORM_SEQUENCE)
                 Timer[EVENT_TRANSFORM_SEQUENCE] = DemonTransformation[TransformCount].timer;
@@ -952,37 +957,37 @@ public:
 
             switch (Phase)
             {
-                case PHASE_NORMAL:
-                    if (HealthBelowPct(65))
-                        EnterPhase(PHASE_FLIGHT_SEQUENCE);
-                    break;
+            case PHASE_NORMAL:
+                if (HealthBelowPct(65))
+                    EnterPhase(PHASE_FLIGHT_SEQUENCE);
+                break;
 
-                case PHASE_NORMAL_2:
-                    if (HealthBelowPct(30))
-                        EnterPhase(PHASE_TALK_SEQUENCE);
-                    break;
+            case PHASE_NORMAL_2:
+                if (HealthBelowPct(30))
+                    EnterPhase(PHASE_TALK_SEQUENCE);
+                break;
 
-                case PHASE_NORMAL_MAIEV:
-                    if (HealthBelowPct(1))
-                        EnterPhase(PHASE_TALK_SEQUENCE);
-                    break;
+            case PHASE_NORMAL_MAIEV:
+                if (HealthBelowPct(1))
+                    EnterPhase(PHASE_TALK_SEQUENCE);
+                break;
 
-                case PHASE_TALK_SEQUENCE:
-                    if (Event == EVENT_TALK_SEQUENCE)
-                        HandleTalkSequence();
-                    break;
+            case PHASE_TALK_SEQUENCE:
+                if (Event == EVENT_TALK_SEQUENCE)
+                    HandleTalkSequence();
+                break;
 
-                case PHASE_FLIGHT_SEQUENCE:
-                    if (Event == EVENT_FLIGHT_SEQUENCE)
-                        HandleFlightSequence();
-                    break;
+            case PHASE_FLIGHT_SEQUENCE:
+                if (Event == EVENT_FLIGHT_SEQUENCE)
+                    HandleFlightSequence();
+                break;
 
-                case PHASE_TRANSFORM_SEQUENCE:
-                    if (Event == EVENT_TRANSFORM_SEQUENCE)
-                        HandleTransformSequence();
-                    break;
-                default:
-                    break;
+            case PHASE_TRANSFORM_SEQUENCE:
+                if (Event == EVENT_TRANSFORM_SEQUENCE)
+                    HandleTransformSequence();
+                break;
+            default:
+                break;
             }
 
             if (me->IsNonMeleeSpellCast(false))
@@ -993,63 +998,63 @@ public:
                 switch (Event)
                 {
                     // PHASE_NORMAL
-                    case EVENT_BERSERK:
-                        Talk(SAY_ILLIDAN_ENRAGE);
-                        DoCast(me, SPELL_BERSERK, true);
-                        Timer[EVENT_BERSERK] = 5000; // The buff actually lasts forever.
-                        break;
+                case EVENT_BERSERK:
+                    Talk(SAY_ILLIDAN_ENRAGE);
+                    DoCast(me, SPELL_BERSERK, true);
+                    Timer[EVENT_BERSERK] = 5000; // The buff actually lasts forever.
+                    break;
 
-                    case EVENT_TAUNT:
-                        Talk(SAY_ILLIDAN_TAUNT);
-                        Timer[EVENT_TAUNT] = urand(25000, 35000);
-                        break;
+                case EVENT_TAUNT:
+                    Talk(SAY_ILLIDAN_TAUNT);
+                    Timer[EVENT_TAUNT] = urand(25000, 35000);
+                    break;
 
-                    case EVENT_SHEAR:
-                        // no longer exists in 3.0f.2
-                        // DoCastVictim(SPELL_SHEAR);
-                        Timer[EVENT_SHEAR] = 25000 + (rand32() % 16 * 1000);
-                        break;
+                case EVENT_SHEAR:
+                    // no longer exists in 3.0f.2
+                    // DoCastVictim(SPELL_SHEAR);
+                    Timer[EVENT_SHEAR] = 25000 + (rand32() % 16 * 1000);
+                    break;
 
-                    case EVENT_FLAME_CRASH:
-                        DoCastVictim(SPELL_FLAME_CRASH);
-                        Timer[EVENT_FLAME_CRASH] = urand(30000, 40000);
-                        break;
+                case EVENT_FLAME_CRASH:
+                    DoCastVictim(SPELL_FLAME_CRASH);
+                    Timer[EVENT_FLAME_CRASH] = urand(30000, 40000);
+                    break;
 
-                    case EVENT_PARASITIC_SHADOWFIEND:
-                        {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 200, true))
-                                DoCast(target, SPELL_PARASITIC_SHADOWFIEND, true);
-                            Timer[EVENT_PARASITIC_SHADOWFIEND] = urand(35000, 45000);
-                        }
-                        break;
+                case EVENT_PARASITIC_SHADOWFIEND:
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 200, true))
+                            DoCast(target, SPELL_PARASITIC_SHADOWFIEND, true);
+                        Timer[EVENT_PARASITIC_SHADOWFIEND] = urand(35000, 45000);
+                    }
+                    break;
 
-                    case EVENT_PARASITE_CHECK:
-                        Timer[EVENT_PARASITE_CHECK] = 0;
-                        break;
+                case EVENT_PARASITE_CHECK:
+                    Timer[EVENT_PARASITE_CHECK] = 0;
+                    break;
 
-                    case EVENT_DRAW_SOUL:
-                        DoCastVictim(SPELL_DRAW_SOUL);
-                        Timer[EVENT_DRAW_SOUL] = urand(50000, 60000);
-                        break;
+                case EVENT_DRAW_SOUL:
+                    DoCastVictim(SPELL_DRAW_SOUL);
+                    Timer[EVENT_DRAW_SOUL] = urand(50000, 60000);
+                    break;
 
-                        // PHASE_NORMAL_2
-                    case EVENT_AGONIZING_FLAMES:
-                        DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_AGONIZING_FLAMES);
-                        Timer[EVENT_AGONIZING_FLAMES] = 0;
-                        break;
+                    // PHASE_NORMAL_2
+                case EVENT_AGONIZING_FLAMES:
+                    DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_AGONIZING_FLAMES);
+                    Timer[EVENT_AGONIZING_FLAMES] = 0;
+                    break;
 
-                    case EVENT_TRANSFORM_NORMAL:
-                        EnterPhase(PHASE_TRANSFORM_SEQUENCE);
-                        break;
+                case EVENT_TRANSFORM_NORMAL:
+                    EnterPhase(PHASE_TRANSFORM_SEQUENCE);
+                    break;
 
-                        // PHASE_NORMAL_MAIEV
-                    case EVENT_ENRAGE:
-                        DoCast(me, SPELL_ENRAGE);
-                        Timer[EVENT_ENRAGE] = 0;
-                        break;
+                    // PHASE_NORMAL_MAIEV
+                case EVENT_ENRAGE:
+                    DoCast(me, SPELL_ENRAGE);
+                    Timer[EVENT_ENRAGE] = 0;
+                    break;
 
-                    default:
-                        break;
+                default:
+                    break;
                 }
                 DoMeleeAttackIfReady();
             }
@@ -1058,32 +1063,32 @@ public:
             {
                 switch (Event)
                 {
-                    case EVENT_FIREBALL:
-                        DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_FIREBALL);
-                        Timer[EVENT_FIREBALL] = 3000;
-                        break;
+                case EVENT_FIREBALL:
+                    DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_FIREBALL);
+                    Timer[EVENT_FIREBALL] = 3000;
+                    break;
 
-                    case EVENT_DARK_BARRAGE:
-                        DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_DARK_BARRAGE);
-                        Timer[EVENT_DARK_BARRAGE] = 0;
-                        break;
+                case EVENT_DARK_BARRAGE:
+                    DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_DARK_BARRAGE);
+                    Timer[EVENT_DARK_BARRAGE] = 0;
+                    break;
 
-                    case EVENT_EYE_BLAST:
-                        CastEyeBlast();
-                        Timer[EVENT_EYE_BLAST] = 0;
-                        break;
+                case EVENT_EYE_BLAST:
+                    CastEyeBlast();
+                    Timer[EVENT_EYE_BLAST] = 0;
+                    break;
 
-                    case EVENT_MOVE_POINT:
-                        Phase = PHASE_FLIGHT_SEQUENCE;
-                        Timer[EVENT_FLIGHT_SEQUENCE] = 0; // do not start Event when changing hover point
-                        HoverPoint += (rand32() % 3 + 1);
-                        if (HoverPoint > 3)
-                            HoverPoint -= 4;
-                        me->GetMotionMaster()->MovePoint(0, HoverPosition[HoverPoint].x, HoverPosition[HoverPoint].y, HoverPosition[HoverPoint].z);
-                        break;
+                case EVENT_MOVE_POINT:
+                    Phase = PHASE_FLIGHT_SEQUENCE;
+                    Timer[EVENT_FLIGHT_SEQUENCE] = 0; // do not start Event when changing hover point
+                    HoverPoint += (rand32() % 3 + 1);
+                    if (HoverPoint > 3)
+                        HoverPoint -= 4;
+                    me->GetMotionMaster()->MovePoint(0, HoverPosition[HoverPoint].x, HoverPosition[HoverPoint].y, HoverPosition[HoverPoint].z);
+                    break;
 
-                    default:
-                        break;
+                default:
+                    break;
                 }
             }
 
@@ -1091,29 +1096,29 @@ public:
             {
                 switch (Event)
                 {
-                    case EVENT_SHADOW_BLAST:
-                        me->GetMotionMaster()->Clear(false);
-                        if (me->GetVictim() && (!me->IsWithinDistInMap(me->GetVictim(), 50) || !me->IsWithinLOSInMap(me->GetVictim())))
-                            me->GetMotionMaster()->MoveChase(me->GetVictim(), 30);
-                        else
-                            me->GetMotionMaster()->MoveIdle();
-                        DoCastVictim(SPELL_SHADOW_BLAST);
-                        Timer[EVENT_SHADOW_BLAST] = 4000;
-                        break;
-                    case EVENT_SHADOWDEMON:
-                        DoCast(me, SPELL_SUMMON_SHADOWDEMON);
-                        Timer[EVENT_SHADOWDEMON] = 0;
-                        Timer[EVENT_FLAME_BURST] += 10000;
-                        break;
-                    case EVENT_FLAME_BURST:
-                        DoCast(me, SPELL_FLAME_BURST);
-                        Timer[EVENT_FLAME_BURST] = 15000;
-                        break;
-                    case EVENT_TRANSFORM_DEMON:
-                        EnterPhase(PHASE_TRANSFORM_SEQUENCE);
-                        break;
-                    default:
-                        break;
+                case EVENT_SHADOW_BLAST:
+                    me->GetMotionMaster()->Clear(false);
+                    if (me->GetVictim() && (!me->IsWithinDistInMap(me->GetVictim(), 50) || !me->IsWithinLOSInMap(me->GetVictim())))
+                        me->GetMotionMaster()->MoveChase(me->GetVictim(), 30);
+                    else
+                        me->GetMotionMaster()->MoveIdle();
+                    DoCastVictim(SPELL_SHADOW_BLAST);
+                    Timer[EVENT_SHADOW_BLAST] = 4000;
+                    break;
+                case EVENT_SHADOWDEMON:
+                    DoCast(me, SPELL_SUMMON_SHADOWDEMON);
+                    Timer[EVENT_SHADOWDEMON] = 0;
+                    Timer[EVENT_FLAME_BURST] += 10000;
+                    break;
+                case EVENT_FLAME_BURST:
+                    DoCast(me, SPELL_FLAME_BURST);
+                    Timer[EVENT_FLAME_BURST] = 15000;
+                    break;
+                case EVENT_TRANSFORM_DEMON:
+                    EnterPhase(PHASE_TRANSFORM_SEQUENCE);
+                    break;
+                default:
+                    break;
                 }
             }
         }
@@ -1123,6 +1128,7 @@ public:
         uint32 Timer[EVENT_ENRAGE + 1];
         PhaseIllidan Phase;
     private:
+        InstanceScript* instance;
         EventIllidan Event;
         uint32 TalkCount;
         uint32 TransformCount;
@@ -1131,6 +1137,7 @@ public:
         ObjectGuid MaievGUID;
         ObjectGuid FlameGUID[2];
         ObjectGuid GlaiveGUID[2];
+        SummonList Summons;
     };
 
     CreatureAI* GetAI(Creature* creature) const override
@@ -1141,7 +1148,7 @@ public:
 
 /********************************** End of Illidan AI* *****************************************/
 
-/******* Functions and vars for Maiev's AI* *****/
+/******* Functions and vars for Akama's AI* *****/
 class boss_maiev_shadowsong : public CreatureScript
 {
 public:
@@ -1168,7 +1175,7 @@ public:
         {
             Initialize();
             SetEquipmentSlots(false, EQUIP_ID_MAIN_HAND_MAIEV, EQUIP_UNEQUIP, EQUIP_NO_CHANGE);
-            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, 45738);
+            me->SetVirtualItem(2, 45738);
         }
 
         void EnterCombat(Unit* /*who*/) override { }
@@ -1370,7 +1377,6 @@ public:
     }
 };
 
-/******* Functions and vars for Akama's AI* *****/
 class npc_akama_illidan : public CreatureScript
 {
 public:
@@ -1407,18 +1413,28 @@ public:
 
             IllidanGUID = instance->GetGuidData(DATA_ILLIDAN_STORMRAGE);
             GateGUID = instance->GetGuidData(DATA_GO_ILLIDAN_GATE);
+            DoorGUID[0] = instance->GetGuidData(DATA_GO_ILLIDAN_DOOR_R);
+            DoorGUID[1] = instance->GetGuidData(DATA_GO_ILLIDAN_DOOR_L);
 
             if (JustCreated) // close all doors at create
+            {
                 instance->HandleGameObject(GateGUID, false);
+
+                for (uint8 i = 0; i < 2; ++i)
+                    instance->HandleGameObject(DoorGUID[i], false);
+            }
             else // open all doors, raid wiped
             {
                 instance->HandleGameObject(GateGUID, true);
                 WalkCount = 1; // skip first wp
+
+                for (uint8 i = 0; i < 2; ++i)
+                    instance->HandleGameObject(DoorGUID[i], true);
             }
 
             KillAllElites();
 
-            me->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE); // Database sometimes has strange values..
+            me->SetUInt32Value(UNIT_NPC_FLAGS, 0); // Database sometimes has strange values..
             me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             me->setActive(false);
             me->SetVisible(false);
@@ -1465,6 +1481,9 @@ public:
 
         void BeginTalk()
         {
+            instance->SetBossState(DATA_ILLIDAN_STORMRAGE, IN_PROGRESS);
+            for (uint8 i = 0; i < 2; ++i)
+                instance->HandleGameObject(DoorGUID[i], false);
             if (Creature* illidan = ObjectAccessor::GetCreature(*me, IllidanGUID))
             {
                 illidan->RemoveAurasDueToSpell(SPELL_KNEEL);
@@ -1656,6 +1675,10 @@ public:
         {
             switch (WalkCount)
             {
+            case 6:
+                for (uint8 i = 0; i < 2; ++i)
+                    instance->HandleGameObject(DoorGUID[i], true);
+                break;
             case 8:
                 if (Phase == PHASE_WALK)
                     EnterPhase(PHASE_TALK);
@@ -1760,7 +1783,7 @@ public:
 
         void sGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
         {
-            CloseGossipMenuFor(player);
+            player->CLOSE_GOSSIP_MENU();
             EnterPhase(PHASE_CHANNEL);
         }
 
@@ -1773,6 +1796,7 @@ public:
         ObjectGuid ChannelGUID;
         ObjectGuid SpiritGUID[2];
         ObjectGuid GateGUID;
+        ObjectGuid DoorGUID[2];
         uint32 ChannelCount;
         uint32 WalkCount;
         uint32 TalkCount;
@@ -1787,7 +1811,7 @@ public:
 
 void boss_illidan_stormrage::boss_illidan_stormrageAI::Reset()
 {
-    _Reset();
+    instance->SetBossState(DATA_ILLIDAN_STORMRAGE, NOT_STARTED);
 
     if (Creature* akama = ObjectAccessor::GetCreature(*me, AkamaGUID))
     {
@@ -1806,11 +1830,12 @@ void boss_illidan_stormrage::boss_illidan_stormrageAI::Reset()
     SetEquipmentSlots(false, EQUIP_UNEQUIP, EQUIP_UNEQUIP, EQUIP_NO_CHANGE);
     me->SetDisableGravity(false);
     me->setActive(false);
+    Summons.DespawnAll();
 }
 
 void boss_illidan_stormrage::boss_illidan_stormrageAI::JustSummoned(Creature* summon)
 {
-    summons.Summon(summon);
+    Summons.Summon(summon);
     switch (summon->GetEntry())
     {
     case PARASITIC_SHADOWFIEND:
@@ -1903,7 +1928,7 @@ void boss_illidan_stormrage::boss_illidan_stormrageAI::HandleTalkSequence()
         break;
     case 15:
         DoCast(me, SPELL_DEATH); // Animate his kneeling + stun him
-        summons.DespawnAll();
+        Summons.DespawnAll();
         break;
     case 17:
         if (Creature* akama = ObjectAccessor::GetCreature(*me, AkamaGUID))

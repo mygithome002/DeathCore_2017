@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,27 +24,23 @@
 #include "CreatureAI.h"
 #include "Vehicle.h"
 #include "Player.h"
+#include "CombatPackets.h"
 
-void WorldSession::HandleAttackSwingOpcode(WorldPacket& recvData)
+void WorldSession::HandleAttackSwingOpcode(WorldPackets::Combat::AttackSwing& packet)
 {
-    ObjectGuid guid;
-    recvData >> guid;
+    Unit* enemy = ObjectAccessor::GetUnit(*_player, packet.Victim);
 
-    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_ATTACKSWING Message %s", guid.ToString().c_str());
-
-    Unit* pEnemy = ObjectAccessor::GetUnit(*_player, guid);
-
-    if (!pEnemy)
+    if (!enemy)
     {
         // stop attack state at client
-        SendAttackStop(NULL);
+        SendAttackStop(nullptr);
         return;
     }
 
-    if (!_player->IsValidAttackTarget(pEnemy))
+    if (!_player->IsValidAttackTarget(enemy))
     {
         // stop attack state at client
-        SendAttackStop(pEnemy);
+        SendAttackStop(enemy);
         return;
     }
 
@@ -54,46 +51,33 @@ void WorldSession::HandleAttackSwingOpcode(WorldPacket& recvData)
     {
         VehicleSeatEntry const* seat = vehicle->GetSeatForPassenger(_player);
         ASSERT(seat);
-        if (!(seat->m_flags & VEHICLE_SEAT_FLAG_CAN_ATTACK))
+        if (!(seat->Flags[0] & VEHICLE_SEAT_FLAG_CAN_ATTACK))
         {
-            SendAttackStop(pEnemy);
+            SendAttackStop(enemy);
             return;
         }
     }
 
-    _player->Attack(pEnemy, true);
+    _player->Attack(enemy, true);
 }
 
-void WorldSession::HandleAttackStopOpcode(WorldPacket & /*recvData*/)
+void WorldSession::HandleAttackStopOpcode(WorldPackets::Combat::AttackStop& /*recvData*/)
 {
     GetPlayer()->AttackStop();
 }
 
-void WorldSession::HandleSetSheathedOpcode(WorldPacket& recvData)
+void WorldSession::HandleSetSheathedOpcode(WorldPackets::Combat::SetSheathed& packet)
 {
-    uint32 sheathed;
-    recvData >> sheathed;
-
-    //TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUID().GetCounter(), sheathed);
-
-    if (sheathed >= MAX_SHEATH_STATE)
+    if (packet.CurrentSheathState >= MAX_SHEATH_STATE)
     {
-        TC_LOG_ERROR("network", "Unknown sheath state %u ??", sheathed);
+        TC_LOG_ERROR("network", "Unknown sheath state %u ??", packet.CurrentSheathState);
         return;
     }
 
-    GetPlayer()->SetSheath(SheathState(sheathed));
+    GetPlayer()->SetSheath(SheathState(packet.CurrentSheathState));
 }
 
 void WorldSession::SendAttackStop(Unit const* enemy)
 {
-    WorldPacket data(SMSG_ATTACKSTOP, (8+8+4));             // we guess size
-    data << GetPlayer()->GetPackGUID();
-    if (enemy)
-        data << enemy->GetPackGUID();
-    else
-        data << uint8(0);
-
-    data << uint32(0);                                      // unk, can be 1 also
-    SendPacket(&data);
+    SendPacket(WorldPackets::Combat::SAttackStop(GetPlayer(), enemy).Write());
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,8 +16,7 @@
  */
 
 /*
- * Comment: Visuals missing, de-germanize code, wow 3.3.5a-ize
- * Patch 3.3.2 (2010-01-02): Jedoga Shadowseeker now only ascends once during the encounter.
+ * Comment: Complete - BUT THE TRIGGER NEEDS DATA WHETHER THE PRISON OF TALDARAM IS OFFLINE !
  */
 
 #include "ScriptMgr.h"
@@ -251,7 +250,7 @@ public:
         {
             ObjectGuid opfer = instance->GetGuidData(DATA_ADD_JEDOGA_INITIAND);
 
-            if (opfer)
+            if (!opfer.IsEmpty())
             {
                 Talk(TEXT_SACRIFICE_1);
                 instance->SetGuidData(DATA_ADD_JEDOGA_OPFER, opfer);

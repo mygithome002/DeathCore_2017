@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -51,11 +52,11 @@ namespace VMAP
         }
     }
 
-    void VMapManager2::InitializeThreadUnsafe(const std::vector<uint32>& mapIds)
+    void VMapManager2::InitializeThreadUnsafe(std::unordered_map<uint32, std::vector<uint32>> const& mapData)
     {
         // the caller must pass the list of all mapIds that will be used in the VMapManager2 lifetime
-        for (const uint32& mapId : mapIds)
-            iInstanceMapTrees.insert(InstanceTreeMap::value_type(mapId, nullptr));
+        for (auto const& p : mapData)
+            iInstanceMapTrees.insert(InstanceTreeMap::value_type(p.first, nullptr));
 
         thread_safe_environment = false;
     }
@@ -75,7 +76,7 @@ namespace VMAP
     std::string VMapManager2::getMapFileName(unsigned int mapId)
     {
         std::stringstream fname;
-        fname.width(3);
+        fname.width(4);
         fname << std::setfill('0') << mapId << std::string(MAP_FILENAME_EXTENSION2);
 
         return fname.str();

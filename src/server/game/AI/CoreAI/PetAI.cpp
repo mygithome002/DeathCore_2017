@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,12 +22,12 @@
 #include "Player.h"
 #include "Spell.h"
 #include "ObjectAccessor.h"
-#include "SpellHistory.h"
 #include "SpellMgr.h"
 #include "Creature.h"
 #include "Util.h"
 #include "Group.h"
 #include "SpellInfo.h"
+#include "SpellHistory.h"
 
 int PetAI::Permissible(const Creature* creature)
 {
@@ -54,12 +55,11 @@ void PetAI::_stopAttack()
 {
     if (!me->IsAlive())
     {
-        TC_LOG_DEBUG("misc", "Creature stoped attacking cuz his dead [guid=%u]", me->GetGUID().GetCounter());
+        TC_LOG_DEBUG("misc", "Creature stoped attacking cuz his dead [%s]", me->GetGUID().ToString().c_str());
         me->GetMotionMaster()->Clear();
         me->GetMotionMaster()->MoveIdle();
         me->CombatStop();
         me->getHostileRefManager().deleteReferences();
-
         return;
     }
 
@@ -96,7 +96,7 @@ void PetAI::UpdateAI(uint32 diff)
 
         if (_needToStop())
         {
-            TC_LOG_DEBUG("misc", "Pet AI stopped attacking [guid=%u]", me->GetGUID().GetCounter());
+            TC_LOG_DEBUG("misc", "Pet AI stopped attacking [%s]", me->GetGUID().ToString().c_str());
             _stopAttack();
             return;
         }
@@ -133,6 +133,7 @@ void PetAI::UpdateAI(uint32 diff)
     // Autocast (cast only in combat or persistent spells in any state)
     if (!me->HasUnitState(UNIT_STATE_CASTING))
     {
+        typedef std::vector<std::pair<Unit*, Spell*> > TargetSpellList;
         TargetSpellList targetSpellStore;
 
         for (uint8 i = 0; i < me->GetPetAutoSpellSize(); ++i)
@@ -179,7 +180,7 @@ void PetAI::UpdateAI(uint32 diff)
                     }
                 }
 
-                if (spellInfo->HasEffect(SPELL_EFFECT_JUMP_DEST))
+                if (spellInfo->HasEffect(DIFFICULTY_NONE, SPELL_EFFECT_JUMP_DEST))
                 {
                     if (!spellUsed)
                         delete spell;
@@ -220,7 +221,7 @@ void PetAI::UpdateAI(uint32 diff)
             }
         }
 
-        // found units to cast on to
+        //found units to cast on to
         if (!targetSpellStore.empty())
         {
             TargetSpellList::iterator it = targetSpellStore.begin();
@@ -460,7 +461,7 @@ void PetAI::DoAttack(Unit* target, bool chase)
             ClearCharmInfoFlags();
             me->GetCharmInfo()->SetIsCommandAttack(oldCmdAttack); // For passive pets commanded to attack so they will use spells
             me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MoveChase(target, me->GetPetChaseDistance());
+            me->GetMotionMaster()->MoveChase(target);
         }
         else // (Stay && ((Aggressive || Defensive) && In Melee Range)))
         {
@@ -564,7 +565,8 @@ bool PetAI::CanAttack(Unit* target)
 
 void PetAI::ReceiveEmote(Player* player, uint32 emote)
 {
-    if (me->GetOwnerGUID() && me->GetOwnerGUID() == player->GetGUID())
+    if (!me->GetOwnerGUID().IsEmpty() && me->GetOwnerGUID() == player->GetGUID())
+    {
         switch (emote)
         {
             case TEXT_EMOTE_COWER:
@@ -584,6 +586,7 @@ void PetAI::ReceiveEmote(Player* player, uint32 emote)
                     me->HandleEmoteCommand(EMOTE_ONESHOT_OMNICAST_GHOUL);
                 break;
         }
+    }
 }
 
 void PetAI::OnCharmed(bool /*apply*/)

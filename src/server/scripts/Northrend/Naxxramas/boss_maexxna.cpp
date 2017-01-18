@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -24,7 +24,8 @@
 enum Spells
 {
     SPELL_WEB_WRAP              = 28622,
-    SPELL_WEB_SPRAY             = 29484,
+    SPELL_WEB_SPRAY_10          = 29484,
+    SPELL_WEB_SPRAY_25          = 54125,
     SPELL_POISON_SHOCK          = 28741,
     SPELL_NECROTIC_POISON       = 28776,
     SPELL_FRENZY                = 54123
@@ -147,7 +148,7 @@ public:
                                 else // on subsequent iterations, only allow positions that are not equal to the previous one (this is sufficient since we should only have two targets at most, ever)
                                     wrapPos = (wrapPos + urand(1, MAX_WRAP_POSITION - 1)) % MAX_WRAP_POSITION;
 
-                                target->RemoveAura(sSpellMgr->GetSpellIdForDifficulty(SPELL_WEB_SPRAY, me));
+                                target->RemoveAura(RAID_MODE(SPELL_WEB_SPRAY_10, SPELL_WEB_SPRAY_25));
                                 if (Creature* wrap = DoSummon(NPC_WEB_WRAP, WrapPositions[wrapPos], 70 * IN_MILLISECONDS, TEMPSUMMON_TIMED_DESPAWN))
                                 {
                                     wrap->AI()->SetGUID(target->GetGUID()); // handles application of debuff
@@ -160,7 +161,7 @@ public:
                     }
                     case EVENT_SPRAY:
                         Talk(EMOTE_WEB_SPRAY);
-                        DoCastAOE(SPELL_WEB_SPRAY);
+                        DoCastAOE(RAID_MODE(SPELL_WEB_SPRAY_10, SPELL_WEB_SPRAY_25));
                         events.Repeat(Seconds(40));
                         break;
                     case EVENT_SHOCK:
@@ -237,7 +238,7 @@ public:
 
         void JustDied(Unit* /*killer*/) override
         {
-            if (victimGUID)
+            if (!victimGUID.IsEmpty())
                 if (Unit* victim = ObjectAccessor::GetUnit(*me, victimGUID))
                     victim->RemoveAurasDueToSpell(SPELL_WEB_WRAP, me->GetGUID());
 
@@ -250,5 +251,6 @@ public:
 void AddSC_boss_maexxna()
 {
     new boss_maexxna();
+
     new npc_webwrap();
 }

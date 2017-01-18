@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,7 +19,6 @@
 #include "ScriptedCreature.h"
 #include "ScriptedGossip.h"
 #include "ScriptedEscortAI.h"
-#include "SpellHistory.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
 #include "Vehicle.h"
@@ -89,7 +88,7 @@ public:
         {
             if (menuId == GOSSIP_ID && gossipListId == GOSSIP_OPTION_ID)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
                 me->setFaction(113);
                 Start(true, true, player->GetGUID());
             }
@@ -133,20 +132,20 @@ public:
 
         //Trainer Menu
         if ( creature->IsTrainer() )
-            AddGossipItemFor(player, GOSSIP_ICON_TRAINER, GOSSIP_TEXT_TRAIN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRAIN);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, GOSSIP_TEXT_TRAIN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRAIN);
 
         //Vendor Menu
         if ( creature->IsVendor() )
             if (player->HasSpell(SPELL_MECHANO_HOG) || player->HasSpell(SPELL_MEKGINEERS_CHOPPER))
-                AddGossipItemFor(player, GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
-        SendGossipMenuFor(player, player->GetGossipTextId(creature), creature->GetGUID());
+        player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
         return true;
     }
 
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
     {
-        ClearGossipMenuFor(player);
+        player->PlayerTalkClass->ClearMenus();
         switch (action)
         {
         case GOSSIP_ACTION_TRAIN:
@@ -281,7 +280,6 @@ public:
 
         void UpdateAI(uint32 diff) override
         {
-            VehicleAI::UpdateAI(diff);
             events.Update(diff);
 
             switch (events.ExecuteEvent())
@@ -479,7 +477,7 @@ public:
 
         void sGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
         {
-            CloseGossipMenuFor(player);
+            player->CLOSE_GOSSIP_MENU();
             playerGUID = player->GetGUID();
             events.ScheduleEvent(EVENT_SCRIPT_1, 100);
         }
@@ -517,7 +515,7 @@ public:
                             if (Player* player = ObjectAccessor::GetPlayer(*me, playerGUID))
                                 voice->AI()->Talk(SAY_VOICE_1, player);
                         }
-                        if (GameObject* go = me->SummonGameObject(OBJECT_TOL_SIGNAL_1, 7860.273f, -1383.622f, 1538.302f, -1.658062f, G3D::Quat(0.f, 0.f, -0.737277f, 0.6755905f), 0))
+                        if (GameObject* go = me->SummonGameObject(OBJECT_TOL_SIGNAL_1, 7860.273f, -1383.622f, 1538.302f, -1.658062f, 0, 0,  -0.737277f, 0.6755905f, 0))
                             objectGUID[objectCounter++] = go->GetGUID();
                         events.ScheduleEvent(EVENT_SCRIPT_5, 6000);
                         break;
@@ -525,7 +523,7 @@ public:
                         if (Player* player = ObjectAccessor::GetPlayer(*me, playerGUID))
                             if (Creature* voice = ObjectAccessor::GetCreature(*me, voiceGUID))
                                 voice->AI()->Talk(SAY_VOICE_2, player);
-                        if (GameObject* go = me->SummonGameObject(OBJECT_TOL_SIGNAL_2, 7875.67f, -1387.266f, 1538.323f, -2.373644f, G3D::Quat(0.f, 0.f, -0.9271832f, 0.3746083f), 0))
+                        if (GameObject* go = me->SummonGameObject(OBJECT_TOL_SIGNAL_2, 7875.67f, -1387.266f, 1538.323f, -2.373644f, 0, 0,  -0.9271832f, 0.3746083f, 0))
                             objectGUID[objectCounter++] = go->GetGUID();
                         events.ScheduleEvent(EVENT_SCRIPT_6, 6000);
                         break;
@@ -533,7 +531,7 @@ public:
                         if (Player* player = ObjectAccessor::GetPlayer(*me, playerGUID))
                             if (Creature* voice = ObjectAccessor::GetCreature(*me, voiceGUID))
                                 voice->AI()->Talk(SAY_VOICE_3, player);
-                        if (GameObject* go = me->SummonGameObject(OBJECT_TOL_SIGNAL_3, 7879.212f, -1401.175f, 1538.279f, 2.967041f, G3D::Quat(0.f, 0.f, 0.9961939f, 0.08716504f), 0))
+                        if (GameObject* go = me->SummonGameObject(OBJECT_TOL_SIGNAL_3, 7879.212f, -1401.175f, 1538.279f, 2.967041f, 0, 0,  0.9961939f, 0.08716504f, 0))
                             objectGUID[objectCounter++] = go->GetGUID();
                         events.ScheduleEvent(EVENT_SCRIPT_7, 6000);
                         break;
@@ -541,7 +539,7 @@ public:
                         if (Player* player = ObjectAccessor::GetPlayer(*me, playerGUID))
                             if (Creature* voice = ObjectAccessor::GetCreature(*me, voiceGUID))
                                 voice->AI()->Talk(SAY_VOICE_4, player);
-                        if (GameObject* go = me->SummonGameObject(OBJECT_TOL_SIGNAL_4, 7868.944f, -1411.18f, 1538.213f, 2.111848f, G3D::Quat(0.f, 0.f, 0.8703556f, 0.4924237f), 0))
+                        if (GameObject* go = me->SummonGameObject(OBJECT_TOL_SIGNAL_4, 7868.944f, -1411.18f, 1538.213f, 2.111848f, 0, 0,  0.8703556f, 0.4924237f, 0))
                             objectGUID[objectCounter++] = go->GetGUID();
                         events.ScheduleEvent(EVENT_SCRIPT_8, 6000);
                         break;
@@ -549,7 +547,7 @@ public:
                         if (Player* player = ObjectAccessor::GetPlayer(*me, playerGUID))
                             if (Creature* voice = ObjectAccessor::GetCreature(*me, voiceGUID))
                                 voice->AI()->Talk(SAY_VOICE_5, player);
-                        if (GameObject* go = me->SummonGameObject(OBJECT_TOL_SIGNAL_5, 7855.11f, -1406.839f, 1538.42f, 1.151916f, G3D::Quat(0.f, 0.f, 0.5446386f, 0.8386708f), 0))
+                        if (GameObject* go = me->SummonGameObject(OBJECT_TOL_SIGNAL_5, 7855.11f, -1406.839f, 1538.42f, 1.151916f, 0, 0,  0.5446386f, 0.8386708f, 0))
                             objectGUID[objectCounter] = go->GetGUID();
                         events.ScheduleEvent(EVENT_SCRIPT_9, 6000);
                         break;
@@ -641,6 +639,97 @@ enum JokkumScriptcast
     EVENT_KROLMIR_7                  = 22,
     EVENT_KROLMIR_8                  = 23,
     EVENT_KROLMIR_9                  = 24,
+};
+
+class npc_king_jokkum_vehicle : public CreatureScript
+{
+public:
+    npc_king_jokkum_vehicle() : CreatureScript("npc_king_jokkum_vehicle") { }
+
+    struct npc_king_jokkum_vehicleAI : public VehicleAI
+    {
+        npc_king_jokkum_vehicleAI(Creature* creature) : VehicleAI(creature)
+        {
+            pathEnd = false;
+        }
+
+        void Reset() override
+        {
+            playerGUID.Clear();
+            pathEnd    = false;
+        }
+
+        void OnCharmed(bool /*apply*/) override { }
+
+        void PassengerBoarded(Unit* who, int8 /*seat*/, bool apply) override
+        {
+            if (apply)
+            {
+                playerGUID = who->GetGUID();
+                Talk(SAY_HOLD_ON, who);
+                me->CastSpell(who, SPELL_JOKKUM_KILL_CREDIT, true);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC);
+                me->GetMotionMaster()->MovePath(PATH_JOKKUM, false);
+            }
+        }
+
+        void MovementInform(uint32 type, uint32 id) override
+        {
+            if (type != WAYPOINT_MOTION_TYPE)
+                return;
+
+            if (pathEnd)
+            {
+                if (id == 4)
+                {
+
+                }
+            }
+            else
+            {
+                if (id == 19)
+                {
+                    pathEnd = true;
+                    me->SetFacingTo(0.418879f);
+                    Talk(SAY_JOKKUM_1);
+                    if (Player* player = ObjectAccessor::GetPlayer(*me, playerGUID))
+                        me->CastSpell(player, SPELL_PLAYER_CAST_VERANUS_SUMMON);
+                    me->CastSpell(me, SPELL_EJECT_ALL_PASSENGERS);
+
+                }
+            }
+        }
+
+        void UpdateAI(uint32 diff) override
+        {
+            if (!pathEnd)
+                return;
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_KROLMIR_1:
+                        Talk(SAY_JOKKUM_2);
+                        events.ScheduleEvent(EVENT_KROLMIR_2, 4000);
+                        break;
+                }
+            }
+        }
+
+    private:
+        EventMap events;
+        ObjectGuid playerGUID;
+        bool pathEnd;
+
+    };
+
+    CreatureAI* GetAI(Creature* creature) const override
+    {
+        return new npc_king_jokkum_vehicleAI(creature);
+    }
 };
 
 class spell_jokkum_scriptcast : public SpellScriptLoader
@@ -766,6 +855,7 @@ void AddSC_storm_peaks()
     new npc_icefang();
     new npc_hyldsmeet_protodrake();
     new npc_brann_bronzebeard_keystone();
+    new npc_king_jokkum_vehicle();
     new spell_jokkum_scriptcast();
     new spell_veranus_summon();
     new spell_close_rift();

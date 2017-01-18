@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,6 +22,7 @@
 #include "GameObject.h"
 #include "Group.h"
 #include "InstanceScript.h"
+#include "InstancePackets.h"
 #include "LFGMgr.h"
 #include "Log.h"
 #include "Map.h"
@@ -30,6 +32,7 @@
 #include "Opcodes.h"
 #include "ScriptReloadMgr.h"
 #include "ScriptMgr.h"
+#include "InstanceScenario.h"
 
 BossBoundaryData::~BossBoundaryData()
 {
@@ -37,7 +40,8 @@ BossBoundaryData::~BossBoundaryData()
         delete it->Boundary;
 }
 
-InstanceScript::InstanceScript(Map* map) : instance(map), completedEncounters(0)
+InstanceScript::InstanceScript(Map* map) : instance(map), completedEncounters(0),
+_entranceId(0), _temporaryEntranceId(0), _combatResurrectionTimer(0), _combatResurrectionCharges(0), _combatResurrectionTimerStarted(false)
 {
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING
     uint32 scriptId = sObjectMgr->GetInstanceTemplate(map->GetId())->ScriptId;
@@ -51,6 +55,9 @@ InstanceScript::InstanceScript(Map* map) : instance(map), completedEncounters(0)
 
 void InstanceScript::SaveToDB()
 {
+    if (InstanceScenario* scenario = instance->ToInstanceMap()->GetInstanceScenario())
+        scenario->SaveToDB();
+
     std::string data = GetSaveData();
     if (data.empty())
         return;
@@ -58,7 +65,8 @@ void InstanceScript::SaveToDB()
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_INSTANCE_DATA);
     stmt->setUInt32(0, GetCompletedEncounterMask());
     stmt->setString(1, data);
-    stmt->setUInt32(2, instance->GetInstanceId());
+    stmt->setUInt32(2, _entranceId);
+    stmt->setUInt32(3, instance->GetInstanceId());
     CharacterDatabase.Execute(stmt);
 }
 
@@ -305,6 +313,24 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
                         if (minion->isWorldBoss() && minion->IsAlive())
                             return false;
 
+            switch (state)
+            {
+                case IN_PROGRESS:
+                {
+                    uint32 resInterval = GetCombatResurrectionChargeInterval();
+                    InitializeCombatResurrections(1, resInterval);
+                    SendEncounterStart(1, 9, resInterval, resInterval);
+                    break;
+                }
+                case FAIL:
+                case DONE:
+                    ResetCombatResurrections();
+                    SendEncounterEnd();
+                    break;
+                default:
+                    break;
+            }
+
             bossInfo->state = state;
             SaveToDB();
         }
@@ -517,36 +543,36 @@ void InstanceScript::DoSendNotifyToInstance(char const* format, ...)
 }
 
 // Update Achievement Criteria for all players in instance
-void InstanceScript::DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit* unit /*= NULL*/)
+void InstanceScript::DoUpdateCriteria(CriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit* unit /*= NULL*/)
 {
     Map::PlayerList const &PlayerList = instance->GetPlayers();
 
     if (!PlayerList.isEmpty())
         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             if (Player* player = i->GetSource())
-                player->UpdateAchievementCriteria(type, miscValue1, miscValue2, unit);
+                player->UpdateCriteria(type, miscValue1, miscValue2, 0, unit);
 }
 
 // Start timed achievement for all players in instance
-void InstanceScript::DoStartTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry)
+void InstanceScript::DoStartCriteriaTimer(CriteriaTimedTypes type, uint32 entry)
 {
     Map::PlayerList const &PlayerList = instance->GetPlayers();
 
     if (!PlayerList.isEmpty())
         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             if (Player* player = i->GetSource())
-                player->StartTimedAchievement(type, entry);
+                player->StartCriteriaTimer(type, entry);
 }
 
 // Stop timed achievement for all players in instance
-void InstanceScript::DoStopTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry)
+void InstanceScript::DoStopCriteriaTimer(CriteriaTimedTypes type, uint32 entry)
 {
     Map::PlayerList const &PlayerList = instance->GetPlayers();
 
     if (!PlayerList.isEmpty())
         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             if (Player* player = i->GetSource())
-                player->RemoveTimedAchievement(type, entry);
+                player->RemoveCriteriaTimer(type, entry);
 }
 
 // Remove Auras due to Spell on all players in instance
@@ -585,42 +611,82 @@ bool InstanceScript::CheckAchievementCriteriaMeet(uint32 criteria_id, Player con
     return false;
 }
 
-void InstanceScript::SendEncounterUnit(uint32 type, Unit* unit /*= NULL*/, uint8 param1 /*= 0*/, uint8 param2 /*= 0*/)
+void InstanceScript::SetEntranceLocation(uint32 worldSafeLocationId)
 {
-    // size of this packet is at most 15 (usually less)
-    WorldPacket data(SMSG_UPDATE_INSTANCE_ENCOUNTER_UNIT, 15);
-    data << uint32(type);
+    _entranceId = worldSafeLocationId;
+    if (_temporaryEntranceId)
+        _temporaryEntranceId = 0;
+}
 
+void InstanceScript::SendEncounterUnit(uint32 type, Unit* unit /*= NULL*/, uint8 priority)
+{
     switch (type)
     {
-        case ENCOUNTER_FRAME_ENGAGE:
-        case ENCOUNTER_FRAME_DISENGAGE:
-        case ENCOUNTER_FRAME_UPDATE_PRIORITY:
+        case ENCOUNTER_FRAME_ENGAGE:                    // SMSG_INSTANCE_ENCOUNTER_ENGAGE_UNIT
+        {
             if (!unit)
                 return;
-            data << unit->GetPackGUID();
-            data << uint8(param1);
+
+            WorldPackets::Instance::InstanceEncounterEngageUnit encounterEngageMessage;
+            encounterEngageMessage.Unit = unit->GetGUID();
+            encounterEngageMessage.TargetFramePriority = priority;
+            instance->SendToPlayers(encounterEngageMessage.Write());
             break;
-        case ENCOUNTER_FRAME_ADD_TIMER:
-        case ENCOUNTER_FRAME_ENABLE_OBJECTIVE:
-        case ENCOUNTER_FRAME_DISABLE_OBJECTIVE:
-            data << uint8(param1);
+        }
+        case ENCOUNTER_FRAME_DISENGAGE:                 // SMSG_INSTANCE_ENCOUNTER_DISENGAGE_UNIT
+        {
+            if (!unit)
+                return;
+
+            WorldPackets::Instance::InstanceEncounterDisengageUnit encounterDisengageMessage;
+            encounterDisengageMessage.Unit = unit->GetGUID();
+            instance->SendToPlayers(encounterDisengageMessage.Write());
             break;
-        case ENCOUNTER_FRAME_UPDATE_OBJECTIVE:
-            data << uint8(param1);
-            data << uint8(param2);
+        }
+        case ENCOUNTER_FRAME_UPDATE_PRIORITY:           // SMSG_INSTANCE_ENCOUNTER_CHANGE_PRIORITY
+        {
+            if (!unit)
+                return;
+
+            WorldPackets::Instance::InstanceEncounterChangePriority encounterChangePriorityMessage;
+            encounterChangePriorityMessage.Unit = unit->GetGUID();
+            encounterChangePriorityMessage.TargetFramePriority = priority;
+            instance->SendToPlayers(encounterChangePriorityMessage.Write());
             break;
-        case ENCOUNTER_FRAME_UNK7:
+        }
         default:
             break;
     }
+}
 
-    instance->SendToPlayers(&data);
+void InstanceScript::SendEncounterStart(uint32 inCombatResCount /*= 0*/, uint32 maxInCombatResCount /*= 0*/, uint32 inCombatResChargeRecovery /*= 0*/, uint32 nextCombatResChargeTime /*= 0*/)
+{
+    WorldPackets::Instance::InstanceEncounterStart encounterStartMessage;
+    encounterStartMessage.InCombatResCount = inCombatResCount;
+    encounterStartMessage.MaxInCombatResCount = maxInCombatResCount;
+    encounterStartMessage.CombatResChargeRecovery = inCombatResChargeRecovery;
+    encounterStartMessage.NextCombatResChargeTime = nextCombatResChargeTime;
+
+    instance->SendToPlayers(encounterStartMessage.Write());
+}
+
+void InstanceScript::SendEncounterEnd()
+{
+    WorldPackets::Instance::InstanceEncounterEnd encounterEndMessage;
+    instance->SendToPlayers(encounterEndMessage.Write());
+}
+
+void InstanceScript::SendBossKillCredit(uint32 encounterId)
+{
+    WorldPackets::Instance::BossKillCredit bossKillCreditMessage;
+    bossKillCreditMessage.DungeonEncounterID = encounterId;
+
+    instance->SendToPlayers(bossKillCreditMessage.Write());
 }
 
 void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* /*source*/)
 {
-    DungeonEncounterList const* encounters = sObjectMgr->GetDungeonEncounterList(instance->GetId(), instance->GetDifficulty());
+    DungeonEncounterList const* encounters = sObjectMgr->GetDungeonEncounterList(instance->GetId(), instance->GetDifficultyID());
     if (!encounters)
         return;
 
@@ -631,11 +697,12 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
         DungeonEncounter const* encounter = *itr;
         if (encounter->creditType == type && encounter->creditEntry == creditEntry)
         {
-            completedEncounters |= 1 << encounter->dbcEntry->encounterIndex;
+            completedEncounters |= 1 << encounter->dbcEntry->Bit;
             if (encounter->lastEncounterDungeon)
             {
                 dungeonId = encounter->lastEncounterDungeon;
-                TC_LOG_DEBUG("lfg", "UpdateEncounterState: Instance %s (instanceId %u) completed encounter %s. Credit Dungeon: %u", instance->GetMapName(), instance->GetInstanceId(), encounter->dbcEntry->encounterName[0], dungeonId);
+                TC_LOG_DEBUG("lfg", "UpdateEncounterState: Instance %s (instanceId %u) completed encounter %s. Credit Dungeon: %u",
+                    instance->GetMapName(), instance->GetInstanceId(), encounter->dbcEntry->Name->Str[sWorld->GetDefaultDbcLocale()], dungeonId);
                 break;
             }
         }
@@ -655,6 +722,14 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                     }
         }
     }
+}
+
+void InstanceScript::UpdatePhasing()
+{
+    Map::PlayerList const& players = instance->GetPlayers();
+    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+        if (Player* player = itr->GetSource())
+            player->SendUpdatePhasing();
 }
 
 std::string InstanceScript::GetBossStateName(uint8 state)
@@ -677,4 +752,62 @@ std::string InstanceScript::GetBossStateName(uint8 state)
         default:
             return "INVALID";
     }
+}
+
+void InstanceScript::UpdateCombatResurrection(uint32 diff)
+{
+    if (!_combatResurrectionTimerStarted)
+        return;
+
+    _combatResurrectionTimer -= diff;
+    if (_combatResurrectionTimer <= 0)
+    {
+        AddCombatResurrectionCharge();
+        _combatResurrectionTimerStarted = false;
+    }
+}
+
+void InstanceScript::InitializeCombatResurrections(uint8 charges /*= 1*/, uint32 interval /*= 0*/)
+{
+    _combatResurrectionCharges = charges;
+    if (!interval)
+        return;
+
+    _combatResurrectionTimer = interval;
+    _combatResurrectionTimerStarted = true;
+}
+
+void InstanceScript::AddCombatResurrectionCharge()
+{
+    ++_combatResurrectionCharges;
+    _combatResurrectionTimer = GetCombatResurrectionChargeInterval();
+    _combatResurrectionTimerStarted = true;
+
+    WorldPackets::Instance::InstanceEncounterGainCombatResurrectionCharge gainCombatResurrectionCharge;
+    gainCombatResurrectionCharge.InCombatResCount = _combatResurrectionCharges;
+    gainCombatResurrectionCharge.CombatResChargeRecovery = _combatResurrectionTimer;
+    instance->SendToPlayers(gainCombatResurrectionCharge.Write());
+}
+
+void InstanceScript::UseCombatResurrection()
+{
+    --_combatResurrectionCharges;
+
+    instance->SendToPlayers(WorldPackets::Instance::InstanceEncounterInCombatResurrection().Write());
+}
+
+void InstanceScript::ResetCombatResurrections()
+{
+    _combatResurrectionCharges = 0;
+    _combatResurrectionTimer = 0;
+    _combatResurrectionTimerStarted = 0;
+}
+
+uint32 InstanceScript::GetCombatResurrectionChargeInterval() const
+{
+    uint32 interval = 0;
+    if (uint32 playerCount = instance->GetPlayers().getSize())
+        interval = 90 * MINUTE * IN_MILLISECONDS / playerCount;
+
+    return interval;
 }

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -50,7 +51,6 @@ enum Gossip_Option
     GOSSIP_OPTION_UNLEARNPETTALENTS = 17,                   //UNIT_NPC_FLAG_TRAINER             (16) (bonus option for GOSSIP_OPTION_TRAINER)
     GOSSIP_OPTION_LEARNDUALSPEC     = 18,                   //UNIT_NPC_FLAG_TRAINER             (16) (bonus option for GOSSIP_OPTION_TRAINER)
     GOSSIP_OPTION_OUTDOORPVP        = 19,                   //added by code (option for outdoor pvp creatures)
-    GOSSIP_OPTION_DUALSPEC_INFO     = 20,                   //UNIT_NPC_FLAG_TRAINER             (16) (bonus option for GOSSIP_OPTION_TRAINER)
     GOSSIP_OPTION_MAX
 };
 
@@ -77,6 +77,7 @@ enum GossipOptionIcon
     GOSSIP_ICON_CHAT_18             = 18,                   // white chat bubble
     GOSSIP_ICON_CHAT_19             = 19,                   // white chat bubble
     GOSSIP_ICON_CHAT_20             = 20,                   // white chat bubble
+    GOSSIP_ICON_CHAT_21             = 21,                   // transmogrifier?
     GOSSIP_ICON_MAX
 };
 
@@ -175,15 +176,8 @@ class TC_GAME_API GossipMenu
 
         void AddGossipMenuItemData(uint32 menuItemId, uint32 gossipActionMenuId, uint32 gossipActionPoi);
 
-        uint32 GetMenuItemCount() const
-        {
-            return _menuItems.size();
-        }
-
-        bool Empty() const
-        {
-            return _menuItems.empty();
-        }
+        uint32 GetMenuItemCount() const { return uint32(_menuItems.size()); }
+        bool Empty() const { return _menuItems.empty(); }
 
         GossipMenuItem const* GetItem(uint32 id) const
         {
@@ -230,23 +224,10 @@ class TC_GAME_API QuestMenu
 
         void AddMenuItem(uint32 QuestId, uint8 Icon);
         void ClearMenu();
-
-        uint8 GetMenuItemCount() const
-        {
-            return _questMenuItems.size();
-        }
-
-        bool Empty() const
-        {
-            return _questMenuItems.empty();
-        }
-
+        uint8 GetMenuItemCount() const{ return uint8(_questMenuItems.size()); }
+        bool Empty() const { return _questMenuItems.empty(); }
         bool HasItem(uint32 questId) const;
-
-        QuestMenuItem const& GetItem(uint16 index) const
-        {
-            return _questMenuItems[index];
-        }
+        QuestMenuItem const& GetItem(uint16 index) const { return _questMenuItems[index]; }
 
     private:
         QuestMenuItemList _questMenuItems;
@@ -275,9 +256,9 @@ class TC_GAME_API PlayerMenu
         /*********************************************************/
         /***                    QUEST SYSTEM                   ***/
         /*********************************************************/
-        void SendQuestGiverStatus(uint8 questStatus, ObjectGuid npcGUID) const;
+        void SendQuestGiverStatus(uint32 questStatus, ObjectGuid npcGUID) const;
 
-        void SendQuestGiverQuestList(QEmote const& eEmote, const std::string& Title, ObjectGuid npcGUID);
+        void SendQuestGiverQuestList(ObjectGuid npcGUID);
 
         void SendQuestQueryResponse(Quest const* quest) const;
         void SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGUID, bool activateAccept) const;

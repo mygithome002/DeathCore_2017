@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2008-2013 DeathCore <http://www.noffearrdeathproject.net/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -34,6 +35,8 @@ class TC_GAME_API WorldSocketMgr : public SocketMgr<WorldSocket>
     typedef SocketMgr<WorldSocket> BaseSocketMgr;
 
 public:
+    ~WorldSocketMgr();
+
     static WorldSocketMgr& Instance();
 
     /// Start network, listen at address:port .
@@ -50,6 +53,7 @@ protected:
     NetworkThread<WorldSocket>* CreateThreads() const override;
 
 private:
+    AsyncAcceptor* _instanceAcceptor;
     int32 _socketSendBufferSize;
     int32 m_SockOutUBuff;
     bool _tcpNoDelay;

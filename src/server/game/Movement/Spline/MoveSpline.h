@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +22,15 @@
 #include "Spline.h"
 #include "MoveSplineInitArgs.h"
 
+namespace WorldPackets
+{
+    namespace Movement
+    {
+        class CommonMovement;
+        class MonsterMove;
+    }
+}
+
 namespace Movement
 {
     struct Location : public Vector3
@@ -35,11 +45,15 @@ namespace Movement
 
     // MoveSpline represents smooth catmullrom or linear curve and point that moves belong it
     // curve can be cyclic - in this case movement will be cyclic
-    // point can have vertical acceleration motion componemt(used in fall, parabolic movement)
+    // point can have vertical acceleration motion component (used in fall, parabolic movement)
     class TC_GAME_API MoveSpline
     {
+        friend class WorldPackets::Movement::CommonMovement;
+        friend class WorldPackets::Movement::MonsterMove;
+
     public:
         typedef Spline<int32> MySpline;
+
         enum UpdateResult
         {
             Result_None         = 0x01,
@@ -47,7 +61,6 @@ namespace Movement
             Result_NextCycle    = 0x04,
             Result_NextSegment  = 0x08
         };
-        friend class PacketBuilder;
 
     protected:
         MySpline        spline;
@@ -116,11 +129,12 @@ namespace Movement
         bool Finalized() const { return splineflags.done; }
         bool isCyclic() const { return splineflags.cyclic; }
         bool isFalling() const { return splineflags.falling; }
-        Vector3 FinalDestination() const { return Initialized() ? spline.getPoint(spline.last()) : Vector3(); }
-        Vector3 CurrentDestination() const { return Initialized() ? spline.getPoint(point_Idx + 1) : Vector3(); }
+        Vector3 const& FinalDestination() const { return Initialized() ? spline.getPoint(spline.last()) : Vector3::zero(); }
+        Vector3 const& CurrentDestination() const { return Initialized() ? spline.getPoint(point_Idx + 1) : Vector3::zero(); }
         int32 currentPathIdx() const;
 
         bool onTransport;
+        bool splineIsFacingOnly;
         std::string ToString() const;
     };
 }

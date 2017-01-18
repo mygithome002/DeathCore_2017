@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -172,7 +172,6 @@ public:
         handler->PSendSysMessage(LANG_COMMAND_CHEAT_POWER, player->GetCommandStatus(CHEAT_POWER) ? enabled : disabled);
         handler->PSendSysMessage(LANG_COMMAND_CHEAT_WW, player->GetCommandStatus(CHEAT_WATERWALK) ? enabled : disabled);
         handler->PSendSysMessage(LANG_COMMAND_CHEAT_TAXINODES, player->isTaxiCheater() ? enabled : disabled);
-
         return true;
     }
 
@@ -183,20 +182,21 @@ public:
 
         std::string argstr = (char*)args;
 
+        Player* target = handler->GetSession()->GetPlayer();
         if (!*args)
-            argstr = (handler->GetSession()->GetPlayer()->GetCommandStatus(CHEAT_WATERWALK)) ? "off" : "on";
+            argstr = (target->GetCommandStatus(CHEAT_WATERWALK)) ? "off" : "on";
 
         if (argstr == "off")
         {
-            handler->GetSession()->GetPlayer()->SetCommandStatusOff(CHEAT_WATERWALK);
-            handler->GetSession()->GetPlayer()->SetMovement(MOVE_LAND_WALK);                // OFF
+            target->SetCommandStatusOff(CHEAT_WATERWALK);
+            target->SetWaterWalking(false);
             handler->SendSysMessage("Waterwalking is OFF. You can't walk on water.");
             return true;
         }
         else if (argstr == "on")
         {
-            handler->GetSession()->GetPlayer()->SetCommandStatusOn(CHEAT_WATERWALK);
-            handler->GetSession()->GetPlayer()->SetMovement(MOVE_WATER_WALK);               // ON
+            target->SetCommandStatusOn(CHEAT_WATERWALK);
+            target->SetWaterWalking(true);
             handler->SendSysMessage("Waterwalking is ON. You can walk on water.");
             return true;
         }
@@ -206,6 +206,7 @@ public:
 
     static bool HandleTaxiCheatCommand(ChatHandler* handler, const char* args)
     {
+
         std::string argstr = (char*)args;
         Player* chr = handler->getSelectedPlayer();
 
@@ -215,11 +216,11 @@ public:
             return false;
 
         if (!*args)
-        {
             argstr = (chr->isTaxiCheater()) ? "off" : "on";
-        }
+
 
         if (argstr == "off")
+
         {
             chr->SetTaxiCheater(false);
             handler->PSendSysMessage(LANG_YOU_REMOVE_TAXIS, handler->GetNameLink(chr).c_str());
@@ -236,6 +237,7 @@ public:
             return true;
         }
 
+
         handler->SendSysMessage(LANG_USE_BOL);
         handler->SetSentErrorMessage(true);
         return false;
@@ -246,6 +248,7 @@ public:
         if (!*args)
             return false;
 
+        // std::int flag = (char*)args;
         int flag = atoi((char*)args);
 
         Player* chr = handler->getSelectedPlayer();
@@ -269,7 +272,7 @@ public:
                 ChatHandler(chr->GetSession()).PSendSysMessage(LANG_YOURS_EXPLORE_SET_NOTHING, handler->GetNameLink().c_str());
         }
 
-        for (uint8 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
+        for (uint16 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
         {
             if (flag != 0)
                 handler->GetSession()->GetPlayer()->SetFlag(PLAYER_EXPLORED_ZONES_1+i, 0xFFFFFFFF);

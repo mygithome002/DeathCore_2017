@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -107,11 +108,10 @@ enum TimeConstants
 enum AccountTypes
 {
     SEC_PLAYER         = 0,
-    SEC_VIP            = 1,
-    SEC_MODERATOR      = 2,
-    SEC_GAMEMASTER     = 3,
-    SEC_ADMINISTRATOR  = 4,
-    SEC_CONSOLE        = 5                                  // must be always last in list, accounts must have less security level always also
+    SEC_MODERATOR      = 1,
+    SEC_GAMEMASTER     = 2,
+    SEC_ADMINISTRATOR  = 3,
+    SEC_CONSOLE        = 4                                  // must be always last in list, accounts must have less security level always also
 };
 
 enum LocaleConstant
@@ -125,20 +125,32 @@ enum LocaleConstant
     LOCALE_esES = 6,
     LOCALE_esMX = 7,
     LOCALE_ruRU = 8,
+    LOCALE_none = 9,
+    LOCALE_ptBR = 10,
+    LOCALE_itIT = 11,
 
     TOTAL_LOCALES
 };
 
+const uint8 OLD_TOTAL_LOCALES = 9; /// @todo convert in simple system
 #define DEFAULT_LOCALE LOCALE_enUS
 
-#define MAX_LOCALES 8
-#define MAX_ACCOUNT_TUTORIAL_VALUES 8
+#define MAX_LOCALES 11
 
 TC_COMMON_API extern char const* localeNames[TOTAL_LOCALES];
 
 TC_COMMON_API LocaleConstant GetLocaleByName(const std::string& name);
 
 typedef std::vector<std::string> StringVector;
+
+#pragma pack(push, 1)
+
+struct TC_COMMON_API LocalizedString
+{
+    char const* Str[TOTAL_LOCALES];
+};
+
+#pragma pack(pop)
 
 // we always use stdlibc++ std::max/std::min, undefine some not C++ standard defines (Win API and some other platforms)
 #ifdef max

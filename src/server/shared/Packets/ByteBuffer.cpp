@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,15 +20,13 @@
 #include "MessageBuffer.h"
 #include "Common.h"
 #include "Log.h"
-
 #include <sstream>
 
-ByteBuffer::ByteBuffer(MessageBuffer&& buffer) : _rpos(0), _wpos(0), _storage(buffer.Move())
+ByteBuffer::ByteBuffer(MessageBuffer&& buffer) : _rpos(0), _wpos(0), _bitpos(InitialBitPos), _curbitval(0), _storage(buffer.Move())
 {
 }
 
-ByteBufferPositionException::ByteBufferPositionException(bool add, size_t pos,
-                                                         size_t size, size_t valueSize)
+ByteBufferPositionException::ByteBufferPositionException(bool add, size_t pos, size_t size, size_t valueSize)
 {
     std::ostringstream ss;
 
@@ -38,8 +37,7 @@ ByteBufferPositionException::ByteBufferPositionException(bool add, size_t pos,
     message().assign(ss.str());
 }
 
-ByteBufferSourceException::ByteBufferSourceException(size_t pos, size_t size,
-                                                     size_t valueSize)
+ByteBufferSourceException::ByteBufferSourceException(size_t pos, size_t size, size_t valueSize)
 {
     std::ostringstream ss;
 

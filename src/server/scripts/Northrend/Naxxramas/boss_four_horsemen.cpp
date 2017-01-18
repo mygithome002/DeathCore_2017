@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -59,6 +59,13 @@ enum Spells
     SPELL_CONDEMNATION     = 57377
 };
 
+#define SPELL_HELPER_UNHOLY_SHADOW RAID_MODE<uint32>(28882, 57369) // Rivendare: Unholy Shadow
+#define SPELL_HELPER_METEOR RAID_MODE<uint32>(28884, 57467) // Korth'azz: Meteor
+#define SPELL_HELPER_SHADOW_BOLT RAID_MODE<uint32>(57374, 57464) // Blaumeux : Shadow Bolt
+#define SPELL_HELPER_VOID_ZONE RAID_MODE<uint32>(28863, 57463) // Blaumeux : Void Zone
+#define SPELL_HELPER_HOLY_BOLT RAID_MODE<uint32>(57376, 57465) // Zeliek : Holy Bolt
+#define SPELL_HELPER_HOLY_WRATH RAID_MODE<uint32>(28883, 57466) // Zeliek: Holy Wrath
+
 enum Actions
 {
     ACTION_BEGIN_MOVEMENT = 1,
@@ -67,7 +74,7 @@ enum Actions
 
 enum HorsemenData
 {
-    DATA_HORSEMEN_IS_TIMED_KILL = Data::DATA_HORSEMEN_CHECK_ACHIEVEMENT_CREDIT, // inherit from naxxramas.h - this needs to be the first entry to ensure that there are no conflicts
+    DATA_HORSEMEN_IS_TIMED_KILL = NAXData::DATA_HORSEMEN_CHECK_ACHIEVEMENT_CREDIT, // inherit from naxxramas.h - this needs to be the first entry to ensure that there are no conflicts
     DATA_MOVEMENT_FINISHED,
     DATA_DEATH_TIME
 };
@@ -279,7 +286,7 @@ struct boss_four_horsemen_baseAI : public BossAI
             if (instance->GetBossState(BOSS_HORSEMEN) == DONE)
                 return;
             instance->SetBossState(BOSS_HORSEMEN, DONE);
-            //instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ENCOUNTER_CREDIT);
+            //instance->DoUpdateCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ENCOUNTER_CREDIT);
             DoCastAOE(SPELL_ENCOUNTER_CREDIT, true);
         }
 
@@ -434,7 +441,7 @@ class boss_four_horsemen_baron : public CreatureScript
                             events.Repeat(Seconds(12));
                             break;
                         case EVENT_UNHOLYSHADOW:
-                            DoCastVictim(SPELL_UNHOLY_SHADOW);
+                            DoCastVictim(SPELL_HELPER_UNHOLY_SHADOW);
                             events.Repeat(randtime(Seconds(10), Seconds(30)));
                             break;
                     }
@@ -447,7 +454,7 @@ class boss_four_horsemen_baron : public CreatureScript
 
             void SpellHitTarget(Unit* /*target*/, SpellInfo const* spell) override
             {
-                if (spell->Id == SPELL_UNHOLY_SHADOW)
+                if (spell->Id == SPELL_HELPER_UNHOLY_SHADOW)
                     Talk(SAY_SPECIAL);
             }
         };
@@ -508,7 +515,7 @@ class boss_four_horsemen_thane : public CreatureScript
                         case EVENT_METEOR:
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 20.0f, true))
                             {
-                                DoCast(target, SPELL_METEOR);
+                                DoCast(target, SPELL_HELPER_METEOR);
                                 _shouldSay = true;
                             }
                             events.Repeat(randtime(Seconds(13), Seconds(17)));
@@ -523,7 +530,7 @@ class boss_four_horsemen_thane : public CreatureScript
 
             void SpellHitTarget(Unit* /*target*/, SpellInfo const* spell) override
             {
-                if (_shouldSay && spell->Id == SPELL_METEOR)
+                if (_shouldSay && spell->Id == SPELL_HELPER_METEOR)
                 {
                     Talk(SAY_SPECIAL);
                     _shouldSay = false;
@@ -583,7 +590,7 @@ class boss_four_horsemen_lady : public CreatureScript
                         case EVENT_VOIDZONE:
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true))
                             {
-                                DoCast(target, SPELL_VOID_ZONE, true);
+                                DoCast(target, SPELL_HELPER_VOID_ZONE, true);
                                 Talk(SAY_SPECIAL);
                             }
                             events.Repeat(randtime(Seconds(12), Seconds(18)));
@@ -595,7 +602,7 @@ class boss_four_horsemen_lady : public CreatureScript
                     return;
 
                 if (Unit* target = SelectTarget(SELECT_TARGET_NEAREST, 0, 45.0f, true))
-                    DoCast(target, SPELL_SHADOW_BOLT);
+                    DoCast(target, SPELL_HELPER_SHADOW_BOLT);
                 else
                 {
                     DoCastAOE(SPELL_UNYIELDING_PAIN);
@@ -653,7 +660,7 @@ class boss_four_horsemen_sir : public CreatureScript
                         case EVENT_HOLYWRATH:
                             if (Unit* target = SelectTarget(SELECT_TARGET_NEAREST, 0, 45.0f, true))
                             {
-                                DoCast(target, SPELL_HOLY_WRATH, true);
+                                DoCast(target, SPELL_HELPER_HOLY_WRATH, true);
                                 _shouldSay = true;
                             }
                             events.Repeat(randtime(Seconds(10), Seconds(18)));
@@ -665,7 +672,7 @@ class boss_four_horsemen_sir : public CreatureScript
                     return;
 
                 if (Unit* target = SelectTarget(SELECT_TARGET_NEAREST, 0, 45.0f, true))
-                    DoCast(target, SPELL_HOLY_BOLT);
+                    DoCast(target, SPELL_HELPER_HOLY_BOLT);
                 else
                 {
                     DoCastAOE(SPELL_CONDEMNATION);
@@ -675,7 +682,7 @@ class boss_four_horsemen_sir : public CreatureScript
 
             void SpellHitTarget(Unit* /*target*/, SpellInfo const* spell) override
             {
-                if (_shouldSay && spell->Id == SPELL_HOLY_WRATH)
+                if (_shouldSay && spell->Id == SPELL_HELPER_HOLY_WRATH)
                 {
                     Talk(SAY_SPECIAL);
                     _shouldSay = false;

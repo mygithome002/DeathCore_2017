@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -133,7 +134,7 @@ namespace MMAP
     bool TerrainBuilder::loadMap(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData, Spot portion)
     {
         char mapFileName[255];
-        sprintf(mapFileName, "maps/%03u%02u%02u.map", mapID, tileY, tileX);
+        sprintf(mapFileName, "maps/%04u_%02u_%02u.map", mapID, tileY, tileX);
 
         FILE* mapFile = fopen(mapFileName, "rb");
         if (!mapFile)
@@ -167,7 +168,7 @@ namespace MMAP
         }
 
         // data used later
-        uint16 holes[16][16];
+        uint8 holes[16][16][8];
         memset(holes, 0, sizeof(holes));
         uint8 liquid_type[16][16];
         memset(liquid_type, 0, sizeof(liquid_type));
@@ -598,22 +599,17 @@ namespace MMAP
         coord[2] = v[index2];
     }
 
-    static uint16 holetab_h[4] = {0x1111, 0x2222, 0x4444, 0x8888};
-    static uint16 holetab_v[4] = {0x000F, 0x00F0, 0x0F00, 0xF000};
-
     /**************************************************************************/
-    bool TerrainBuilder::isHole(int square, const uint16 holes[16][16])
+    bool TerrainBuilder::isHole(int square, uint8 const holes[16][16][8])
     {
         int row = square / 128;
         int col = square % 128;
         int cellRow = row / 8;     // 8 squares per cell
         int cellCol = col / 8;
-        int holeRow = row % 8 / 2;
-        int holeCol = (square - (row * 128 + cellCol * 8)) / 2;
+        int holeRow = row % 8;
+        int holeCol = (square - (row * 128 + cellCol * 8));
 
-        uint16 hole = holes[cellRow][cellCol];
-
-        return (hole & holetab_h[holeCol] & holetab_v[holeRow]) != 0;
+        return (holes[cellRow][cellCol][holeRow] & (1 << holeCol)) != 0;
     }
 
     /**************************************************************************/
@@ -763,12 +759,12 @@ namespace MMAP
                                     }
 
                                     uint32 liqOffset = meshData.liquidVerts.size() / 3;
-                                    for (uint32 j = 0; j < liqVerts.size(); ++j)
-                                        meshData.liquidVerts.append(liqVerts[j].y, liqVerts[j].z, liqVerts[j].x);
+                                    for (uint32 i = 0; i < liqVerts.size(); ++i)
+                                        meshData.liquidVerts.append(liqVerts[i].y, liqVerts[i].z, liqVerts[i].x);
 
-                                    for (uint32 j = 0; j < liqTris.size() / 3; ++j)
+                                    for (uint32 i = 0; i < liqTris.size() / 3; ++i)
                                     {
-                                        meshData.liquidTris.append(liqTris[j*3+1] + liqOffset, liqTris[j*3+2] + liqOffset, liqTris[j*3] + liqOffset);
+                                        meshData.liquidTris.append(liqTris[i*3+1] + liqOffset, liqTris[i*3+2] + liqOffset, liqTris[i*3] + liqOffset);
                                         meshData.liquidType.append(type);
                                     }
                     }

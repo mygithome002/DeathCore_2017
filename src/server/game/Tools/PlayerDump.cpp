@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,50 +19,52 @@
 #include "Common.h"
 #include "PlayerDump.h"
 #include "DatabaseEnv.h"
-#include "UpdateFields.h"
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "AccountMgr.h"
 #include "World.h"
 
-#define DUMP_TABLE_COUNT 32
+#define DUMP_TABLE_COUNT 30
 struct DumpTable
 {
     char const* name;
     DumpTableType type;
 };
 
-DumpTable const dumpTables[DUMP_TABLE_COUNT] =
+static DumpTable dumpTables[DUMP_TABLE_COUNT] =
 {
     { "characters",                       DTT_CHARACTER  },
     { "character_account_data",           DTT_CHAR_TABLE },
     { "character_achievement",            DTT_CHAR_TABLE },
     { "character_achievement_progress",   DTT_CHAR_TABLE },
     { "character_action",                 DTT_CHAR_TABLE },
-    { "character_aura",                   DTT_CHAR_TABLE },
+    // { "character_aura",                   DTT_CHAR_TABLE }, /// @todo: reguid casterguid (full guid)
+    // { "character_aura_effect",            DTT_CHAR_TABLE }, /// @todo: reguid casterguid (full guid)
+    { "character_cuf_profiles",           DTT_CHAR_TABLE },
+    { "character_currency",               DTT_CURRENCY   },
     { "character_declinedname",           DTT_CHAR_TABLE },
     { "character_equipmentsets",          DTT_EQSET_TABLE},
-    { "character_fishingsteps",           DTT_CHAR_TABLE },
     { "character_glyphs",                 DTT_CHAR_TABLE },
     { "character_homebind",               DTT_CHAR_TABLE },
     { "character_inventory",              DTT_INVENTORY  },
     { "character_pet",                    DTT_PET        },
     { "character_pet_declinedname",       DTT_PET        },
     { "character_queststatus",            DTT_CHAR_TABLE },
-    { "character_queststatus_daily",      DTT_CHAR_TABLE },
-    { "character_queststatus_weekly",     DTT_CHAR_TABLE },
-    { "character_queststatus_monthly",    DTT_CHAR_TABLE },
-    { "character_queststatus_seasonal",   DTT_CHAR_TABLE },
+    { "character_queststatus_objectives", DTT_CHAR_TABLE },
     { "character_queststatus_rewarded",   DTT_CHAR_TABLE },
     { "character_reputation",             DTT_CHAR_TABLE },
     { "character_skills",                 DTT_CHAR_TABLE },
     { "character_spell",                  DTT_CHAR_TABLE },
+    { "character_spell_charges",          DTT_CHAR_TABLE },
     { "character_spell_cooldown",         DTT_CHAR_TABLE },
     { "character_talent",                 DTT_CHAR_TABLE },
+    /// @todo: character_void_storage
     { "mail",                             DTT_MAIL       },
     { "mail_items",                       DTT_MAIL_ITEM  }, // must be after mail
-    { "pet_aura",                         DTT_PET_TABLE  }, // must be after character_pet
+    // { "pet_aura",                         DTT_PET_TABLE  }, // must be after character_pet /// @todo: reguid casterguid (full guid)
+    // { "pet_aura_effect",                  DTT_PET_TABLE  }, // must be after character_pet /// @todo: reguid casterguid (full guid)
     { "pet_spell",                        DTT_PET_TABLE  }, // must be after character_pet
+    { "pet_spell_charges",                DTT_PET_TABLE  }, // must be after character_pet
     { "pet_spell_cooldown",               DTT_PET_TABLE  }, // must be after character_pet
     { "item_instance",                    DTT_ITEM       }, // must be after character_inventory and mail_items
     { "character_gifts",                  DTT_ITEM_GIFT  }, // must be after item_instance
@@ -190,9 +193,9 @@ bool ChangeGuid(std::string& str, uint32 n, PlayerDump::DumpGuidMap& guidMap, Ob
     if (allowZero && !oldGuid)
         return true;                                        // not an error
 
-    char chritem[20];
+    char chritem[21];
     ObjectGuid::LowType newGuid = RegisterNewGuid(oldGuid, guidMap, guidOffset);
-    snprintf(chritem, 20, "%u", newGuid);
+    snprintf(chritem, 21, UI64FMTD, newGuid);
 
     return ChangeNth(str, n, chritem, false, allowZero);
 }
@@ -247,7 +250,7 @@ std::string PlayerDumpWriter::GenerateWhereStr(char const* field, DumpGuidSet co
 void StoreGUID(QueryResult result, uint32 field, PlayerDump::DumpGuidSet &guids)
 {
     Field* fields = result->Fetch();
-    ObjectGuid::LowType guid = fields[field].GetUInt32();
+    ObjectGuid::LowType guid = fields[field].GetUInt64();
     if (guid)
         guids.insert(guid);
 }
@@ -269,6 +272,7 @@ bool PlayerDumpWriter::DumpTable(std::string& dump, ObjectGuid::LowType guid, ch
 
     switch (type)
     {
+        case DTT_CURRENCY:  fieldname = "CharacterGuid";             break;
         case DTT_ITEM:      fieldname = "guid";      guids = &items; break;
         case DTT_ITEM_GIFT: fieldname = "item_guid"; guids = &items; break;
         case DTT_PET:       fieldname = "owner";                     break;
@@ -319,10 +323,13 @@ bool PlayerDumpWriter::DumpTable(std::string& dump, ObjectGuid::LowType guid, ch
                     break;
                 case DTT_CHARACTER:
                 {
-                    if (result->GetFieldCount() <= 73)          // avoid crashes on next check
+                    if (result->GetFieldCount() <= 64)          // avoid crashes on next check
+                    {
                         TC_LOG_FATAL("misc", "PlayerDumpWriter::DumpTable - Trying to access non-existing or wrong positioned field (`deleteInfos_Account`) in `characters` table.");
+                        return false;
+                    }
 
-                    if (result->Fetch()[73].GetUInt32())        // characters.deleteInfos_Account - if filled error
+                    if (result->Fetch()[64].GetUInt32())        // characters.deleteInfos_Account - if filled error
                         return false;
                     break;
                 }
@@ -398,7 +405,7 @@ void fixNULLfields(std::string& line)
 DumpReturn PlayerDumpReader::LoadDump(std::string const& file, uint32 account, std::string name, ObjectGuid::LowType guid)
 {
     uint32 charcount = AccountMgr::GetCharactersCount(account);
-    if (charcount >= 10)
+    if (charcount >= sWorld->getIntConfig(CONFIG_CHARACTERS_PER_REALM))
         return DUMP_TOO_MANY_CHARS;
 
     FILE* fin = fopen(file.c_str(), "r");
@@ -410,21 +417,18 @@ DumpReturn PlayerDumpReader::LoadDump(std::string const& file, uint32 account, s
     // make sure the same guid doesn't already exist and is safe to use
     bool incHighest = true;
     if (guid && guid < sObjectMgr->GetGenerator<HighGuid::Player>().GetNextAfterMaxUsed())
-
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHECK_GUID);
-        stmt->setUInt32(0, guid);
+        stmt->setUInt64(0, guid);
         PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
         if (result)
             guid = sObjectMgr->GetGenerator<HighGuid::Player>().GetNextAfterMaxUsed();                     // use first free if exists
-
         else
             incHighest = false;
     }
     else
         guid = sObjectMgr->GetGenerator<HighGuid::Player>().GetNextAfterMaxUsed();
-
 
     // normalize the name if specified and check if it exists
     if (!normalizePlayerName(name))
@@ -444,13 +448,12 @@ DumpReturn PlayerDumpReader::LoadDump(std::string const& file, uint32 account, s
 
     // name encoded or empty
 
-    snprintf(newguid, 20, "%u", guid);
+    snprintf(newguid, 20, UI64FMTD, guid);
     snprintf(chraccount, 20, "%u", account);
 
     DumpGuidMap items;
     DumpGuidMap mails;
-    char buf[32000];
-    memset(buf, 0, sizeof(buf));
+    char buf[32000] = "";
 
     typedef std::map<uint32 /*old*/, uint32 /*new*/> PetIds;
     PetIds petIds;
@@ -546,22 +549,23 @@ DumpReturn PlayerDumpReader::LoadDump(std::string const& file, uint32 account, s
                     PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
                     if (result)
-                        if (!ChangeNth(line, 37, "1"))      // characters.at_login set to "rename on login"
+                        if (!ChangeNth(line, 41, "1"))      // characters.at_login set to "rename on login"
                             ROLLBACK(DUMP_FILE_BROKEN);
                 }
                 else if (!ChangeNth(line, 3, name.c_str())) // characters.name
                     ROLLBACK(DUMP_FILE_BROKEN);
 
                 const char null[5] = "NULL";
-                if (!ChangeNth(line, 74, null))             // characters.deleteInfos_Account
+                if (!ChangeNth(line, 65, null))             // characters.deleteInfos_Account
                     ROLLBACK(DUMP_FILE_BROKEN);
-                if (!ChangeNth(line, 75, null))             // characters.deleteInfos_Name
+                if (!ChangeNth(line, 66, null))             // characters.deleteInfos_Name
                     ROLLBACK(DUMP_FILE_BROKEN);
-                if (!ChangeNth(line, 76, null))             // characters.deleteDate
+                if (!ChangeNth(line, 67, null))             // characters.deleteDate
                     ROLLBACK(DUMP_FILE_BROKEN);
                 break;
             }
             case DTT_CHAR_TABLE:
+            case DTT_CURRENCY:
             {
                 if (!ChangeNth(line, 1, newguid))           // character_*.guid update
                     ROLLBACK(DUMP_FILE_BROKEN);
@@ -676,15 +680,13 @@ DumpReturn PlayerDumpReader::LoadDump(std::string const& file, uint32 account, s
     CharacterDatabase.CommitTransaction(trans);
 
     // in case of name conflict player has to rename at login anyway
-    sWorld->AddCharacterInfo(ObjectGuid(HighGuid::Player, guid), account, name, gender, race, playerClass, level);
+    sWorld->AddCharacterInfo(ObjectGuid::Create<HighGuid::Player>(guid), account, name, gender, race, playerClass, level, false);
 
     sObjectMgr->GetGenerator<HighGuid::Item>().Set(sObjectMgr->GetGenerator<HighGuid::Item>().GetNextAfterMaxUsed() + items.size());
-
     sObjectMgr->_mailId     += mails.size();
 
     if (incHighest)
         sObjectMgr->GetGenerator<HighGuid::Player>().Generate();
-
 
     fclose(fin);
 

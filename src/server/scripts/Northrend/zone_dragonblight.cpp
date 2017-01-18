@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,7 +24,6 @@ SDCategory: Dragonblight
 EndScriptData */
 
 /* ContentData
-npc_alexstrasza_wr_gate
 EndContentData */
 
 #include "ScriptMgr.h"
@@ -173,34 +173,29 @@ class npc_commander_eligor_dawnbringer : public CreatureScript
                 {
                     if (id == 1)
                     {
-                        me->SetFacingTo(PosTalkLocations[talkWing].GetOrientation(), true);
+                        me->SetFacingTo(PosTalkLocations[talkWing].GetOrientation());
                         TurnAudience();
 
                         switch (talkWing)
                         {
-                        case 0: // Pinnacle of Naxxramas
-                            {
-                                switch (urand (0, 1))
+                            case 0: // Pinnacle of Naxxramas
+                                switch (urand(0, 1))
                                 {
                                     case 0: ChangeImage(NPC_IMAGE_OF_KELTHUZAD, MODEL_IMAGE_OF_KELTHUZAD, SAY_KELTHUZAD_1);
-                                            _events.ScheduleEvent(EVENT_KELTHUZAD_2, 8000); break;
+                                        _events.ScheduleEvent(EVENT_KELTHUZAD_2, 8000); break;
                                     case 1: ChangeImage(NPC_IMAGE_OF_SAPPHIRON, MODEL_IMAGE_OF_SAPPHIRON, SAY_SAPPHIRON); break;
                                 }
-                            }
-                            break;
-                        case 1: // Death knight wing of Naxxramas
-                            {
-                                switch (urand (0, 2))
+                                break;
+                            case 1: // Death knight wing of Naxxramas
+                                switch (urand(0, 2))
                                 {
                                     case 0: ChangeImage(NPC_IMAGE_OF_RAZUVIOUS, MODEL_IMAGE_OF_RAZUVIOUS, SAY_RAZUVIOUS); break;
                                     case 1: ChangeImage(NPC_IMAGE_OF_GOTHIK, MODEL_IMAGE_OF_GOTHIK, SAY_GOTHIK); break;
                                     case 2: ChangeImage(NPC_IMAGE_OF_THANE, MODEL_IMAGE_OF_THANE, SAY_DEATH_KNIGHTS_1);
-                                            _events.ScheduleEvent(EVENT_DEATH_KNIGHTS_2, 10000); break;
+                                        _events.ScheduleEvent(EVENT_DEATH_KNIGHTS_2, 10000); break;
                                 }
-                            }
-                            break;
-                        case 2: // Blighted abomination wing of Naxxramas
-                            {
+                                break;
+                            case 2: // Blighted abomination wing of Naxxramas
                                 switch (urand (0, 3))
                                 {
                                     case 0: ChangeImage(NPC_IMAGE_OF_PATCHWERK, MODEL_IMAGE_OF_PATCHWERK, SAY_PATCHWERK); break;
@@ -208,20 +203,16 @@ class npc_commander_eligor_dawnbringer : public CreatureScript
                                     case 2: ChangeImage(NPC_IMAGE_OF_THADDIUS, MODEL_IMAGE_OF_THADDIUS, SAY_THADDIUS); break;
                                     case 3: ChangeImage(NPC_IMAGE_OF_GLUTH, MODEL_IMAGE_OF_GLUTH, SAY_GLUTH); break;
                                 }
-                            }
-                            break;
-                        case 3: // Accursed spider wing of Naxxramas
-                            {
+                                break;
+                            case 3: // Accursed spider wing of Naxxramas
                                 switch (urand (0, 2))
                                 {
                                     case 0: ChangeImage(NPC_IMAGE_OF_ANUBREKHAN, MODEL_IMAGE_OF_ANUBREKHAN, SAY_ANUBREKHAN); break;
                                     case 1: ChangeImage(NPC_IMAGE_OF_FAERLINA, MODEL_IMAGE_OF_FAERLINA, SAY_FAERLINA); break;
                                     case 2: ChangeImage(NPC_IMAGE_OF_MAEXXNA, MODEL_IMAGE_OF_MAEXXNA, SAY_MAEXXNA); break;
                                 }
-                            }
-                            break;
-                        case 4: // Dread plague wing of Naxxramas
-                            {
+                                break;
+                            case 4: // Dread plague wing of Naxxramas
                                 switch (urand (0, 2))
                                 {
                                     case 0: ChangeImage(NPC_IMAGE_OF_NOTH, MODEL_IMAGE_OF_NOTH, SAY_NOTH); break;
@@ -229,11 +220,10 @@ class npc_commander_eligor_dawnbringer : public CreatureScript
                                             _events.ScheduleEvent(EVENT_HEIGAN_2, 8000); break;
                                     case 2: ChangeImage(NPC_IMAGE_OF_LOATHEB, MODEL_IMAGE_OF_LOATHEB, SAY_LOATHEB); break;
                                 }
-                            }
-                            break;
-                        case 5: // Home
-                            _events.ScheduleEvent(EVENT_START_RANDOM, 30000);
-                            break;
+                                break;
+                            case 5: // Home
+                                _events.ScheduleEvent(EVENT_START_RANDOM, 30000);
+                                break;
                         }
                     }
                 }
@@ -363,6 +353,16 @@ class npc_commander_eligor_dawnbringer : public CreatureScript
         {
             return new npc_commander_eligor_dawnbringerAI(creature);
         }
+};
+
+enum AlexstraszaWrGate
+{
+    // Quest
+    QUEST_RETURN_TO_AG_A    = 12499,
+    QUEST_RETURN_TO_AG_H    = 12500,
+
+    // Movie
+    MOVIE_ID_GATES          = 14
 };
 
 /*######
@@ -497,21 +497,21 @@ class npc_wyrmrest_defender : public CreatureScript
         {
             if (player->GetQuestStatus(QUEST_DEFENDING_WYRMREST_TEMPLE) == QUEST_STATUS_INCOMPLETE)
             {
-                AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-                SendGossipMenuFor(player, GOSSIP_TEXTID_DEF1, creature->GetGUID());
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+                player->SEND_GOSSIP_MENU(GOSSIP_TEXTID_DEF1, creature->GetGUID());
             }
             else
-                SendGossipMenuFor(player, player->GetGossipTextId(creature), creature->GetGUID());
+                player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
 
             return true;
         }
 
         bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
         {
-            ClearGossipMenuFor(player);
+            player->PlayerTalkClass->ClearMenus();
             if (action == GOSSIP_ACTION_INFO_DEF+1)
             {
-                SendGossipMenuFor(player, GOSSIP_TEXTID_DEF2, creature->GetGUID());
+                player->SEND_GOSSIP_MENU(GOSSIP_TEXTID_DEF2, creature->GetGUID());
                 // Makes player cast trigger spell for 49207 on self
                 player->CastSpell(player, SPELL_CHARACTER_SCRIPT, true);
                 // The gossip should not auto close
@@ -700,31 +700,6 @@ class npc_torturer_lecraft : public CreatureScript
         }
 };
 
-enum MessengerTorvus
-{
-    NPC_MESSENGER_TORVUS        = 26649,
-    QUEST_MESSAGE_FROM_THE_WEST = 12033,
-
-    TALK_0 = 0
-};
-
-class at_nearby_messenger_torvus : public AreaTriggerScript
-{
-public:
-    at_nearby_messenger_torvus() : AreaTriggerScript("at_nearby_messenger_torvus") { }
-
-    bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/) override
-    {
-        if (player->IsAlive())
-            if (Quest const* quest = sObjectMgr->GetQuestTemplate(QUEST_MESSAGE_FROM_THE_WEST))
-                if (player->CanTakeQuest(quest, false))
-                    if (Creature* creature = player->FindNearestCreature(NPC_MESSENGER_TORVUS, 50.0f, true))
-                        creature->AI()->Talk(TALK_0, player);
-
-        return true;
-    }
-};
-
 void AddSC_dragonblight()
 {
     new npc_commander_eligor_dawnbringer();
@@ -732,5 +707,4 @@ void AddSC_dragonblight()
     new spell_q12096_q12092_bark();
     new npc_wyrmrest_defender();
     new npc_torturer_lecraft();
-    new at_nearby_messenger_torvus();
 }

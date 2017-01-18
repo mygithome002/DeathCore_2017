@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -160,7 +160,7 @@ public:
                     {
                         for (GuidList::const_iterator itr = EggList.begin(); itr != EggList.end(); ++itr)
                             if (GameObject* egg = instance->GetGameObject(*itr))
-                                egg->SetPhaseMask(2, true);
+                                egg->SetLootState(GO_JUST_DEACTIVATED);
                     }
                     SetData(DATA_EGG_EVENT, NOT_STARTED);
                     break;

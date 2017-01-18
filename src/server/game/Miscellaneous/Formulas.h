@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,11 +23,28 @@
 #include "SharedDefines.h"
 #include "ScriptMgr.h"
 #include "Player.h"
-#include "WorldSession.h"
-#include "VipSystem.h"
+#include "GameTables.h"
 
 namespace Trinity
 {
+    inline uint32 GetExpansionForLevel(uint32 level)
+    {
+        if (level < 60)
+            return EXPANSION_CLASSIC;
+        else if (level < 70)
+            return EXPANSION_THE_BURNING_CRUSADE;
+        else if (level < 80)
+            return EXPANSION_WRATH_OF_THE_LICH_KING;
+        else if (level < 85)
+            return EXPANSION_CATACLYSM;
+        else if (level < 90)
+            return EXPANSION_MISTS_OF_PANDARIA;
+        else if (level < 100)
+            return EXPANSION_WARLORDS_OF_DRAENOR;
+        else
+            return CURRENT_EXPANSION;
+    }
+
     namespace Honor
     {
         inline float hk_honor_at_level_f(uint8 level, float multiplier = 1.0f)
@@ -48,14 +66,18 @@ namespace Trinity
         {
             uint8 level;
 
-            if (pl_level <= 5)
+            if (pl_level < 7)
                 level = 0;
-            else if (pl_level <= 39)
-                level = pl_level - 5 - pl_level / 10;
-            else if (pl_level <= 59)
-                level = pl_level - 1 - pl_level / 5;
+            else if (pl_level < 35)
+            {
+                uint8 count = 0;
+                for (int i = 15; i <= pl_level; ++i)
+                    if (i % 5 == 0) ++count;
+
+                level = (pl_level - 7) - (count - 1);
+            }
             else
-                level = pl_level - 9;
+                level = pl_level - 10;
 
             sScriptMgr->OnGrayLevelCalculation(level, pl_level);
             return level;
@@ -84,7 +106,7 @@ namespace Trinity
         {
             uint8 diff;
 
-            if (pl_level < 8)
+            if (pl_level < 4)
                 diff = 5;
             else if (pl_level < 10)
                 diff = 6;
@@ -113,27 +135,12 @@ namespace Trinity
             return diff;
         }
 
-        inline uint32 BaseGain(uint8 pl_level, uint8 mob_level, ContentLevels content)
+        inline uint32 BaseGain(uint8 pl_level, uint8 mob_level)
         {
             uint32 baseGain;
-            uint32 nBaseExp;
 
-            switch (content)
-            {
-                case CONTENT_1_60:
-                    nBaseExp = 45;
-                    break;
-                case CONTENT_61_70:
-                    nBaseExp = 235;
-                    break;
-                case CONTENT_71_80:
-                    nBaseExp = 580;
-                    break;
-                default:
-                    TC_LOG_ERROR("misc", "BaseGain: Unsupported content level %u", content);
-                    nBaseExp = 45;
-                    break;
-            }
+            GtXpEntry const* xpPlayer = sXpGameTable.GetRow(pl_level);
+            GtXpEntry const* xpMob = sXpGameTable.GetRow(mob_level);
 
             if (mob_level >= pl_level)
             {
@@ -141,7 +148,7 @@ namespace Trinity
                 if (nLevelDiff > 4)
                     nLevelDiff = 4;
 
-                baseGain = ((pl_level * 5 + nBaseExp) * (20 + nLevelDiff) / 10 + 1) / 2;
+                baseGain = uint32(round(xpPlayer->PerKill * (1 + 0.05f * nLevelDiff)));
             }
             else
             {
@@ -149,13 +156,13 @@ namespace Trinity
                 if (mob_level > gray_level)
                 {
                     uint8 ZD = GetZeroDifference(pl_level);
-                    baseGain = (pl_level * 5 + nBaseExp) * (ZD + mob_level - pl_level) / ZD;
+                    baseGain = uint32(round(xpMob->PerKill * ((1 - ((pl_level - mob_level) / float(ZD))) * (xpMob->Divisor / xpPlayer->Divisor))));
                 }
                 else
                     baseGain = 0;
             }
 
-            sScriptMgr->OnBaseGainCalculation(baseGain, pl_level, mob_level, content);
+            sScriptMgr->OnBaseGainCalculation(baseGain, pl_level, mob_level);
             return baseGain;
         }
 
@@ -169,10 +176,14 @@ namespace Trinity
             {
                 float xpMod = 1.0f;
 
-                gain = BaseGain(player->getLevel(), u->getLevel(), GetContentLevelsForMapAndZone(u->GetMapId(), u->GetZoneId()));
+                gain = BaseGain(player->getLevel(), u->getLevel());
 
                 if (gain && creature)
                 {
+                    // Players get only 10% xp for killing creatures of lower expansion levels than himself
+                    if ((uint32(creature->GetCreatureTemplate()->HealthScalingExpansion) < GetExpansionForLevel(player->getLevel())))
+                        gain = uint32(round(gain / 10.0f));
+
                     if (creature->isElite())
                     {
                         // Elites in instances have a 2.75x XP bonus instead of the regular 2x world bonus.
@@ -190,8 +201,6 @@ namespace Trinity
                     xpMod *= 1.0f - 2.0f*creature->m_PlayerDamageReq / creature->GetMaxHealth();
 
                 gain = uint32(gain * xpMod);
-
-                sVipSystem->VipFill(player->GetSession()->GetSecurity(), TYPE_RATE_XP_KILL, gain);
             }
 
             sScriptMgr->OnGainCalculation(gain, player, u);
@@ -205,7 +214,8 @@ namespace Trinity
             if (isRaid)
             {
                 // FIXME: Must apply decrease modifiers depending on raid size.
-                rate = 1.0f;
+                // set to < 1 to, so client will display raid related strings
+                rate = 0.99f;
             }
             else
             {
@@ -232,6 +242,26 @@ namespace Trinity
             return rate;
         }
     } // namespace Trinity::XP
+
+    namespace Currency
+    {
+        inline uint32 ConquestRatingCalculator(uint32 rate)
+        {
+            if (rate <= 1500)
+                return 1350; // Default conquest points
+            else if (rate > 3000)
+                rate = 3000;
+
+            // http://www.arenajunkies.com/topic/179536-conquest-point-cap-vs-personal-rating-chart/page__st__60#entry3085246
+            return uint32(1.4326 * ((1511.26 / (1 + 1639.28 / exp(0.00412 * rate))) + 850.15));
+        }
+
+        inline uint32 BgConquestRatingCalculator(uint32 rate)
+        {
+            // WowWiki: Battleground ratings receive a bonus of 22.2% to the cap they generate
+            return uint32((ConquestRatingCalculator(rate) * 1.222f) + 0.5f);
+        }
+    } // namespace Trinity::Currency
 } // namespace Trinity
 
 #endif

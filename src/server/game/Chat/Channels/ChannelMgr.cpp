@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,6 +18,7 @@
 
 #include "Channel.h"
 #include "ChannelMgr.h"
+#include "ChannelPackets.h"
 #include "Player.h"
 #include "World.h"
 
@@ -29,7 +31,7 @@ ChannelMgr::~ChannelMgr()
         delete itr->second;
 }
 
-ChannelMgr* ChannelMgr::forTeam(uint32 team)
+ChannelMgr* ChannelMgr::ForTeam(uint32 team)
 {
     static ChannelMgr allianceChannelMgr(ALLIANCE);
     static ChannelMgr hordeChannelMgr(HORDE);
@@ -75,11 +77,10 @@ Channel* ChannelMgr::GetJoinChannel(uint32 channelId, std::string const& name, A
     {
         ChatChannelsEntry const* channelEntry = sChatChannelsStore.AssertEntry(channelId);
         uint32 zoneId = zoneEntry ? zoneEntry->ID : 0;
-        if (channelEntry->flags & (CHANNEL_DBC_FLAG_GLOBAL | CHANNEL_DBC_FLAG_CITY_ONLY))
+        if (channelEntry->Flags & (CHANNEL_DBC_FLAG_GLOBAL | CHANNEL_DBC_FLAG_CITY_ONLY))
             zoneId = 0;
 
         std::pair<uint32, uint32> key = std::make_pair(channelId, zoneId);
-
         auto itr = _channels.find(key);
         if (itr != _channels.end())
             return itr->second;
@@ -95,6 +96,7 @@ Channel* ChannelMgr::GetJoinChannel(uint32 channelId, std::string const& name, A
             return nullptr;
 
         wstrToLower(channelName);
+
         auto itr = _customChannels.find(channelName);
         if (itr != _customChannels.end())
             return itr->second;
@@ -105,25 +107,20 @@ Channel* ChannelMgr::GetJoinChannel(uint32 channelId, std::string const& name, A
     }
 }
 
-Channel* ChannelMgr::GetChannel(uint32 channelId, std::string const& name, Player* player, bool pkt /*= true*/, AreaTableEntry const* zoneEntry /*= nullptr*/) const
+Channel* ChannelMgr::GetChannel(uint32 channelId, std::string const& name, Player* player, bool notify /*= true*/, AreaTableEntry const* zoneEntry /*= nullptr*/) const
 {
-    Channel* ret = nullptr;
-    bool send = false;
-
+    Channel* result = nullptr;
     if (channelId) // builtin
     {
         ChatChannelsEntry const* channelEntry = sChatChannelsStore.AssertEntry(channelId);
         uint32 zoneId = zoneEntry ? zoneEntry->ID : 0;
-        if (channelEntry->flags & (CHANNEL_DBC_FLAG_GLOBAL | CHANNEL_DBC_FLAG_CITY_ONLY))
+        if (channelEntry->Flags & (CHANNEL_DBC_FLAG_GLOBAL | CHANNEL_DBC_FLAG_CITY_ONLY))
             zoneId = 0;
 
         std::pair<uint32, uint32> key = std::make_pair(channelId, zoneId);
-
         auto itr = _channels.find(key);
         if (itr != _channels.end())
-            ret = itr->second;
-        else
-            send = true;
+            result = itr->second;
     }
     else // custom
     {
@@ -132,24 +129,21 @@ Channel* ChannelMgr::GetChannel(uint32 channelId, std::string const& name, Playe
             return nullptr;
 
         wstrToLower(channelName);
+
         auto itr = _customChannels.find(channelName);
         if (itr != _customChannels.end())
-            ret = itr->second;
-        else
-            send = true;
+            result = itr->second;
     }
 
-    if (send && pkt)
+    if (!result && notify)
     {
         std::string channelName = name;
         Channel::GetChannelName(channelName, channelId, player->GetSession()->GetSessionDbcLocale(), zoneEntry);
 
-        WorldPacket data;
-        ChannelMgr::MakeNotOnPacket(&data, channelName);
-        player->SendDirectMessage(&data);
+        SendNotOnChannelNotify(player, channelName);
     }
 
-    return ret;
+    return result;
 }
 
 void ChannelMgr::LeftChannel(std::string const& name)
@@ -175,11 +169,10 @@ void ChannelMgr::LeftChannel(uint32 channelId, AreaTableEntry const* zoneEntry)
 {
     ChatChannelsEntry const* channelEntry = sChatChannelsStore.AssertEntry(channelId);
     uint32 zoneId = zoneEntry ? zoneEntry->ID : 0;
-    if (channelEntry->flags & (CHANNEL_DBC_FLAG_GLOBAL | CHANNEL_DBC_FLAG_CITY_ONLY))
+    if (channelEntry->Flags & (CHANNEL_DBC_FLAG_GLOBAL | CHANNEL_DBC_FLAG_CITY_ONLY))
         zoneId = 0;
 
     std::pair<uint32, uint32> key = std::make_pair(channelId, zoneId);
-
     auto itr = _channels.find(key);
     if (itr == _channels.end())
         return;
@@ -192,8 +185,10 @@ void ChannelMgr::LeftChannel(uint32 channelId, AreaTableEntry const* zoneEntry)
     }
 }
 
-void ChannelMgr::MakeNotOnPacket(WorldPacket* data, std::string const& name)
+void ChannelMgr::SendNotOnChannelNotify(Player const* player, std::string const& name)
 {
-    data->Initialize(SMSG_CHANNEL_NOTIFY, 1 + name.size());
-    (*data) << uint8(CHAT_NOT_MEMBER_NOTICE) << name;
+    WorldPackets::Channel::ChannelNotify notify;
+    notify.Type = CHAT_NOT_MEMBER_NOTICE;
+    notify._Channel = name;
+    player->SendDirectMessage(notify.Write());
 }

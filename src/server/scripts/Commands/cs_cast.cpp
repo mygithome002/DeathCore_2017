@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -99,7 +99,8 @@ public:
                 return false;
         }
 
-        TriggerCastFlags triggered = (triggeredStr != NULL) ? TRIGGERED_FULL_DEBUG_MASK : TRIGGERED_NONE;
+        bool triggered = (triggeredStr != NULL);
+
         handler->GetSession()->GetPlayer()->CastSpell(target, spellId, triggered);
 
         return true;
@@ -131,7 +132,8 @@ public:
                 return false;
         }
 
-        TriggerCastFlags triggered = (triggeredStr != NULL) ? TRIGGERED_FULL_DEBUG_MASK : TRIGGERED_NONE;
+        bool triggered = (triggeredStr != NULL);
+
         caster->CastSpell(handler->GetSession()->GetPlayer(), spellId, triggered);
 
         return true;
@@ -165,7 +167,8 @@ public:
                 return false;
         }
 
-        TriggerCastFlags triggered = (triggeredStr != NULL) ? TRIGGERED_FULL_DEBUG_MASK : TRIGGERED_NONE;
+        bool triggered = (triggeredStr != NULL);
+
         float x, y, z;
         handler->GetSession()->GetPlayer()->GetClosePoint(x, y, z, dist);
 
@@ -227,7 +230,8 @@ public:
                 return false;
         }
 
-        TriggerCastFlags triggered = (triggeredStr != NULL) ? TRIGGERED_FULL_DEBUG_MASK : TRIGGERED_NONE;
+        bool triggered = (triggeredStr != NULL);
+
         caster->CastSpell(caster->GetVictim(), spellId, triggered);
 
         return true;
@@ -270,7 +274,8 @@ public:
                 return false;
         }
 
-        TriggerCastFlags triggered = (triggeredStr != NULL) ? TRIGGERED_FULL_DEBUG_MASK : TRIGGERED_NONE;
+        bool triggered = (triggeredStr != NULL);
+
         caster->CastSpell(x, y, z, spellId, triggered);
 
         return true;

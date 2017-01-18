@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -81,7 +82,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature /*= nullptr*/, float maxRange
     // If it can't find a suitable attack target then we should error out.
     if (!creature->HasReactState(REACT_PASSIVE) && !creature->GetVictim())
     {
-        TC_LOG_ERROR("misc.dozoneincombat", "DoZoneInCombat called for creature that has empty threat list (creature entry = %u)", creature->GetEntry());
+        TC_LOG_ERROR("misc", "DoZoneInCombat called for creature that has empty threat list (creature entry = %u)", creature->GetEntry());
         return;
     }
 
@@ -161,7 +162,7 @@ void CreatureAI::TriggerAlert(Unit const* who) const
     me->SendAIReaction(AI_REACTION_ALERT);
 
     // Face the unit (stealthed player) and set distracted state for 5 seconds
-    me->SetFacingTo(me->GetAngle(who->GetPositionX(), who->GetPositionY()), true);
+    me->SetFacingTo(me->GetAngle(who->GetPositionX(), who->GetPositionY()));
     me->StopMoving();
     me->GetMotionMaster()->MoveDistract(5 * IN_MILLISECONDS);
 }
@@ -275,11 +276,11 @@ bool CreatureAI::_EnterEvadeMode(EvadeReason /*why*/)
     return true;
 }
 
-static const uint32 BOUNDARY_VISUALIZE_CREATURE = 15425;
-static const float BOUNDARY_VISUALIZE_CREATURE_SCALE = 0.25f;
-static const int8 BOUNDARY_VISUALIZE_STEP_SIZE = 1;
-static const int32 BOUNDARY_VISUALIZE_FAILSAFE_LIMIT = 750;
-static const float BOUNDARY_VISUALIZE_SPAWN_HEIGHT = 5.0f;
+const uint32 BOUNDARY_VISUALIZE_CREATURE = 15425;
+const float BOUNDARY_VISUALIZE_CREATURE_SCALE = 0.25f;
+const int8 BOUNDARY_VISUALIZE_STEP_SIZE = 1;
+const int32 BOUNDARY_VISUALIZE_FAILSAFE_LIMIT = 750;
+const float BOUNDARY_VISUALIZE_SPAWN_HEIGHT = 5.0f;
 int32 CreatureAI::VisualizeBoundary(uint32 duration, Unit* owner, bool fill) const
 {
     typedef std::pair<int32, int32> coordinate;

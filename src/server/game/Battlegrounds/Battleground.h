@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,6 +26,8 @@
 #include "WorldPacket.h"
 #include "Object.h"
 #include "GameObject.h"
+#include "Packets/WorldStatePackets.h"
+#include "Packets/BattlegroundPackets.h"
 #include "EventMap.h"
 
 class Creature;
@@ -36,17 +39,8 @@ class WorldObject;
 class WorldPacket;
 class BattlegroundMap;
 
-struct PvPDifficultyEntry;
+struct PvpDifficultyEntry;
 struct WorldSafeLocsEntry;
-
-enum BattlegroundDesertionType
-{
-    BG_DESERTION_TYPE_LEAVE_BG        = 0, // player leaves the BG
-    BG_DESERTION_TYPE_OFFLINE         = 1, // player is kicked from BG because offline
-    BG_DESERTION_TYPE_LEAVE_QUEUE     = 2, // player is invited to join and refuses to do it
-    BG_DESERTION_TYPE_NO_ENTER_BUTTON = 3, // player is invited to join and do nothing (time expires)
-    BG_DESERTION_TYPE_INVITE_LOGOUT   = 4, // player is invited to join and logs out
-};
 
 enum BattlegroundCriteriaId
 {
@@ -128,12 +122,15 @@ enum BattlegroundTimeIntervals
     RESURRECTION_INTERVAL           = 30000,                // ms
     //REMIND_INTERVAL                 = 10000,                // ms
     INVITATION_REMIND_TIME          = 20000,                // ms
-    INVITE_ACCEPT_WAIT_TIME         = 60000,                // ms
-    TIME_TO_AUTOREMOVE              = 120000,               // ms
+    INVITE_ACCEPT_WAIT_TIME         = 90000,                // ms
+    TIME_AUTOCLOSE_BATTLEGROUND     = 120000,               // ms
     MAX_OFFLINE_TIME                = 300,                  // secs
     RESPAWN_ONE_DAY                 = 86400,                // secs
     RESPAWN_IMMEDIATELY             = 0,                    // secs
-    BUFF_RESPAWN_TIME               = 180                   // secs
+    BUFF_RESPAWN_TIME               = 180,                  // secs
+    BATTLEGROUND_COUNTDOWN_MAX      = 120,                  // secs
+    ARENA_COUNTDOWN_MAX             = 60,                   // secs
+    PLAYER_POSITION_UPDATE_INTERVAL = 5                     // secs
 };
 
 enum BattlegroundStartTimeIntervals
@@ -152,7 +149,7 @@ enum BattlegroundBuffObjects
     BG_OBJECTID_BERSERKERBUFF_ENTRY = 179905
 };
 
-const uint32 Buff_Entries[3] = { BG_OBJECTID_SPEEDBUFF_ENTRY, BG_OBJECTID_REGENBUFF_ENTRY, BG_OBJECTID_BERSERKERBUFF_ENTRY };
+uint32 const Buff_Entries[3] = { BG_OBJECTID_SPEEDBUFF_ENTRY, BG_OBJECTID_REGENBUFF_ENTRY, BG_OBJECTID_BERSERKERBUFF_ENTRY };
 
 enum BattlegroundStatus
 {
@@ -167,6 +164,7 @@ struct BattlegroundPlayer
 {
     time_t  OfflineRemoveTime;                              // for tracking and removing offline players from queue after 5 minutes
     uint32  Team;                                           // Player's team
+    int32   ActiveSpec;                                     // Player's active spec
 };
 
 struct BattlegroundObjectInfo
@@ -180,7 +178,6 @@ struct BattlegroundObjectInfo
 
 enum ArenaType
 {
-    ARENA_TYPE_1v1          = 1,
     ARENA_TYPE_2v2          = 2,
     ARENA_TYPE_3v3          = 3,
     ARENA_TYPE_5v5          = 5
@@ -214,6 +211,20 @@ enum BGHonorMode
 #define BG_AWARD_ARENA_POINTS_MIN_LEVEL 71
 #define ARENA_TIMELIMIT_POINTS_LOSS    -16
 
+enum BattlegroundPlayerPositionConstants
+{
+    PLAYER_POSITION_ICON_NONE           = 0,
+    PLAYER_POSITION_ICON_HORDE_FLAG     = 1,
+    PLAYER_POSITION_ICON_ALLIANCE_FLAG  = 2,
+
+    PLAYER_POSITION_ARENA_SLOT_NONE     = 1,
+    PLAYER_POSITION_ARENA_SLOT_1        = 2,
+    PLAYER_POSITION_ARENA_SLOT_2        = 3,
+    PLAYER_POSITION_ARENA_SLOT_3        = 4,
+    PLAYER_POSITION_ARENA_SLOT_4        = 5,
+    PLAYER_POSITION_ARENA_SLOT_5        = 6
+};
+
 /*
 This class is used to:
 1. Add player to battleground
@@ -242,19 +253,20 @@ class TC_GAME_API Battleground
 
         /* achievement req. */
         virtual bool IsAllNodesControlledByTeam(uint32 /*team*/) const { return false; }
-        void StartTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry);
+        void StartCriteriaTimer(CriteriaTimedTypes type, uint32 entry);
         virtual bool CheckAchievementCriteriaMeet(uint32 /*criteriaId*/, Player const* /*player*/, Unit const* /*target*/ = NULL, uint32 /*miscvalue1*/ = 0);
 
         /* Battleground */
         // Get methods:
         std::string const& GetName() const  { return m_Name; }
+        uint64 GetQueueId() const { return m_queueId; }
         BattlegroundTypeId GetTypeID(bool GetRandom = false) const { return GetRandom ? m_RandomTypeID : m_TypeID; }
         BattlegroundBracketId GetBracketId() const { return m_BracketId; }
         uint32 GetInstanceID() const        { return m_InstanceID; }
         BattlegroundStatus GetStatus() const { return m_Status; }
         uint32 GetClientInstanceID() const  { return m_ClientInstanceID; }
-        uint32 GetStartTime() const         { return m_StartTime; }
-        uint32 GetEndTime() const           { return m_EndTime; }
+        uint32 GetElapsedTime() const       { return m_StartTime; }
+        uint32 GetRemainingTime() const     { return m_EndTime; }
         uint32 GetLastResurrectTime() const { return m_LastResurrectTime; }
         uint32 GetMaxPlayers() const        { return m_MaxPlayers; }
         uint32 GetMinPlayers() const        { return m_MinPlayers; }
@@ -273,16 +285,17 @@ class TC_GAME_API Battleground
         bool IsRandom() const { return m_IsRandom; }
 
         // Set methods:
+        void SetQueueId(uint64 queueId)        { m_queueId = queueId; }
         void SetName(std::string const& name) { m_Name = name; }
         void SetTypeID(BattlegroundTypeId TypeID) { m_TypeID = TypeID; }
         void SetRandomTypeID(BattlegroundTypeId TypeID) { m_RandomTypeID = TypeID; }
         //here we can count minlevel and maxlevel for players
-        void SetBracket(PvPDifficultyEntry const* bracketEntry);
+        void SetBracket(PvpDifficultyEntry const* bracketEntry);
         void SetInstanceID(uint32 InstanceID) { m_InstanceID = InstanceID; }
         void SetStatus(BattlegroundStatus Status) { m_Status = Status; }
         void SetClientInstanceID(uint32 InstanceID) { m_ClientInstanceID = InstanceID; }
-        void SetStartTime(uint32 Time)      { m_StartTime = Time; }
-        void SetEndTime(uint32 Time)        { m_EndTime = Time; }
+        void SetElapsedTime(uint32 Time)        { m_StartTime = Time; }
+        void SetRemainingTime(uint32 Time)      { m_EndTime = Time; }
         void SetLastResurrectTime(uint32 Time) { m_LastResurrectTime = Time; }
         void SetMaxPlayers(uint32 MaxPlayers) { m_MaxPlayers = MaxPlayers; }
         void SetMinPlayers(uint32 MinPlayers) { m_MinPlayers = MinPlayers; }
@@ -316,12 +329,12 @@ class TC_GAME_API Battleground
 
         typedef std::map<ObjectGuid, BattlegroundPlayer> BattlegroundPlayerMap;
         BattlegroundPlayerMap const& GetPlayers() const { return m_Players; }
-        uint32 GetPlayersSize() const { return m_Players.size(); }
+        uint32 GetPlayersSize() const { return uint32(m_Players.size()); }
 
-        typedef std::map<uint32, BattlegroundScore*> BattlegroundScoreMap;
-        uint32 GetPlayerScoresSize() const { return PlayerScores.size(); }
+        typedef std::map<ObjectGuid, BattlegroundScore*> BattlegroundScoreMap;
+        uint32 GetPlayerScoresSize() const { return uint32(PlayerScores.size()); }
 
-        uint32 GetReviveQueueSize() const { return m_ReviveQueue.size(); }
+        uint32 GetReviveQueueSize() const { return uint32(m_ReviveQueue.size()); }
 
         void AddPlayerToResurrectQueue(ObjectGuid npc_guid, ObjectGuid player_guid);
         void RemovePlayerFromResurrectQueue(ObjectGuid player_guid);
@@ -351,9 +364,9 @@ class TC_GAME_API Battleground
 
         // Packet Transfer
         // method that should fill worldpacket with actual world states (not yet implemented for all battlegrounds!)
-        virtual void FillInitialWorldStates(WorldPacket& /*data*/) { }
-        void SendPacketToTeam(uint32 TeamID, WorldPacket* packet, Player* sender = NULL, bool self = true);
-        void SendPacketToAll(WorldPacket* packet);
+        virtual void FillInitialWorldStates(WorldPackets::WorldState::InitWorldStates& /*data*/) { }
+        void SendPacketToTeam(uint32 TeamID, WorldPacket const* packet, Player* sender = NULL, bool self = true) const;
+        void SendPacketToAll(WorldPacket const* packet) const;
 
         void SendChatMessage(Creature* source, uint8 textId, WorldObject* target = NULL);
 
@@ -365,13 +378,11 @@ class TC_GAME_API Battleground
         void CastSpellOnTeam(uint32 SpellID, uint32 TeamID);
         void RemoveAuraOnTeam(uint32 SpellID, uint32 TeamID);
         void RewardHonorToTeam(uint32 Honor, uint32 TeamID);
-        void RewardReputationToTeam(uint32 a_faction_id, uint32 h_faction_id, uint32 Reputation, uint32 TeamID);
-        void UpdateWorldState(uint32 Field, uint32 Value);
-        void UpdateWorldStateForPlayer(uint32 Field, uint32 Value, Player* player);
+        void RewardReputationToTeam(uint32 faction_id, uint32 Reputation, uint32 TeamID);
+        void UpdateWorldState(uint32 variable, uint32 value, bool hidden = false);
         virtual void EndBattleground(uint32 winner);
         void BlockMovement(Player* player);
 
-        void SendWarningToAll(uint32 entry, ...);
         void SendMessageToAll(uint32 entry, ChatMsg type, Player const* source = NULL);
         void PSendMessageToAll(uint32 entry, ChatMsg type, Player const* source, ...);
 
@@ -382,7 +393,7 @@ class TC_GAME_API Battleground
         Group* GetBgRaid(uint32 TeamID) const { return TeamID == ALLIANCE ? m_BgRaids[TEAM_ALLIANCE] : m_BgRaids[TEAM_HORDE]; }
         void SetBgRaid(uint32 TeamID, Group* bg_raid);
 
-        void BuildPvPLogDataPacket(WorldPacket& data);
+        void BuildPvPLogDataPacket(WorldPackets::Battleground::PVPLogData& pvpLogData);
         virtual bool UpdatePlayerScore(Player* player, uint32 type, uint32 value, bool doAddHonor = true);
 
         static TeamId GetTeamIndexByTeamId(uint32 Team) { return Team == ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE; }
@@ -407,7 +418,7 @@ class TC_GAME_API Battleground
 
         // Triggers handle
         // must be implemented in BG subclass
-        virtual void HandleAreaTrigger(Player* /*player*/, uint32 /*Trigger*/);
+        virtual void HandleAreaTrigger(Player* /*player*/, uint32 /*trigger*/, bool /*entered*/);
         // must be implemented in BG subclass if need AND call base class generic code
         virtual void HandleKillPlayer(Player* player, Player* killer);
         virtual void HandleKillUnit(Creature* /*creature*/, Player* /*killer*/) { }
@@ -426,6 +437,10 @@ class TC_GAME_API Battleground
 
         // Death related
         virtual WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
+
+        virtual WorldSafeLocsEntry const* GetExploitTeleportLocation(Team /*team*/) { return nullptr; }
+        // GetExploitTeleportLocation(TeamId) must be implemented in the battleground subclass.
+        void TeleportPlayerToExploitLocation(Player* player);
 
         virtual void AddPlayer(Player* player);                // must be implemented in BG subclass
 
@@ -489,12 +504,44 @@ class TC_GAME_API Battleground
         Player* _GetPlayer(BattlegroundPlayerMap::const_iterator itr, const char* context) const { return _GetPlayer(itr->first, itr->second.OfflineRemoveTime != 0, context); }
         Player* _GetPlayerForTeam(uint32 teamId, BattlegroundPlayerMap::const_iterator itr, const char* context) const;
 
+        /* Pre- and post-update hooks */
+
+        /**
+         * @brief Pre-update hook.
+         *
+         * Will be called before battleground update is started. Depending on
+         * the result of this call actual update body may be skipped.
+         *
+         * @param diff a time difference between two worldserver update loops in
+         * milliseconds.
+         *
+         * @return @c true if update must be performed, @c false otherwise.
+         *
+         * @see Update(), PostUpdateImpl().
+         */
+        virtual bool PreUpdateImpl(uint32 /* diff */) { return true; }
+
+        /**
+         * @brief Post-update hook.
+         *
+         * Will be called after battleground update has passed. May be used to
+         * implement custom update effects in subclasses.
+         *
+         * @param diff a time difference between two worldserver update loops in
+         * milliseconds.
+         *
+         * @see Update(), PreUpdateImpl().
+         */
+        virtual void PostUpdateImpl(uint32 /* diff */) { }
+
         void _ProcessOfflineQueue();
         void _ProcessResurrect(uint32 diff);
         void _ProcessProgress(uint32 diff);
         void _ProcessLeave(uint32 diff);
         void _ProcessJoin(uint32 diff);
         void _CheckSafePositions(uint32 diff);
+        void _ProcessPlayerPositionBroadcast(uint32 diff);
+        virtual void GetPlayerPositionData(std::vector<WorldPackets::Battleground::BattlegroundPlayerPosition>* /*positions*/) const { }
 
         // Scorekeeping
         BattlegroundScoreMap PlayerScores;                // Player scores
@@ -528,6 +575,7 @@ class TC_GAME_API Battleground
         BattlegroundStatus m_Status;
         uint32 m_ClientInstanceID;                          // the instance-id which is sent to the client and without any other internal use
         uint32 m_StartTime;
+        uint32 m_CountdownTimer;
         uint32 m_ResetStatTimer;
         uint32 m_ValidStartPositionTimer;
         int32 m_EndTime;                                    // it is set to 120000 when bg is ending and it decreases itself
@@ -543,36 +591,8 @@ class TC_GAME_API Battleground
         bool   m_PrematureCountDown;
         uint32 m_PrematureCountDownTimer;
         std::string m_Name;
-
-        /* Pre- and post-update hooks */
-
-        /**
-         * @brief Pre-update hook.
-         *
-         * Will be called before battleground update is started. Depending on
-         * the result of this call actual update body may be skipped.
-         *
-         * @param diff a time difference between two worldserver update loops in
-         * milliseconds.
-         *
-         * @return @c true if update must be performed, @c false otherwise.
-         *
-         * @see Update(), PostUpdateImpl().
-         */
-        virtual bool PreUpdateImpl(uint32 /* diff */) { return true; }
-
-        /**
-         * @brief Post-update hook.
-         *
-         * Will be called after battleground update has passed. May be used to
-         * implement custom update effects in subclasses.
-         *
-         * @param diff a time difference between two worldserver update loops in
-         * milliseconds.
-         *
-         * @see Update(), PreUpdateImpl().
-         */
-        virtual void PostUpdateImpl(uint32 /* diff */) { }
+        uint64 m_queueId;
+        uint32 m_LastPlayerPositionBroadcast;
 
         // Player lists
         GuidVector m_ResurrectQueue;                        // Player GUID

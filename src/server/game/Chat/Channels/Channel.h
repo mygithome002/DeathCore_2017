@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,11 +20,20 @@
 #define _CHANNEL_H
 
 #include "Common.h"
-
-#include "WorldSession.h"
+#include "ObjectGuid.h"
 #include "WorldPacket.h"
 
 class Player;
+
+namespace WorldPackets
+{
+    namespace Channel
+    {
+        class ChannelNotify;
+    }
+}
+
+struct AreaTableEntry;
 
 enum ChatNotify
 {
@@ -64,7 +74,9 @@ enum ChatNotify
     CHAT_NOT_IN_AREA_NOTICE           = 0x20,           //+ "[%s] You are not in the correct area for this channel."; -- The user is trying to send a chat to a zone specific channel, and they're not physically in that zone.
     CHAT_NOT_IN_LFG_NOTICE            = 0x21,           //+ "[%s] You must be queued in looking for group before joining this channel."; -- The user must be in the looking for group system to join LFG chat channels.
     CHAT_VOICE_ON_NOTICE              = 0x22,           //+ "[%s] Channel voice enabled by %s.";
-    CHAT_VOICE_OFF_NOTICE             = 0x23            //+ "[%s] Channel voice disabled by %s.";
+    CHAT_VOICE_OFF_NOTICE             = 0x23,           //+ "[%s] Channel voice disabled by %s.";
+    CHAT_TRIAL_RESTRICTED             = 0x24,
+    CHAT_NOT_ALLOWED_IN_CHANNEL       = 0x25
 };
 
 enum ChannelFlags
@@ -117,35 +129,45 @@ class TC_GAME_API Channel
 {
     struct PlayerInfo
     {
-        uint8 flags;
-        bool invisible;
+        uint8 GetFlags() const { return _flags; }
 
-        bool IsInvisible() const { return invisible; }
-        void SetInvisible(bool on) { invisible = on; }
+        bool IsInvisible() const { return _invisible; }
+        void SetInvisible(bool on) { _invisible = on; }
 
-        bool HasFlag(uint8 flag) const { return (flags & flag) != 0; }
-        void SetFlag(uint8 flag) { flags |= flag; }
+        inline bool HasFlag(uint8 flag) const { return (_flags & flag) != 0; }
+        inline void SetFlag(uint8 flag) { _flags |= flag; }
+        inline void RemoveFlag(uint8 flag) { _flags &= ~flag; }
 
-        bool IsOwner() const { return (flags & MEMBER_FLAG_OWNER) != 0; }
+        bool IsOwner() const { return HasFlag(MEMBER_FLAG_OWNER); }
         void SetOwner(bool state)
         {
-            if (state) flags |= MEMBER_FLAG_OWNER;
-            else flags &= ~MEMBER_FLAG_OWNER;
+            if (state)
+                SetFlag(MEMBER_FLAG_OWNER);
+            else
+                RemoveFlag(MEMBER_FLAG_OWNER);
         }
 
-        bool IsModerator() const { return (flags & MEMBER_FLAG_MODERATOR) != 0; }
+        bool IsModerator() const { return HasFlag(MEMBER_FLAG_MODERATOR); }
         void SetModerator(bool state)
         {
-            if (state) flags |= MEMBER_FLAG_MODERATOR;
-            else flags &= ~MEMBER_FLAG_MODERATOR;
+            if (state)
+                SetFlag(MEMBER_FLAG_MODERATOR);
+            else
+                RemoveFlag(MEMBER_FLAG_MODERATOR);
         }
 
-        bool IsMuted() const { return (flags & MEMBER_FLAG_MUTED) != 0; }
+        bool IsMuted() const { return HasFlag(MEMBER_FLAG_MUTED); }
         void SetMuted(bool state)
         {
-            if (state) flags |= MEMBER_FLAG_MUTED;
-            else flags &= ~MEMBER_FLAG_MUTED;
+            if (state)
+                SetFlag(MEMBER_FLAG_MUTED);
+            else
+                RemoveFlag(MEMBER_FLAG_MUTED);
         }
+
+    private:
+        uint8 _flags = MEMBER_FLAG_NONE;
+        bool _invisible = false;
     };
 
     public:
@@ -157,6 +179,7 @@ class TC_GAME_API Channel
 
         uint32 GetChannelId() const { return _channelId; }
         bool IsConstant() const { return _channelId != 0; }
+
         bool IsLFG() const { return (GetFlags() & CHANNEL_FLAG_LFG) != 0; }
 
         bool IsAnnounce() const { return _announceEnabled; }
@@ -165,7 +188,7 @@ class TC_GAME_API Channel
         std::string const& GetPassword() const { return _channelPassword; }
         void SetPassword(std::string const& npassword) { _channelPassword = npassword; }
 
-        uint32 GetNumPlayers() const { return _playersStore.size(); }
+        uint32 GetNumPlayers() const { return uint32(_playersStore.size()); }
 
         uint8 GetFlags() const { return _channelFlags; }
         bool HasFlag(uint8 flag) const { return (_channelFlags & flag) != 0; }
@@ -183,53 +206,56 @@ class TC_GAME_API Channel
         void Password(Player const* player, std::string const& pass);
         void SetMode(Player const* player, std::string const& p2n, bool mod, bool set);
 
+        void SetInvisible(Player const* player, bool on);
+
+        void SetOwner(ObjectGuid const& guid, bool exclaim = true);
+        void SetOwner(Player const* player, std::string const& name);
+        void SendWhoOwner(Player const* player);
+
         void SetModerator(Player const* player, std::string const& newname) { SetMode(player, newname, true, true); }
         void UnsetModerator(Player const* player, std::string const& newname) { SetMode(player, newname, true, false); }
         void SetMute(Player const* player, std::string const& newname) { SetMode(player, newname, false, true); }
         void UnsetMute(Player const* player, std::string const& newname) { SetMode(player, newname, false, false); }
-
-        void SetInvisible(Player const* player, bool on);
-
-        void SetOwner(ObjectGuid guid, bool exclaim = true);
-        void SetOwner(Player const* player, std::string const& name);
-        void SendWhoOwner(ObjectGuid guid);
-
-        void List(Player const* player) const;
+        void SilenceAll(Player const* player, std::string const& name);
+        void SilenceVoice(Player const* player, std::string const& name);
+        void UnsilenceAll(Player const* player, std::string const& name);
+        void UnsilenceVoice(Player const* player, std::string const& name);
+        void List(Player const* player);
         void Announce(Player const* player);
-        void Say(ObjectGuid guid, std::string const& what, uint32 lang) const;
+        void Say(ObjectGuid const& guid, std::string const& what, uint32 lang) const;
+        void DeclineInvite(Player const* player);
         void Invite(Player const* player, std::string const& newp);
-        void Voice(ObjectGuid guid1, ObjectGuid guid2) const;
-        void DeVoice(ObjectGuid guid1, ObjectGuid guid2) const;
-        void JoinNotify(ObjectGuid guid) const;                                       // invisible notify
-        void LeaveNotify(ObjectGuid guid) const;                                      // invisible notify
+        void Voice(Player const* player);
+        void DeVoice(Player const* player);
+        void JoinNotify(Player const* player);
+        void LeaveNotify(Player const* player);
         void SetOwnership(bool ownership) { _ownershipEnabled = ownership; }
         static void CleanOldChannelsInDB();
 
     private:
+        template <class Builder>
+        void SendToAll(Builder& builder, ObjectGuid const& guid = ObjectGuid::Empty) const;
 
-        template<class Builder>
-        void SendToAll(Builder&, ObjectGuid guid = ObjectGuid::Empty) const;
+        template <class Builder>
+        void SendToAllButOne(Builder& builder, ObjectGuid const& who) const;
 
-        template<class Builder>
-        void SendToAllButOne(Builder& builder, ObjectGuid who) const;
+        template <class Builder>
+        void SendToOne(Builder& builder, ObjectGuid const& who) const;
 
-        template<class Builder>
-        void SendToOne(Builder& builder, ObjectGuid who) const;
-
-        bool IsOn(ObjectGuid who) const { return _playersStore.count(who) != 0; }
-        bool IsBanned(ObjectGuid guid) const { return _bannedStore.count(guid) != 0; }
+        bool IsOn(ObjectGuid const& who) const { return _playersStore.count(who) != 0; }
+        bool IsBanned(ObjectGuid const& guid) const { return _bannedStore.count(guid) != 0; }
 
         void UpdateChannelInDB() const;
         void UpdateChannelUseageInDB() const;
 
-        uint8 GetPlayerFlags(ObjectGuid guid) const
+        uint8 GetPlayerFlags(ObjectGuid const& guid) const
         {
             PlayerContainer::const_iterator itr = _playersStore.find(guid);
-            return itr != _playersStore.end() ? itr->second.flags : 0;
+            return itr != _playersStore.end() ? itr->second.GetFlags() : 0;
         }
 
-        void SetModerator(ObjectGuid guid, bool set);
-        void SetMute(ObjectGuid guid, bool set);
+        void SetModerator(ObjectGuid const& guid, bool set);
+        void SetMute(ObjectGuid const& guid, bool set);
 
         typedef std::map<ObjectGuid, PlayerInfo> PlayerContainer;
         typedef GuidUnorderedSet BannedContainer;
@@ -250,5 +276,5 @@ class TC_GAME_API Channel
 
         AreaTableEntry const* _zoneEntry;
 };
-#endif
 
+#endif

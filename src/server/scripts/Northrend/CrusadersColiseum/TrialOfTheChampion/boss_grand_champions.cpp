@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -131,9 +132,9 @@ bool GrandChampionsOutVehicle(Creature* me)
 
     if (pGrandChampion1 && pGrandChampion2 && pGrandChampion3)
     {
-        if (!pGrandChampion1->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) &&
-            !pGrandChampion2->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) &&
-            !pGrandChampion3->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+        if (!pGrandChampion1->m_movementInfo.transport.guid &&
+            !pGrandChampion2->m_movementInfo.transport.guid &&
+            !pGrandChampion3->m_movementInfo.transport.guid)
             return true;
     }
 
@@ -393,7 +394,7 @@ public:
                 }
             }else uiPhaseTimer -= uiDiff;
 
-            if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+            if (!UpdateVictim() || !me->m_movementInfo.transport.guid.IsEmpty())
                 return;
 
             if (uiInterceptTimer <= uiDiff)
@@ -541,7 +542,7 @@ public:
                 uiFireBallTimer = 5000;
             } else uiFireBallTimer -= uiDiff;
 
-            if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+            if (!UpdateVictim() || !me->m_movementInfo.transport.guid.IsEmpty())
                 return;
 
             if (uiFireBallTimer <= uiDiff)
@@ -683,7 +684,7 @@ public:
                 }
             }else uiPhaseTimer -= uiDiff;
 
-            if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+            if (!UpdateVictim() || !me->m_movementInfo.transport.guid.IsEmpty())
                 return;
 
             if (uiChainLightningTimer <= uiDiff)
@@ -833,7 +834,7 @@ public:
                 }
             }else uiPhaseTimer -= uiDiff;
 
-            if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+            if (!UpdateVictim() || !me->m_movementInfo.transport.guid.IsEmpty())
                 return;
 
             if (uiLightningArrowsTimer <= uiDiff)
@@ -985,7 +986,7 @@ public:
                 }
             } else uiPhaseTimer -= uiDiff;
 
-            if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+            if (!UpdateVictim() || !me->m_movementInfo.transport.guid.IsEmpty())
                 return;
 
             if (uiEviscerateTimer <= uiDiff)

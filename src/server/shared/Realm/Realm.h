@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -37,18 +37,33 @@ enum RealmFlags
     REALM_FLAG_FULL             = 0x80
 };
 
-struct TC_SHARED_API RealmHandle
+#pragma pack(push, 1)
+
+namespace Battlenet
 {
-    RealmHandle() : Realm(0) { }
-    RealmHandle(uint32 index) : Realm(index) { }
-
-    uint32 Realm;   // primary key in `realmlist` table
-
-    bool operator<(RealmHandle const& r) const
+    struct TC_SHARED_API RealmHandle
     {
-        return Realm < r.Realm;
-    }
-};
+        RealmHandle() : Region(0), Site(0), Realm(0) { }
+        RealmHandle(uint8 region, uint8 battlegroup, uint32 index)
+            : Region(region), Site(battlegroup), Realm(index) { }
+        RealmHandle(uint32 realmAddress) : Region((realmAddress >> 24) & 0xFF), Site((realmAddress >> 16) & 0xFF), Realm(realmAddress & 0xFFFF) { }
+
+        uint8 Region;
+        uint8 Site;
+        uint32 Realm;   // primary key in `realmlist` table
+
+        bool operator<(RealmHandle const& r) const
+        {
+            return Realm < r.Realm;
+        }
+
+        uint32 GetAddress() const { return (Region << 24) | (Site << 16) | uint16(Realm); }
+        std::string GetAddressString() const;
+        std::string GetSubRegionAddress() const;
+    };
+}
+
+#pragma pack(pop)
 
 /// Type of server, this is values from second column of Cfg_Configs.dbc
 enum RealmType
@@ -68,7 +83,7 @@ enum RealmType
 // Storage object for a realm
 struct TC_SHARED_API Realm
 {
-    RealmHandle Id;
+    Battlenet::RealmHandle Id;
     uint32 Build;
     ip::address ExternalAddress;
     ip::address LocalAddress;
@@ -82,6 +97,9 @@ struct TC_SHARED_API Realm
     float PopulationLevel;
 
     ip::tcp::endpoint GetAddressForClient(ip::address const& clientAddr) const;
+    uint32 GetConfigId() const;
+
+    static uint32 const ConfigIdByType[MAX_CLIENT_REALM_TYPE];
 };
 
 #endif // Realm_h__

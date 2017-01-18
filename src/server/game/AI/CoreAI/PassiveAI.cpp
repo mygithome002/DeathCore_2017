@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -47,14 +48,14 @@ void PossessedAI::UpdateAI(uint32 /*diff*/)
 void PossessedAI::JustDied(Unit* /*u*/)
 {
     // We died while possessed, disable our loot
-    me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+    me->RemoveFlag(OBJECT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
 }
 
 void PossessedAI::KilledUnit(Unit* victim)
 {
     // We killed a creature, disable victim's loot
     if (victim->GetTypeId() == TYPEID_UNIT)
-        victim->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        victim->RemoveFlag(OBJECT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
 }
 
 void PossessedAI::OnCharmed(bool /*apply*/)

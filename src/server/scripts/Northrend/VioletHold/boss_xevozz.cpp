@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -52,7 +52,8 @@ enum CreatureSpells
     SPELL_MAGIC_PULL                            = 50770,
     SPELL_SUMMON_PLAYERS                        = 54164,
     SPELL_POWER_BALL_VISUAL                     = 54141,
-    SPELL_POWER_BALL_DAMAGE_TRIGGER             = 54207
+    SPELL_POWER_BALL_DAMAGE_TRIGGER             = 54207,
+    SPELL_POWER_BALL_DAMAGE_TRIGGER_H           = 59476
 };
 
 enum Yells
@@ -203,7 +204,7 @@ class npc_ethereal_sphere : public CreatureScript
                 ScheduledTasks();
 
                 DoCast(me, SPELL_POWER_BALL_VISUAL);
-                DoCast(me, SPELL_POWER_BALL_DAMAGE_TRIGGER);
+                DoCast(me, DUNGEON_MODE(SPELL_POWER_BALL_DAMAGE_TRIGGER, SPELL_POWER_BALL_DAMAGE_TRIGGER_H));
 
                 me->DespawnOrUnsummon(40000);
             }

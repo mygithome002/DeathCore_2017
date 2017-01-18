@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -40,7 +40,7 @@ public:
             { "activelist", rbac::RBAC_PERM_COMMAND_EVENT_ACTIVELIST, true, &HandleEventActiveListCommand, "" },
             { "start",      rbac::RBAC_PERM_COMMAND_EVENT_START,      true, &HandleEventStartCommand,      "" },
             { "stop",       rbac::RBAC_PERM_COMMAND_EVENT_STOP,       true, &HandleEventStopCommand,       "" },
-            { "info",       rbac::RBAC_PERM_COMMAND_EVENT,            true, &HandleEventInfoCommand,       "" },
+            { "",           rbac::RBAC_PERM_COMMAND_EVENT,            true, &HandleEventInfoCommand,       "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -88,7 +88,7 @@ public:
         if (!id)
             return false;
 
-        uint32 eventId = atoul(id);
+        uint32 eventId = atoi(id);
 
         GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
 
@@ -137,7 +137,7 @@ public:
         if (!id)
             return false;
 
-        uint32 eventId = atoul(id);
+        int32 eventId = atoi(id);
 
         GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
 
@@ -178,7 +178,7 @@ public:
         if (!id)
             return false;
 
-        uint32 eventId = atoul(id);
+        int32 eventId = atoi(id);
 
         GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
 

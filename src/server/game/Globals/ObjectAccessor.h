@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -71,8 +72,10 @@ namespace ObjectAccessor
     TC_GAME_API Object* GetObjectByTypeMask(WorldObject const&, ObjectGuid const&, uint32 typemask);
     TC_GAME_API Corpse* GetCorpse(WorldObject const& u, ObjectGuid const& guid);
     TC_GAME_API GameObject* GetGameObject(WorldObject const& u, ObjectGuid const& guid);
-    TC_GAME_API Transport* GetTransport(WorldObject const& u, ObjectGuid const& guid);
+    TC_GAME_API Transport* GetTransportOnMap(WorldObject const& u, ObjectGuid const& guid);
+    TC_GAME_API Transport* GetTransport(ObjectGuid const& guid);
     TC_GAME_API DynamicObject* GetDynamicObject(WorldObject const& u, ObjectGuid const& guid);
+    TC_GAME_API AreaTrigger* GetAreaTrigger(WorldObject const& u, ObjectGuid const& guid);
     TC_GAME_API Unit* GetUnit(WorldObject const&, ObjectGuid const& guid);
     TC_GAME_API Creature* GetCreature(WorldObject const& u, ObjectGuid const& guid);
     TC_GAME_API Pet* GetPet(WorldObject const&, ObjectGuid const& guid);
@@ -103,12 +106,6 @@ namespace ObjectAccessor
     {
         HashMapHolder<T>::Remove(object);
     }
-
-    template<>
-    void AddObject(Player* player);
-
-    template<>
-    void RemoveObject(Player* player);
 
     TC_GAME_API void SaveAllPlayers();
 };

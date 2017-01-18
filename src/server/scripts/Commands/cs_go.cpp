@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,7 +25,7 @@ EndScriptData */
 #include "ScriptMgr.h"
 #include "ObjectMgr.h"
 #include "MapManager.h"
-#include "TicketMgr.h"
+#include "SupportMgr.h"
 #include "Chat.h"
 #include "Language.h"
 #include "Player.h"
@@ -44,12 +44,15 @@ public:
             { "graveyard",          rbac::RBAC_PERM_COMMAND_GO_GRAVEYARD,           false, &HandleGoGraveyardCommand,                   "" },
             { "grid",               rbac::RBAC_PERM_COMMAND_GO_GRID,                false, &HandleGoGridCommand,                        "" },
             { "object",             rbac::RBAC_PERM_COMMAND_GO_OBJECT,              false, &HandleGoObjectCommand,                      "" },
+            { "quest",              rbac::RBAC_PERM_COMMAND_GO_QUEST,               false, &HandleGoQuestCommand,                       "" },
             { "taxinode",           rbac::RBAC_PERM_COMMAND_GO_TAXINODE,            false, &HandleGoTaxinodeCommand,                    "" },
             { "trigger",            rbac::RBAC_PERM_COMMAND_GO_TRIGGER,             false, &HandleGoTriggerCommand,                     "" },
             { "zonexy",             rbac::RBAC_PERM_COMMAND_GO_ZONEXY,              false, &HandleGoZoneXYCommand,                      "" },
             { "xyz",                rbac::RBAC_PERM_COMMAND_GO_XYZ,                 false, &HandleGoXYZCommand,                         "" },
-            { "ticket",             rbac::RBAC_PERM_COMMAND_GO_TICKET,              false, &HandleGoTicketCommand,                      "" },
-            { "offset",             rbac::RBAC_PERM_COMMAND_GO_OFFSET,              false, &HandleGoOffsetCommand,                      "" },
+            { "bugticket",          rbac::RBAC_PERM_COMMAND_GO_BUG_TICKET,          false, &HandleGoTicketCommand<BugTicket>,           "" },
+            { "complaintticket",    rbac::RBAC_PERM_COMMAND_GO_COMPLAINT_TICKET,    false, &HandleGoTicketCommand<ComplaintTicket>,     "" },
+            { "suggestionticket",   rbac::RBAC_PERM_COMMAND_GO_SUGGESTION_TICKET,   false, &HandleGoTicketCommand<SuggestionTicket>,    "" },
+            { "",                   rbac::RBAC_PERM_COMMAND_GO,                     false, &HandleGoXYZCommand,                         "" },
         };
 
         static std::vector<ChatCommand> commandTable =
@@ -96,7 +99,7 @@ public:
             if (!id)
                 return false;
 
-            uint32 entry = atoul(id);
+            int32 entry = atoi(id);
             if (!entry)
                 return false;
 
@@ -104,20 +107,20 @@ public:
         }
         else
         {
-            ObjectGuid::LowType guidLow = atoul(param1);
+            int32 guid = atoi(param1);
 
             // Number is invalid - maybe the user specified the mob's name
-            if (!guidLow)
+            if (!guid)
             {
                 std::string name = param1;
                 WorldDatabase.EscapeString(name);
                 whereClause << ", creature_template WHERE creature.id = creature_template.entry AND creature_template.name " _LIKE_" '" << name << '\'';
             }
             else
-                whereClause <<  "WHERE guid = '" << guidLow << '\'';
+                whereClause <<  "WHERE guid = '" << guid << '\'';
         }
 
-        QueryResult result = WorldDatabase.PQuery("SELECT position_x, position_y, position_z, orientation, map, guid, id FROM creature %s", whereClause.str().c_str());
+        QueryResult result = WorldDatabase.PQuery("SELECT position_x, position_y, position_z, orientation, map FROM creature %s", whereClause.str().c_str());
         if (!result)
         {
             handler->SendSysMessage(LANG_COMMAND_GOCREATNOTFOUND);
@@ -133,8 +136,6 @@ public:
         float z = fields[2].GetFloat();
         float o = fields[3].GetFloat();
         uint32 mapId = fields[4].GetUInt16();
-
-        Transport* transport = NULL;
 
         if (!MapManager::IsValidMapCoord(mapId, x, y, z, o) || sObjectMgr->IsTransportMap(mapId))
         {
@@ -153,11 +154,8 @@ public:
         else
             player->SaveRecallPosition();
 
-        if (player->TeleportTo(mapId, x, y, z, o))
-        {
-            if (transport)
-                transport->AddPassenger(player);
-        }
+        player->TeleportTo(mapId, x, y, z, o);
+
         return true;
     }
 
@@ -172,7 +170,7 @@ public:
         if (!gyId)
             return false;
 
-        uint32 graveyardId = atoul(gyId);
+        int32 graveyardId = atoi(gyId);
 
         if (!graveyardId)
             return false;
@@ -185,9 +183,9 @@ public:
             return false;
         }
 
-        if (!MapManager::IsValidMapCoord(gy->map_id, gy->x, gy->y, gy->z))
+        if (!MapManager::IsValidMapCoord(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z))
         {
-            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, gy->x, gy->y, gy->map_id);
+            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, gy->Loc.X, gy->Loc.Y, gy->MapID);
             handler->SetSentErrorMessage(true);
             return false;
         }
@@ -202,7 +200,7 @@ public:
         else
             player->SaveRecallPosition();
 
-        player->TeleportTo(gy->map_id, gy->x, gy->y, gy->z, player->GetOrientation());
+        player->TeleportTo(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z, (gy->Facing * M_PI) / 180); // Orientation is initially in degrees
         return true;
     }
 
@@ -221,7 +219,7 @@ public:
         if (!gridX || !gridY)
             return false;
 
-        uint32 mapId = id ? atoul(id) : player->GetMapId();
+        uint32 mapId = id ? (uint32)atoi(id) : player->GetMapId();
 
         // center of grid
         float x = ((float)atof(gridX) - CENTER_GRID_ID + 0.5f) * SIZE_OF_GRIDS;
@@ -264,15 +262,15 @@ public:
         if (!id)
             return false;
 
-        ObjectGuid::LowType guidLow = atoul(id);
-        if (!guidLow)
+        ObjectGuid::LowType guid = strtoull(id, nullptr, 10);
+        if (!guid)
             return false;
 
         float x, y, z, o;
         uint32 mapId;
 
         // by DB guid
-        if (GameObjectData const* goData = sObjectMgr->GetGOData(guidLow))
+        if (GameObjectData const* goData = sObjectMgr->GetGOData(guid))
         {
             x = goData->posX;
             y = goData->posY;
@@ -308,33 +306,50 @@ public:
         return true;
     }
 
-    static bool HandleGoTaxinodeCommand(ChatHandler* handler, char const* args)
+    static bool HandleGoQuestCommand(ChatHandler* handler, char const* args)
     {
-        Player* player = handler->GetSession()->GetPlayer();
-
         if (!*args)
             return false;
 
-        char* id = handler->extractKeyFromLink((char*)args, "Htaxinode");
+        Player* player = handler->GetSession()->GetPlayer();
+
+        char* id = handler->extractKeyFromLink((char*)args, "Hquest");
         if (!id)
             return false;
 
-        uint32 nodeId = atoul(id);
-        if (!nodeId)
+        uint32 questID = atoi(id);
+        if (!questID)
             return false;
 
-        TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(nodeId);
-        if (!node)
+        if (!sObjectMgr->GetQuestTemplate(questID))
         {
-            handler->PSendSysMessage(LANG_COMMAND_GOTAXINODENOTFOUND, nodeId);
+            handler->PSendSysMessage(LANG_COMMAND_QUEST_NOTFOUND, questID);
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        if ((node->x == 0.0f && node->y == 0.0f && node->z == 0.0f) ||
-            !MapManager::IsValidMapCoord(node->map_id, node->x, node->y, node->z))
+        float x, y, z;
+        uint32 mapId;
+
+        if (QuestPOIVector const* poiData = sObjectMgr->GetQuestPOIVector(questID))
         {
-            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, node->x, node->y, node->map_id);
+            auto data = poiData->front();
+
+            mapId = data.MapID;
+
+            x = data.points.front().X;
+            y = data.points.front().Y;
+        }
+        else
+        {
+            handler->PSendSysMessage(LANG_COMMAND_QUEST_NOTFOUND, questID);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        if (!MapManager::IsValidMapCoord(mapId, x, y) || sObjectMgr->IsTransportMap(mapId))
+        {
+            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, x, y, mapId);
             handler->SetSentErrorMessage(true);
             return false;
         }
@@ -349,7 +364,55 @@ public:
         else
             player->SaveRecallPosition();
 
-        player->TeleportTo(node->map_id, node->x, node->y, node->z, player->GetOrientation());
+        Map const* map = sMapMgr->CreateBaseMap(mapId);
+        z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
+
+        player->TeleportTo(mapId, x, y, z, 0.0f);
+        return true;
+    }
+
+    static bool HandleGoTaxinodeCommand(ChatHandler* handler, char const* args)
+    {
+        Player* player = handler->GetSession()->GetPlayer();
+
+        if (!*args)
+            return false;
+
+        char* id = handler->extractKeyFromLink((char*)args, "Htaxinode");
+        if (!id)
+            return false;
+
+        int32 nodeId = atoi(id);
+        if (!nodeId)
+            return false;
+
+        TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(nodeId);
+        if (!node)
+        {
+            handler->PSendSysMessage(LANG_COMMAND_GOTAXINODENOTFOUND, nodeId);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        if ((node->Pos.X == 0.0f && node->Pos.Y == 0.0f && node->Pos.Z == 0.0f) ||
+            !MapManager::IsValidMapCoord(node->MapID, node->Pos.X, node->Pos.Y, node->Pos.Z))
+        {
+            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, node->Pos.X, node->Pos.Y, node->MapID);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        // stop flight if need
+        if (player->IsInFlight())
+        {
+            player->GetMotionMaster()->MovementExpired();
+            player->CleanupAfterTaxiFlight();
+        }
+        // save only in non-flight case
+        else
+            player->SaveRecallPosition();
+
+        player->TeleportTo(node->MapID, node->Pos.X, node->Pos.Y, node->Pos.Z, player->GetOrientation());
         return true;
     }
 
@@ -364,7 +427,7 @@ public:
         if (!id)
             return false;
 
-        uint32 areaTriggerId = atoul(id);
+        int32 areaTriggerId = atoi(id);
 
         if (!areaTriggerId)
             return false;
@@ -377,9 +440,9 @@ public:
             return false;
         }
 
-        if (!MapManager::IsValidMapCoord(at->mapid, at->x, at->y, at->z))
+        if (!MapManager::IsValidMapCoord(at->MapID, at->Pos.X, at->Pos.Y, at->Pos.Z))
         {
-            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, at->x, at->y, at->mapid);
+            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, at->Pos.X, at->Pos.Y, at->MapID);
             handler->SetSentErrorMessage(true);
             return false;
         }
@@ -394,7 +457,7 @@ public:
         else
             player->SaveRecallPosition();
 
-        player->TeleportTo(at->mapid, at->x, at->y, at->z, player->GetOrientation());
+        player->TeleportTo(at->MapID, at->Pos.X, at->Pos.Y, at->Pos.Z, player->GetOrientation());
         return true;
     }
 
@@ -422,7 +485,7 @@ public:
         if ((x == 0.0f && *zoneX != '0') || (y == 0.0f && *zoneY != '0'))
             return false;
 
-        uint32 areaId = id ? atoul(id) : player->GetZoneId();
+        uint32 areaId = id ? (uint32)atoi(id) : player->GetZoneId();
 
         AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(areaId);
 
@@ -434,23 +497,23 @@ public:
         }
 
         // update to parent zone if exist (client map show only zones without parents)
-        AreaTableEntry const* zoneEntry = areaEntry->zone ? sAreaTableStore.LookupEntry(areaEntry->zone) : areaEntry;
+        AreaTableEntry const* zoneEntry = areaEntry->ParentAreaID ? sAreaTableStore.LookupEntry(areaEntry->ParentAreaID) : areaEntry;
         ASSERT(zoneEntry);
 
-        Map const* map = sMapMgr->CreateBaseMap(zoneEntry->mapid);
+        Map const* map = sMapMgr->CreateBaseMap(zoneEntry->MapID);
 
         if (map->Instanceable())
         {
-            handler->PSendSysMessage(LANG_INVALID_ZONE_MAP, areaEntry->ID, areaEntry->area_name[handler->GetSessionDbcLocale()], map->GetId(), map->GetMapName());
+            handler->PSendSysMessage(LANG_INVALID_ZONE_MAP, areaId, areaEntry->AreaName->Str[handler->GetSessionDbcLocale()], map->GetId(), map->GetMapName());
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        Zone2MapCoordinates(x, y, zoneEntry->ID);
+        sDB2Manager.Zone2MapCoordinates(areaEntry->ParentAreaID ? uint32(areaEntry->ParentAreaID) : areaId, x, y);
 
-        if (!MapManager::IsValidMapCoord(zoneEntry->mapid, x, y))
+        if (!MapManager::IsValidMapCoord(zoneEntry->MapID, x, y))
         {
-            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, x, y, zoneEntry->mapid);
+            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, x, y, zoneEntry->MapID);
             handler->SetSentErrorMessage(true);
             return false;
         }
@@ -467,7 +530,7 @@ public:
 
         float z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
 
-        player->TeleportTo(zoneEntry->mapid, x, y, z, player->GetOrientation());
+        player->TeleportTo(zoneEntry->MapID, x, y, z, player->GetOrientation());
         return true;
     }
 
@@ -492,7 +555,7 @@ public:
         float y = (float)atof(goY);
         float z;
         float ort = port ? (float)atof(port) : player->GetOrientation();
-        uint32 mapId = id ? atoul(id) : player->GetMapId();
+        uint32 mapId = id ? (uint32)atoi(id) : player->GetMapId();
 
         if (goZ)
         {
@@ -530,6 +593,7 @@ public:
         return true;
     }
 
+    template<typename T>
     static bool HandleGoTicketCommand(ChatHandler* handler, char const* args)
     {
         if (!*args)
@@ -539,11 +603,11 @@ public:
         if (!id)
             return false;
 
-        uint32 ticketId = atoul(id);
+        uint32 ticketId = atoi(id);
         if (!ticketId)
             return false;
 
-        GmTicket* ticket = sTicketMgr->GetTicket(ticketId);
+        T* ticket = sSupportMgr->GetTicket<T>(ticketId);
         if (!ticket)
         {
             handler->SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
@@ -560,50 +624,6 @@ public:
             player->SaveRecallPosition();
 
         ticket->TeleportTo(player);
-        return true;
-    }
-
-    static bool HandleGoOffsetCommand(ChatHandler* handler, char const* args)
-    {
-        if (!*args)
-            return false;
-
-        Player* player = handler->GetSession()->GetPlayer();
-
-        char* goX = strtok((char*)args, " ");
-        char* goY = strtok(NULL, " ");
-        char* goZ = strtok(NULL, " ");
-        char* port = strtok(NULL, " ");
-
-        float x, y, z, o;
-        player->GetPosition(x, y, z, o);
-        if (goX)
-            x += atof(goX);
-        if (goY)
-            y += atof(goY);
-        if (goZ)
-            z += atof(goZ);
-        if (port)
-            o += atof(port);
-
-        if (!Trinity::IsValidMapCoord(x, y, z, o))
-        {
-            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, x, y, player->GetMapId());
-            handler->SetSentErrorMessage(true);
-            return false;
-        }
-
-        // stop flight if need
-        if (player->IsInFlight())
-        {
-            player->GetMotionMaster()->MovementExpired();
-            player->CleanupAfterTaxiFlight();
-        }
-        // save only in non-flight case
-        else
-            player->SaveRecallPosition();
-
-        player->TeleportTo(player->GetMapId(), x, y, z, o);
         return true;
     }
 };

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,16 +19,11 @@
 /* ScriptData
 SDName: The_Barrens
 SD%Complete: 90
-SDComment: Quest support: 863, 898, 1719, 2458, 4921, 6981,
+SDComment: Quest support: 863
 SDCategory: Barrens
 EndScriptData */
 
 /* ContentData
-npc_beaten_corpse
-npc_gilthares
-npc_sputtervalve
-npc_taskmaster_fizzule
-npc_twiggy_flathead
 npc_wizzlecrank_shredder
 EndContentData */
 
@@ -42,37 +38,38 @@ EndContentData */
 ## npc_beaten_corpse
 ######*/
 
+#define GOSSIP_CORPSE "Examine corpse in detail..."
+
 enum BeatenCorpse
 {
-    GOSSIP_OPTION_ID_BEATEN_CORPSE  = 0,
-    GOSSIP_MENU_OPTION_INSPECT_BODY = 2871
+    QUEST_LOST_IN_BATTLE    = 4921
 };
 
 class npc_beaten_corpse : public CreatureScript
 {
-    public:
-        npc_beaten_corpse() : CreatureScript("npc_beaten_corpse") { }
+public:
+    npc_beaten_corpse() : CreatureScript("npc_beaten_corpse") { }
 
-        struct npc_beaten_corpseAI : public ScriptedAI
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+    {
+        player->PlayerTalkClass->ClearMenus();
+        if (action == GOSSIP_ACTION_INFO_DEF +1)
         {
-            npc_beaten_corpseAI(Creature* creature) : ScriptedAI(creature)
-            {
-            }
-
-            void sGossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override
-            {
-                if (menuId == GOSSIP_MENU_OPTION_INSPECT_BODY && gossipListId == GOSSIP_OPTION_ID_BEATEN_CORPSE)
-                {
-                    CloseGossipMenuFor(player);
-                    player->TalkedToCreature(me->GetEntry(), me->GetGUID());
-                }
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new npc_beaten_corpseAI(creature);
+            player->SEND_GOSSIP_MENU(3558, creature->GetGUID());
+            player->TalkedToCreature(creature->GetEntry(), creature->GetGUID());
         }
+        return true;
+    }
+
+    bool OnGossipHello(Player* player, Creature* creature) override
+    {
+        if (player->GetQuestStatus(QUEST_LOST_IN_BATTLE) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(QUEST_LOST_IN_BATTLE) == QUEST_STATUS_COMPLETE)
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CORPSE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+        player->SEND_GOSSIP_MENU(3557, creature->GetGUID());
+        return true;
+    }
+
 };
 
 /*######
@@ -377,7 +374,7 @@ public:
             {
                 Player* warrior = NULL;
 
-                if (PlayerGUID)
+                if (!PlayerGUID.IsEmpty())
                     warrior = ObjectAccessor::GetPlayer(*me, PlayerGUID);
 
                 if (!warrior)
@@ -390,7 +387,7 @@ public:
 
                     for (uint8 i = 0; i < 6; ++i) // unsummon challengers
                     {
-                        if (AffrayChallenger[i])
+                        if (!AffrayChallenger[i].IsEmpty())
                         {
                             Creature* creature = ObjectAccessor::GetCreature((*me), AffrayChallenger[i]);
                             if (creature && creature->IsAlive())
@@ -398,7 +395,7 @@ public:
                         }
                     }
 
-                    if (BigWill) // unsummon bigWill
+                    if (!BigWill.IsEmpty()) // unsummon bigWill
                     {
                         Creature* creature = ObjectAccessor::GetCreature((*me), BigWill);
                         if (creature && creature->IsAlive())
@@ -439,7 +436,7 @@ public:
                     {
                         for (uint8 i = 0; i < 6; ++i)
                         {
-                            if (AffrayChallenger[i])
+                            if (!AffrayChallenger[i].IsEmpty())
                             {
                                 Creature* creature = ObjectAccessor::GetCreature((*me), AffrayChallenger[i]);
                                 if ((!creature || (!creature->IsAlive())) && !ChallengerDown[i])
@@ -454,7 +451,7 @@ public:
 
                     if (WaveTimer <= diff)
                     {
-                        if (Wave < 6 && AffrayChallenger[Wave] && !EventBigWill)
+                        if (Wave < 6 && !AffrayChallenger[Wave].IsEmpty() && !EventBigWill)
                         {
                             Talk(SAY_TWIGGY_FLATHEAD_FRAY);
                             Creature* creature = ObjectAccessor::GetCreature(*me, AffrayChallenger[Wave]);
@@ -482,7 +479,7 @@ public:
                                 WaveTimer = 1000;
                             }
                         }
-                        else if (Wave >= 6 && EventBigWill && BigWill)
+                        else if (Wave >= 6 && EventBigWill && !BigWill.IsEmpty())
                         {
                             Creature* creature = ObjectAccessor::GetCreature(*me, BigWill);
                             if (!creature || !creature->IsAlive())
@@ -673,9 +670,5 @@ public:
 
 void AddSC_the_barrens()
 {
-    new npc_beaten_corpse();
-    new npc_gilthares();
-    new npc_taskmaster_fizzule();
-    new npc_twiggy_flathead();
     new npc_wizzlecrank_shredder();
 }

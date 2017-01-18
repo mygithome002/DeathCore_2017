@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -265,7 +266,7 @@ public:
 
         void JustDied(Unit* /*killer*/) override
         {
-            if (DorotheeGUID)
+            if (!DorotheeGUID.IsEmpty())
             {
                 Creature* Dorothee = (ObjectAccessor::GetCreature((*me), DorotheeGUID));
                 if (Dorothee && Dorothee->IsAlive())
@@ -796,43 +797,46 @@ enum RedRidingHood
     SAY_WOLF_AGGRO                  = 0,
     SAY_WOLF_SLAY                   = 1,
     SAY_WOLF_HOOD                   = 2,
-    OPTION_WHAT_PHAT_LEWTS_YOU_HAVE = 7443,
     SOUND_WOLF_DEATH                = 9275,
 
     SPELL_LITTLE_RED_RIDING_HOOD    = 30768,
     SPELL_TERRIFYING_HOWL           = 30752,
     SPELL_WIDE_SWIPE                = 30761,
 
-    CREATURE_BIG_BAD_WOLF           = 17521
+    CREATURE_BIG_BAD_WOLF           = 17521,
 };
+
+
+#define GOSSIP_GRANDMA          "What phat lewtz you have grandmother?"
+
+
 
 class npc_grandmother : public CreatureScript
 {
-    public:
-        npc_grandmother() : CreatureScript("npc_grandmother") { }
+public:
+    npc_grandmother() : CreatureScript("npc_grandmother") { }
 
-        struct npc_grandmotherAI : public ScriptedAI
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+    {
+        player->PlayerTalkClass->ClearMenus();
+        if (action == GOSSIP_ACTION_INFO_DEF)
         {
-            npc_grandmotherAI(Creature* creature) : ScriptedAI(creature) { }
+            if (Creature* pBigBadWolf = creature->SummonCreature(CREATURE_BIG_BAD_WOLF, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILLISECONDS))
+                pBigBadWolf->AI()->AttackStart(player);
 
-            void sGossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override
-            {
-                if (menuId == OPTION_WHAT_PHAT_LEWTS_YOU_HAVE && gossipListId == 0)
-                {
-                    CloseGossipMenuFor(player);
-
-                    if (Creature* pBigBadWolf = me->SummonCreature(CREATURE_BIG_BAD_WOLF, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILLISECONDS))
-                        pBigBadWolf->AI()->AttackStart(player);
-
-                    me->DespawnOrUnsummon();
-                }
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new npc_grandmotherAI(creature);
+            creature->DespawnOrUnsummon();
         }
+
+        return true;
+    }
+
+    bool OnGossipHello(Player* player, Creature* creature) override
+    {
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_GRANDMA, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        player->SEND_GOSSIP_MENU(8990, creature->GetGUID());
+
+        return true;
+    }
 };
 
 class boss_bigbadwolf : public CreatureScript
@@ -1251,7 +1255,7 @@ public:
                         Julianne->setDeathState(JUST_DIED);
                         Julianne->CombatStop(true);
                         Julianne->DeleteThreatList();
-                        Julianne->SetUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                        Julianne->SetUInt32Value(OBJECT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                     }
                     return;
                 }
@@ -1273,7 +1277,7 @@ public:
         void EnterCombat(Unit* /*who*/) override
         {
             Talk(SAY_ROMULO_AGGRO);
-            if (JulianneGUID)
+            if (!JulianneGUID.IsEmpty())
             {
                 Creature* Julianne = (ObjectAccessor::GetCreature((*me), JulianneGUID));
                 if (Julianne && Julianne->GetVictim())
@@ -1521,7 +1525,7 @@ void boss_julianne::boss_julianneAI::DamageTaken(Unit* /*done_by*/, uint32 &dama
                 Romulo->setDeathState(JUST_DIED);
                 Romulo->CombatStop(true);
                 Romulo->DeleteThreatList();
-                Romulo->SetUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                Romulo->SetUInt32Value(OBJECT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             }
 
             return;

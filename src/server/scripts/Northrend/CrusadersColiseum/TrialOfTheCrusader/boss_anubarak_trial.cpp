@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -33,7 +34,7 @@ enum Yells
     SAY_AGGRO               = 1,
     EMOTE_SUBMERGE          = 2,
     EMOTE_BURROWER          = 3,
-    EMOTE_EMERGE            = 4,
+    SAY_EMERGE              = 4,
     SAY_LEECHING_SWARM      = 5,
     EMOTE_LEECHING_SWARM    = 6,
     SAY_KILL_PLAYER         = 7,
@@ -221,10 +222,10 @@ class boss_anubarak_trial : public CreatureScript
                 instance->SetBossState(BOSS_ANUBARAK, FAIL);
                 //Summon Scarab Swarms neutral at random places
                 for (int i = 0; i < 10; i++)
-                    if (Creature* scarab = me->SummonCreature(NPC_SCARAB, AnubarakLoc[1].GetPositionX()+urand(0, 50)-25, AnubarakLoc[1].GetPositionY()+urand(0, 50)-25, AnubarakLoc[1].GetPositionZ()))
+                    if (Creature* temp = me->SummonCreature(NPC_SCARAB, AnubarakLoc[1].GetPositionX()+urand(0, 50)-25, AnubarakLoc[1].GetPositionY()+urand(0, 50)-25, AnubarakLoc[1].GetPositionZ()))
                     {
-                        scarab->setFaction(31);
-                        scarab->GetMotionMaster()->MoveRandom(10);
+                        temp->setFaction(31);
+                        temp->GetMotionMaster()->MoveRandom(10);
                     }
             }
 
@@ -291,10 +292,10 @@ class boss_anubarak_trial : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                events.Update(diff);
-
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
+
+                events.Update(diff);
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
@@ -364,7 +365,6 @@ class boss_anubarak_trial : public CreatureScript
                             me->RemoveAurasDueToSpell(SPELL_SUBMERGE_ANUBARAK);
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                             DoCast(me, SPELL_EMERGE_ANUBARAK);
-                            Talk(EMOTE_EMERGE);
                             events.SetPhase(PHASE_MELEE);
                             events.ScheduleEvent(EVENT_FREEZE_SLASH, 15*IN_MILLISECONDS, 0, PHASE_MELEE);
                             events.ScheduleEvent(EVENT_PENETRATING_COLD, 20*IN_MILLISECONDS, PHASE_MELEE);
@@ -402,8 +402,6 @@ class boss_anubarak_trial : public CreatureScript
                             break;
                     }
 
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 if (HealthBelowPct(30) && events.IsInPhase(PHASE_MELEE) && !_reachedPhase3)
@@ -839,10 +837,9 @@ class spell_impale : public SpellScriptLoader
             void HandleDamageCalc(SpellEffIndex /*effIndex*/)
             {
                 Unit* target = GetHitUnit();
-                uint32 permafrost = sSpellMgr->GetSpellIdForDifficulty(SPELL_PERMAFROST, target);
 
                 // make sure Impale doesnt do damage if we are standing on permafrost
-                if (target && target->HasAura(permafrost))
+                if (target && target->HasAura(SPELL_PERMAFROST))
                     SetHitDamage(0);
             }
 
@@ -883,9 +880,9 @@ class spell_anubarak_leeching_swarm : public SpellScriptLoader
                     if (lifeLeeched < 250)
                         lifeLeeched = 250;
                     // Damage
-                    caster->CastCustomSpell(target, SPELL_LEECHING_SWARM_DMG, &lifeLeeched, 0, 0, true);
+                    caster->CastCustomSpell(target, SPELL_LEECHING_SWARM_DMG, &lifeLeeched, 0, 0, false);
                     // Heal
-                    caster->CastCustomSpell(caster, SPELL_LEECHING_SWARM_HEAL, &lifeLeeched, 0, 0, true);
+                    caster->CastCustomSpell(caster, SPELL_LEECHING_SWARM_HEAL, &lifeLeeched, 0, 0, false);
                 }
             }
 

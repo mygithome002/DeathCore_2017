@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -167,7 +168,7 @@ class boss_omor_the_unscarred : public CreatureScript
                             OrbitalStrike_Timer = 14000 + rand32() % 2000;
                             PlayerGUID = temp->GetGUID();
 
-                            if (PlayerGUID)
+                            if (!PlayerGUID.IsEmpty())
                                 CanPullBack = true;
                         }
                     }

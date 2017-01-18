@@ -1,27 +1,29 @@
-# Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+# Copyright (C) 2005-2009 MaNGOS project <http://getmangos.com/>
+# Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
 #
-# This program is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by the
-# Free Software Foundation; either version 2 of the License, or (at your
-# option) any later version.
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-# more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program. If not, see <http://www.gnu.org/licenses/>.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 CollectSourceFiles(
   ${CMAKE_CURRENT_SOURCE_DIR}
   PRIVATE_SOURCES)
 
+if (WIN32)
+  list(APPEND PRIVATE_SOURCES ${sources_windows})
+endif()
+
 add_executable(vmap4extractor ${PRIVATE_SOURCES})
 
 target_link_libraries(vmap4extractor
   PUBLIC
-    mpq)
+    common
+    casc
+    bzip2)
 
 CollectIncludeDirectories(
   ${CMAKE_CURRENT_SOURCE_DIR}

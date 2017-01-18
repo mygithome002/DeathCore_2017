@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,10 +19,12 @@
 #include "vmapexport.h"
 #include "model.h"
 #include "wmo.h"
-#include "mpq_libmpq04.h"
+#include "mpqfile.h"
 #include <cassert>
 #include <algorithm>
 #include <cstdio>
+
+extern HANDLE CascStorage;
 
 Model::Model(std::string &filename) : filename(filename), vertices(0), indices(0)
 {
@@ -30,7 +33,7 @@ Model::Model(std::string &filename) : filename(filename), vertices(0), indices(0
 
 bool Model::open()
 {
-    MPQFile f(filename.c_str());
+    MPQFile f(CascStorage, filename.c_str());
 
     if (f.isEof())
     {
@@ -42,16 +45,26 @@ bool Model::open()
 
     _unload();
 
-    memcpy(&header, f.getBuffer(), sizeof(ModelHeader));
-    if(header.nBoundingTriangles > 0)
+    uint32 m2start = 0;
+    char const* ptr = f.getBuffer();
+    while (m2start + 4 < f.getSize() && *reinterpret_cast<uint32 const*>(ptr) != '02DM')
     {
-        f.seek(0);
+        ++m2start;
+        ++ptr;
+        if (m2start + sizeof(ModelHeader) > f.getSize())
+            return false;
+    }
+
+    memcpy(&header, f.getBuffer() + m2start, sizeof(ModelHeader));
+    if (header.nBoundingTriangles > 0)
+    {
+        f.seek(m2start);
         f.seekRelative(header.ofsBoundingVertices);
         vertices = new Vec3D[header.nBoundingVertices];
         f.read(vertices,header.nBoundingVertices*12);
         for (uint32 i=0; i<header.nBoundingVertices; i++)
             vertices[i] = fixCoordSystem(vertices[i]);
-        f.seek(0);
+        f.seek(m2start);
         f.seekRelative(header.ofsBoundingTriangles);
         indices = new uint16[header.nBoundingTriangles];
         f.read(indices,header.nBoundingTriangles*2);
@@ -174,21 +187,21 @@ ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID
         return;
 
     uint16 adtId = 0;// not used for models
-    uint32 flags = MOD_M2;
+    uint32 tcflags = MOD_M2;
     if (tileX == 65 && tileY == 65)
-        flags |= MOD_WORLDSPAWN;
+        tcflags |= MOD_WORLDSPAWN;
 
     //write mapID, tileX, tileY, Flags, ID, Pos, Rot, Scale, name
     fwrite(&mapID, sizeof(uint32), 1, pDirfile);
     fwrite(&tileX, sizeof(uint32), 1, pDirfile);
     fwrite(&tileY, sizeof(uint32), 1, pDirfile);
-    fwrite(&flags, sizeof(uint32), 1, pDirfile);
+    fwrite(&tcflags, sizeof(uint32), 1, pDirfile);
     fwrite(&adtId, sizeof(uint16), 1, pDirfile);
     fwrite(&id, sizeof(uint32), 1, pDirfile);
     fwrite(&pos, sizeof(float), 3, pDirfile);
     fwrite(&rot, sizeof(float), 3, pDirfile);
     fwrite(&sc, sizeof(float), 1, pDirfile);
-    uint32 nlen=strlen(ModelInstName);
+    uint32 nlen = strlen(ModelInstName);
     fwrite(&nlen, sizeof(uint32), 1, pDirfile);
     fwrite(ModelInstName, sizeof(char), nlen, pDirfile);
 

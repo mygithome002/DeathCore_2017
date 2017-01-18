@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -178,6 +179,12 @@ enum BG_AB_Objectives
     AB_OBJECTIVE_DEFEND_BASE            = 123
 };
 
+enum BG_AB_ExploitTeleportLocations
+{
+    AB_EXPLOIT_TELEPORT_LOCATION_ALLIANCE = 3705,
+    AB_EXPLOIT_TELEPORT_LOCATION_HORDE = 3706
+};
+
 #define BG_AB_NotABBGWeekendHonorTicks      260
 #define BG_AB_ABBGWeekendHonorTicks         160
 #define BG_AB_NotABBGWeekendReputationTicks 160
@@ -241,7 +248,7 @@ struct BattlegroundABScore final : public BattlegroundScore
     friend class BattlegroundAB;
 
     protected:
-        BattlegroundABScore(ObjectGuid playerGuid) : BattlegroundScore(playerGuid), BasesAssaulted(0), BasesDefended(0) { }
+        BattlegroundABScore(ObjectGuid playerGuid, uint32 team) : BattlegroundScore(playerGuid, team), BasesAssaulted(0), BasesDefended(0) { }
 
         void UpdateScore(uint32 type, uint32 value) override
         {
@@ -259,11 +266,10 @@ struct BattlegroundABScore final : public BattlegroundScore
             }
         }
 
-        void BuildObjectivesBlock(WorldPacket& data) final override
+        void BuildObjectivesBlock(std::vector<int32>& stats) override
         {
-            data << uint32(2);
-            data << uint32(BasesAssaulted);
-            data << uint32(BasesDefended);
+            stats.push_back(BasesAssaulted);
+            stats.push_back(BasesDefended);
         }
 
         uint32 GetAttr1() const final override { return BasesAssaulted; }
@@ -283,16 +289,17 @@ class BattlegroundAB : public Battleground
         void StartingEventCloseDoors() override;
         void StartingEventOpenDoors() override;
         void RemovePlayer(Player* player, ObjectGuid guid, uint32 team) override;
-        void HandleAreaTrigger(Player* Source, uint32 Trigger) override;
+        void HandleAreaTrigger(Player* source, uint32 trigger, bool entered) override;
         bool SetupBattleground() override;
         void Reset() override;
         void EndBattleground(uint32 winner) override;
         WorldSafeLocsEntry const* GetClosestGraveYard(Player* player) override;
+        WorldSafeLocsEntry const* GetExploitTeleportLocation(Team team) override;
 
         /* Scorekeeping */
         bool UpdatePlayerScore(Player* player, uint32 type, uint32 value, bool doAddHonor = true) override;
 
-        void FillInitialWorldStates(WorldPacket& data) override;
+        void FillInitialWorldStates(WorldPackets::WorldState::InitWorldStates& packet) override;
 
         /* Nodes occupying */
         void EventPlayerClickedOnFlag(Player* source, GameObject* target_obj) override;

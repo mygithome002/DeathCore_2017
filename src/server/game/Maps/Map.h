@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,7 +21,6 @@
 
 #include "Define.h"
 
-#include "DBCStructure.h"
 #include "GridDefines.h"
 #include "Cell.h"
 #include "Timer.h"
@@ -35,24 +35,31 @@
 #include <list>
 #include <memory>
 
-class Unit;
-class WorldPacket;
-class InstanceScript;
-class Group;
-class InstanceSave;
-class Object;
-class WorldObject;
-class TempSummon;
-class Player;
-class CreatureGroup;
-struct ScriptInfo;
-struct ScriptAction;
-struct Position;
 class Battleground;
-class MapInstanced;
 class BattlegroundMap;
+class CreatureGroup;
+class Group;
 class InstanceMap;
+class InstanceSave;
+class InstanceScript;
+class InstanceScenario;
+class MapInstanced;
+class Object;
+class Player;
+class TempSummon;
+class Unit;
+class WorldObject;
+class WorldPacket;
+struct MapDifficultyEntry;
+struct MapEntry;
+struct Position;
+struct ScriptAction;
+struct ScriptInfo;
+struct SummonPropertiesEntry;
 class Transport;
+enum Difficulty : uint8;
+enum WeatherState : uint32;
+
 namespace Trinity { struct ObjectUpdater; }
 
 struct ScriptAction
@@ -230,11 +237,10 @@ enum LevelRequirementVsMode
 
 struct ZoneDynamicInfo
 {
-    ZoneDynamicInfo() : MusicId(0), WeatherId(0), WeatherGrade(0.0f),
-        OverrideLightId(0), LightFadeInTime(0) { }
+    ZoneDynamicInfo();
 
     uint32 MusicId;
-    uint32 WeatherId;
+    WeatherState WeatherId;
     float WeatherGrade;
     uint32 OverrideLightId;
     uint32 LightFadeInTime;
@@ -248,9 +254,11 @@ struct ZoneDynamicInfo
 #define DEFAULT_HEIGHT_SEARCH     50.0f                     // default search distance to find height at nearby locations
 #define MIN_UNLOAD_DELAY      1                             // immediate unload
 
-typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
+typedef std::map<ObjectGuid::LowType/*leaderDBGUID*/, CreatureGroup*> CreatureGroupHolderType;
 
 typedef std::unordered_map<uint32 /*zoneId*/, ZoneDynamicInfo> ZoneDynamicInfoMap;
+
+typedef TypeUnorderedMapContainer<AllMapStoredObjectTypes, ObjectGuid> MapStoredObjectTypesContainer;
 
 class TC_GAME_API Map : public GridRefManager<NGridType>
 {
@@ -274,7 +282,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
             return false;
         }
 
-        virtual bool AddPlayerToMap(Player*);
+        virtual bool AddPlayerToMap(Player* player, bool initPlayer = true);
         virtual void RemovePlayerFromMap(Player*, bool);
 
         template<class T> bool AddToMap(T *);
@@ -318,8 +326,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
             grid.ResetTimeTracker(time_t(float(i_gridExpiry)*factor));
         }
 
-        time_t GetGridExpiry(void) const { return i_gridExpiry; }
-        uint32 GetId(void) const { return i_mapEntry->MapID; }
+        time_t GetGridExpiry() const { return i_gridExpiry; }
 
         static bool ExistMap(uint32 mapid, int gx, int gy);
         static bool ExistVMap(uint32 mapid, int gx, int gy);
@@ -384,26 +391,23 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         const char* GetMapName() const;
 
         // have meaning only for instanced map (that have set real difficulty)
-        Difficulty GetDifficulty() const { return Difficulty(GetSpawnMode()); }
-        bool IsRegularDifficulty() const { return GetDifficulty() == REGULAR_DIFFICULTY; }
-        MapDifficulty const* GetMapDifficulty() const;
+        Difficulty GetDifficultyID() const { return Difficulty(GetSpawnMode()); }
+        MapDifficultyEntry const* GetMapDifficulty() const;
+        uint32 GetDifficultyLootBonusTreeMod() const;
 
-        bool Instanceable() const { return i_mapEntry && i_mapEntry->Instanceable(); }
-        bool IsDungeon() const { return i_mapEntry && i_mapEntry->IsDungeon(); }
-        bool IsNonRaidDungeon() const { return i_mapEntry && i_mapEntry->IsNonRaidDungeon(); }
-        bool IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
-        bool IsRaidOrHeroicDungeon() const { return IsRaid() || i_spawnMode > DUNGEON_DIFFICULTY_NORMAL; }
-        bool IsHeroic() const { return IsRaid() ? i_spawnMode >= RAID_DIFFICULTY_10MAN_HEROIC : i_spawnMode >= DUNGEON_DIFFICULTY_HEROIC; }
-        bool Is25ManRaid() const { return IsRaid() && i_spawnMode & RAID_DIFFICULTY_MASK_25MAN; }   // since 25man difficulties are 1 and 3, we can check them like that
-        bool IsBattleground() const { return i_mapEntry && i_mapEntry->IsBattleground(); }
-        bool IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }
-        bool IsBattlegroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattlegroundOrArena(); }
-        bool GetEntrancePos(int32 &mapid, float &x, float &y)
-        {
-            if (!i_mapEntry)
-                return false;
-            return i_mapEntry->GetEntrancePos(mapid, x, y);
-        }
+        uint32 GetId() const;
+        bool Instanceable() const;
+        bool IsDungeon() const;
+        bool IsNonRaidDungeon() const;
+        bool IsRaid() const;
+        bool IsRaidOrHeroicDungeon() const;
+        bool IsHeroic() const;
+        bool Is25ManRaid() const;   // since 25man difficulties are 1 and 3, we can check them like that
+        bool IsBattleground() const;
+        bool IsBattleArena() const;
+        bool IsBattlegroundOrArena() const;
+        bool IsGarrison() const;
+        bool GetEntrancePos(int32 &mapid, float &x, float &y);
 
         void AddObjectToRemoveList(WorldObject* obj);
         void AddObjectToSwitchList(WorldObject* obj, bool on);
@@ -423,7 +427,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void AddWorldObject(WorldObject* obj) { i_worldObjects.insert(obj); }
         void RemoveWorldObject(WorldObject* obj) { i_worldObjects.erase(obj); }
 
-        void SendToPlayers(WorldPacket* data) const;
+        void SendToPlayers(WorldPacket const* data) const;
 
         typedef MapRefManager PlayerList;
         PlayerList const& GetPlayers() const { return m_mapRefManager; }
@@ -451,12 +455,13 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         TempSummon* SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties = NULL, uint32 duration = 0, Unit* summoner = NULL, uint32 spellId = 0, uint32 vehId = 0);
         void SummonCreatureGroup(uint8 group, std::list<TempSummon*>* list = NULL);
+        AreaTrigger* GetAreaTrigger(ObjectGuid const& guid);
         Corpse* GetCorpse(ObjectGuid const& guid);
         Creature* GetCreature(ObjectGuid const& guid);
-        GameObject* GetGameObject(ObjectGuid const& guid);
-        Transport* GetTransport(ObjectGuid const& guid);
         DynamicObject* GetDynamicObject(ObjectGuid const& guid);
+        GameObject* GetGameObject(ObjectGuid const& guid);
         Pet* GetPet(ObjectGuid const& guid);
+        Transport* GetTransport(ObjectGuid const& guid);
 
         MapStoredObjectTypesContainer& GetObjectsStore() { return _objectsStore; }
 
@@ -493,7 +498,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         BattlegroundMap* ToBattlegroundMap() { if (IsBattlegroundOrArena()) return reinterpret_cast<BattlegroundMap*>(this); else return NULL;  }
         BattlegroundMap const* ToBattlegroundMap() const { if (IsBattlegroundOrArena()) return reinterpret_cast<BattlegroundMap const*>(this); return NULL; }
 
-        float GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, float* ground = NULL, bool swim = false) const;
+        float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
         float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
         bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask) const;
         void Balance() { _dynamicTree.balance(); }
@@ -502,6 +507,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         bool ContainsGameObjectModel(const GameObjectModel& model) const { return _dynamicTree.contains(model);}
         bool getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist);
 
+        virtual ObjectGuid::LowType GetOwnerGuildId(uint32 /*team*/ = TEAM_OTHER) const { return UI64LIT(0); }
         /*
             RESPAWN TIMES
         */
@@ -542,10 +548,11 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         void SendInitTransports(Player* player);
         void SendRemoveTransports(Player* player);
+        void SendUpdateTransportVisibility(Player* player, std::set<uint32> const& previousPhases);
         void SendZoneDynamicInfo(Player* player);
 
         void SetZoneMusic(uint32 zoneId, uint32 musicId);
-        void SetZoneWeather(uint32 zoneId, uint32 weatherId, float weatherGrade);
+        void SetZoneWeather(uint32 zoneId, WeatherState weatherId, float weatherGrade);
         void SetZoneOverrideLight(uint32 zoneId, uint32 lightId, uint32 fadeInTime);
 
         void UpdateAreaDependentAuras();
@@ -555,13 +562,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         {
             static_assert(ObjectGuidTraits<high>::MapSpecific, "Only map specific guid can be generated in Map context");
             return GetGuidSequenceGenerator<high>().Generate();
-        }
-
-        template<HighGuid high>
-        inline ObjectGuid::LowType GetMaxLowGuid()
-        {
-            static_assert(ObjectGuidTraits<high>::MapSpecific, "Only map specific guid can be retrieved in Map context");
-            return GetGuidSequenceGenerator<high>().GetNextAfterMaxUsed();
         }
 
         void AddUpdateObject(Object* obj)
@@ -575,7 +575,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         }
 
     private:
-
         void LoadMapAndVMap(int gx, int gy);
         void LoadVMap(int gx, int gy);
         void LoadMap(int gx, int gy, bool reload = false);
@@ -633,6 +632,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
     protected:
         void SetUnloadReferenceLock(const GridCoord &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
+        virtual void LoadGridObjects(NGridType* grid, Cell const& cell);
 
         std::mutex _mapLock;
         std::mutex _gridLock;
@@ -729,7 +729,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         {
             auto itr = _guidGenerators.find(high);
             if (itr == _guidGenerators.end())
-                itr = _guidGenerators.insert(std::make_pair(high, std::unique_ptr<ObjectGuidGenerator<high>>(new ObjectGuidGenerator<high>()))).first;
+                itr = _guidGenerators.insert(std::make_pair(high, Trinity::make_unique<ObjectGuidGenerator<high>>())).first;
 
             return *itr->second;
         }
@@ -760,15 +760,16 @@ class TC_GAME_API InstanceMap : public Map
     public:
         InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, Map* _parent);
         ~InstanceMap();
-        bool AddPlayerToMap(Player*) override;
+        bool AddPlayerToMap(Player* player, bool initPlayer = true) override;
         void RemovePlayerFromMap(Player*, bool) override;
         void Update(const uint32) override;
         void CreateInstanceData(bool load);
         bool Reset(uint8 method);
         uint32 GetScriptId() const { return i_script_id; }
         InstanceScript* GetInstanceScript() { return i_data; }
-        InstanceScript const* GetInstanceScript() const { return i_data; }
-        void PermBindAllPlayers();
+        InstanceScenario* GetInstanceScenario() { return i_scenario; }
+        void SetInstanceScenario(InstanceScenario* scenario) { i_scenario = scenario; }
+        void PermBindAllPlayers(Player* source);
         void UnloadAll() override;
         EnterState CannotEnter(Player* player) override;
         void SendResetWarnings(uint32 timeLeft) const;
@@ -786,6 +787,7 @@ class TC_GAME_API InstanceMap : public Map
         bool m_unloadWhenEmpty;
         InstanceScript* i_data;
         uint32 i_script_id;
+        InstanceScenario* i_scenario;
 };
 
 class TC_GAME_API BattlegroundMap : public Map
@@ -794,7 +796,7 @@ class TC_GAME_API BattlegroundMap : public Map
         BattlegroundMap(uint32 id, time_t, uint32 InstanceId, Map* _parent, uint8 spawnMode);
         ~BattlegroundMap();
 
-        bool AddPlayerToMap(Player*) override;
+        bool AddPlayerToMap(Player* player, bool initPlayer = true) override;
         void RemovePlayerFromMap(Player*, bool) override;
         EnterState CannotEnter(Player* player) override;
         void SetUnload();

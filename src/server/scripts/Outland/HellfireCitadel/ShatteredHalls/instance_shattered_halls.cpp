@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,13 +24,13 @@ SDCategory: Hellfire Citadel, Shattered Halls
 EndScriptData */
 
 #include "ScriptMgr.h"
-#include "ScriptedCreature.h"
-#include "SpellScript.h"
-#include "SpellAuraEffects.h"
 #include "InstanceScript.h"
+#include "shattered_halls.h"
 #include "Player.h"
 #include "SpellAuras.h"
-#include "shattered_halls.h"
+#include "CreatureAI.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
 
 DoorData const doorData[] =
 {
@@ -301,6 +302,7 @@ class instance_shattered_halls : public InstanceMapScript
             uint32 _team;
         };
 };
+
 
 void AddSC_instance_shattered_halls()
 {

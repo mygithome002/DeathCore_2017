@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -308,7 +308,7 @@ T* DatabaseWorkerPool<T>::GetFreeConnection()
     //! Block forever until a connection is free
     for (;;)
     {
-        connection = _connections[IDX_SYNCH][++i % num_cons].get();
+        connection = _connections[IDX_SYNCH][i++ % num_cons].get();
         //! Must be matched with t->Unlock() or you will get deadlocks
         if (connection->LockIfReady())
             break;
@@ -320,3 +320,4 @@ T* DatabaseWorkerPool<T>::GetFreeConnection()
 template class TC_DATABASE_API DatabaseWorkerPool<LoginDatabaseConnection>;
 template class TC_DATABASE_API DatabaseWorkerPool<WorldDatabaseConnection>;
 template class TC_DATABASE_API DatabaseWorkerPool<CharacterDatabaseConnection>;
+template class TC_DATABASE_API DatabaseWorkerPool<HotfixDatabaseConnection>;

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,14 +19,11 @@
 /* ScriptData
 SDName: Dustwallow_Marsh
 SD%Complete: 95
-SDComment: Quest support: 558, 11126, 11142, 11174, Vendor Nat Pagle
+SDComment: Quest support: 1270, 1222, 27245
 SDCategory: Dustwallow Marsh
 EndScriptData */
 
 /* ContentData
-npc_nat_pagle
-npc_private_hendel
-npc_cassa_crimsonwing - handled by npc_taxi
 EndContentData */
 
 #include "ScriptMgr.h"
@@ -52,7 +50,7 @@ public:
 
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
     {
-        ClearGossipMenuFor(player);
+        player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_TRADE)
             player->GetSession()->SendListInventory(creature->GetGUID());
 
@@ -66,11 +64,11 @@ public:
 
         if (creature->IsVendor() && player->GetQuestRewardStatus(QUEST_NATS_MEASURING_TAPE))
         {
-            AddGossipItemFor(player, GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
-            SendGossipMenuFor(player, 7640, creature->GetGUID());
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+            player->SEND_GOSSIP_MENU(7640, creature->GetGUID());
         }
         else
-            SendGossipMenuFor(player, 7638, creature->GetGUID());
+            player->SEND_GOSSIP_MENU(7638, creature->GetGUID());
 
         return true;
     }
@@ -230,7 +228,6 @@ public:
 
 };
 
-
 enum SpellScripts
 {
     SPELL_OOZE_ZAP              = 42489,
@@ -257,7 +254,7 @@ class spell_ooze_zap : public SpellScriptLoader
 
             SpellCastResult CheckRequirement()
             {
-                if (!GetCaster()->HasAura(GetSpellInfo()->Effects[EFFECT_1].CalcValue()))
+                if (!GetCaster()->HasAura(GetSpellInfo()->GetEffect(EFFECT_1)->CalcValue()))
                     return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW; // This is actually correct
 
                 if (!GetExplTargetUnit())
@@ -342,7 +339,7 @@ class spell_energize_aoe : public SpellScriptLoader
             {
                 for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
                 {
-                    if ((*itr)->GetTypeId() == TYPEID_PLAYER && (*itr)->ToPlayer()->GetQuestStatus(GetSpellInfo()->Effects[EFFECT_1].CalcValue()) == QUEST_STATUS_INCOMPLETE)
+                    if ((*itr)->GetTypeId() == TYPEID_PLAYER && (*itr)->ToPlayer()->GetQuestStatus(GetSpellInfo()->GetEffect(EFFECT_1)->CalcValue()) == QUEST_STATUS_INCOMPLETE)
                         ++itr;
                     else
                         targets.erase(itr++);
@@ -372,9 +369,6 @@ class spell_energize_aoe : public SpellScriptLoader
 
 void AddSC_dustwallow_marsh()
 {
-    new npc_nat_pagle();
-    new npc_private_hendel();
-    new npc_zelfrax();
     new spell_ooze_zap();
     new spell_ooze_zap_channel_end();
     new spell_energize_aoe();

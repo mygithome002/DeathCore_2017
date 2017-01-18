@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,29 +23,31 @@
 #include "Dynamic/LinkedList.h"
 #include "Dynamic/LinkedReference/Reference.h"
 
-template <class TO, class FROM>
-class RefManager : public LinkedListHead
+template <class TO, class FROM> class RefManager : public LinkedListHead
 {
     public:
-        typedef LinkedListHead::Iterator<Reference<TO, FROM>> iterator;
+        typedef LinkedListHead::Iterator< Reference<TO, FROM> > iterator;
         RefManager() { }
+        virtual ~RefManager() { clearReferences(); }
 
-        Reference<TO, FROM>* getFirst()             { return static_cast<Reference<TO, FROM>*>(LinkedListHead::getFirst()); }
-
-        Reference<TO, FROM> const* getFirst() const { return static_cast<Reference<TO, FROM> const*>(LinkedListHead::getFirst()); }
+        Reference<TO, FROM>* getFirst() { return ((Reference<TO, FROM>*) LinkedListHead::getFirst()); }
+        Reference<TO, FROM> const* getFirst() const { return ((Reference<TO, FROM> const*) LinkedListHead::getFirst()); }
+        Reference<TO, FROM>* getLast() { return ((Reference<TO, FROM>*) LinkedListHead::getLast()); }
+        Reference<TO, FROM> const* getLast() const { return ((Reference<TO, FROM> const*) LinkedListHead::getLast()); }
 
         iterator begin() { return iterator(getFirst()); }
-        iterator end()   { return iterator(nullptr); }
-
-        virtual ~RefManager()
-        {
-            clearReferences();
-        }
+        iterator end() { return iterator(NULL); }
+        iterator rbegin() { return iterator(getLast()); }
+        iterator rend() { return iterator(NULL); }
 
         void clearReferences()
         {
-            while (Reference<TO, FROM>* ref = getFirst())
-                ref->invalidate();
+            LinkedListElement* ref;
+            while ((ref = getFirst()) != NULL)
+            {
+                ((Reference<TO, FROM>*) ref)->invalidate();
+                ref->delink();                              // the delink might be already done by invalidate(), but doing it here again does not hurt and insures an empty list
+            }
         }
 };
 

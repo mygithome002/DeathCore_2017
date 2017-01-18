@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -61,14 +61,22 @@ class boss_loatheb : public CreatureScript
 
         struct boss_loathebAI : public BossAI
         {
-            boss_loathebAI(Creature* creature) : BossAI(creature, BOSS_LOATHEB), _doomCounter(0), _sporeLoser(true) { }
+            boss_loathebAI(Creature* creature) : BossAI(creature, BOSS_LOATHEB)
+            {
+                Initialize();
+            }
+
+            void Initialize()
+            {
+                _doomCounter = 0;
+                _sporeLoserData = true;
+            }
 
             void Reset() override
             {
                 _Reset();
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FUNGAL_CREEP);
-                _doomCounter = 0;
-                _sporeLoser = true;
+                Initialize();
             }
 
             void EnterCombat(Unit* /*who*/) override
@@ -82,13 +90,13 @@ class boss_loatheb : public CreatureScript
 
             void SummonedCreatureDies(Creature* summon, Unit* /*killer*/) override
             {
-                _sporeLoser = false;
-                summon->CastSpell(summon, SPELL_FUNGAL_CREEP, true);
+                _sporeLoserData = false;
+                summon->CastSpell(summon,SPELL_FUNGAL_CREEP,true);
             }
 
             uint32 GetData(uint32 id) const override
             {
-                return (_sporeLoser && id == DATA_ACHIEVEMENT_SPORE_LOSER) ? 1u : 0u;
+                return (_sporeLoserData && id == DATA_ACHIEVEMENT_SPORE_LOSER) ? 1u : 0u;
             }
 
             void UpdateAI(uint32 diff) override
@@ -114,12 +122,12 @@ class boss_loatheb : public CreatureScript
                             events.Repeat(Seconds(30));
                             break;
                         case EVENT_INEVITABLE_DOOM:
-                            ++_doomCounter;
+                            _doomCounter++;
                             DoCastAOE(SPELL_INEVITABLE_DOOM);
                             if (_doomCounter > 6)
                                 events.Repeat((_doomCounter & 1) ? Seconds(14) : Seconds(17));
                             else
-                                events.Repeat(Seconds(30));
+                                events.Repeat(30);
                             break;
                         case EVENT_SPORE:
                             DoCast(me, SPELL_SUMMON_SPORE, false);
@@ -140,8 +148,8 @@ class boss_loatheb : public CreatureScript
             }
 
         private:
+            bool _sporeLoserData;
             uint8 _doomCounter;
-            bool _sporeLoser;
         };
 
         CreatureAI* GetAI(Creature* creature) const override

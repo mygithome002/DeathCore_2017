@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,8 +26,10 @@
 #include "World.h"
 #include "Group.h"
 #include "Player.h"
+#include "GarrisonMap.h"
+#include "ScenarioMgr.h"
 
-MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, DUNGEON_DIFFICULTY_NORMAL)
+MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, DIFFICULTY_NORMAL)
 {
     // fill with zero
     memset(&GridMapReference, 0, MAX_NUMBER_OF_GRIDS*MAX_NUMBER_OF_GRIDS*sizeof(uint16));
@@ -137,9 +140,9 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
             }
         }
     }
-    else
+    else if (!IsGarrison())
     {
-        InstancePlayerBind* pBind = player->GetBoundInstance(GetId(), player->GetDifficulty(IsRaid()));
+        InstancePlayerBind* pBind = player->GetBoundInstance(GetId(), player->GetDifficultyID(GetEntry()));
         InstanceSave* pSave = pBind ? pBind->save : nullptr;
 
         // priority:
@@ -164,7 +167,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
                 if (groupBind)
                 {
                     // solo saves should be reset when entering a group's instance
-                    player->UnbindInstance(GetId(), player->GetDifficulty(IsRaid()));
+                    player->UnbindInstance(GetId(), player->GetDifficultyID(GetEntry()));
                     pSave = groupBind->save;
                 }
             }
@@ -176,7 +179,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
             map = FindInstanceMap(newInstanceId);
             // it is possible that the save exists but the map doesn't
             if (!map)
-                map = CreateInstance(newInstanceId, pSave, pSave->GetDifficulty());
+                map = CreateInstance(newInstanceId, pSave, pSave->GetDifficultyID(), player->GetTeamId());
         }
         else
         {
@@ -184,19 +187,26 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
             // the instance will be created for the first time
             newInstanceId = sMapMgr->GenerateInstanceId();
 
-            Difficulty diff = player->GetGroup() ? player->GetGroup()->GetDifficulty(IsRaid()) : player->GetDifficulty(IsRaid());
+            Difficulty diff = player->GetGroup() ? player->GetGroup()->GetDifficultyID(GetEntry()) : player->GetDifficultyID(GetEntry());
             //Seems it is now possible, but I do not know if it should be allowed
             //ASSERT(!FindInstanceMap(NewInstanceId));
             map = FindInstanceMap(newInstanceId);
             if (!map)
-                map = CreateInstance(newInstanceId, NULL, diff);
+                map = CreateInstance(newInstanceId, NULL, diff, player->GetTeamId());
         }
+    }
+    else
+    {
+        newInstanceId = player->GetGUID().GetCounter();
+        map = FindInstanceMap(newInstanceId);
+        if (!map)
+            map = CreateGarrison(newInstanceId, player);
     }
 
     return map;
 }
 
-InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save, Difficulty difficulty)
+InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save, Difficulty difficulty, TeamId team)
 {
     // load/create a map
     std::lock_guard<std::mutex> lock(_mapLock);
@@ -216,9 +226,9 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save,
     }
 
     // some instances only have one difficulty
-    GetDownscaledMapDifficultyData(GetId(), difficulty);
+    sDB2Manager.GetDownscaledMapDifficultyData(GetId(), difficulty);
 
-    TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %s", save?"":"new ", InstanceId, GetId(), difficulty?"heroic":"normal");
+    TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %s", save ? "" : "new ", InstanceId, GetId(), difficulty ? "heroic" : "normal");
 
     InstanceMap* map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty, this);
     ASSERT(map->IsDungeon());
@@ -228,6 +238,8 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save,
 
     bool load_data = save != NULL;
     map->CreateInstanceData(load_data);
+    if (InstanceScenario* instanceScenario = sScenarioMgr->CreateInstanceScenario(map, team))
+        map->SetInstanceScenario(instanceScenario);
 
     if (sWorld->getBoolConfig(CONFIG_INSTANCEMAP_LOAD_GRIDS))
         map->LoadAllCells();
@@ -243,21 +255,23 @@ BattlegroundMap* MapInstanced::CreateBattleground(uint32 InstanceId, Battlegroun
 
     TC_LOG_DEBUG("maps", "MapInstanced::CreateBattleground: map bg %d for %d created.", InstanceId, GetId());
 
-    PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketByLevel(bg->GetMapId(), bg->GetMinLevel());
-
-    uint8 spawnMode;
-
-    if (bracketEntry)
-        spawnMode = bracketEntry->difficulty;
-    else
-        spawnMode = REGULAR_DIFFICULTY;
-
-    BattlegroundMap* map = new BattlegroundMap(GetId(), GetGridExpiry(), InstanceId, this, spawnMode);
+    BattlegroundMap* map = new BattlegroundMap(GetId(), GetGridExpiry(), InstanceId, this, DIFFICULTY_NONE);
     ASSERT(map->IsBattlegroundOrArena());
     map->SetBG(bg);
     bg->SetBgMap(map);
 
     m_InstancedMaps[InstanceId] = map;
+    return map;
+}
+
+GarrisonMap* MapInstanced::CreateGarrison(uint32 instanceId, Player* owner)
+{
+    std::lock_guard<std::mutex> lock(_mapLock);
+
+    GarrisonMap* map = new GarrisonMap(GetId(), GetGridExpiry(), instanceId, this, owner->GetGUID());
+    ASSERT(map->IsGarrison());
+
+    m_InstancedMaps[instanceId] = map;
     return map;
 }
 

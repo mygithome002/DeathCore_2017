@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -43,10 +43,21 @@ class npc_pet_dk_ebon_gargoyle : public CreatureScript
 
         struct npc_pet_dk_ebon_gargoyleAI : CasterAI
         {
-            npc_pet_dk_ebon_gargoyleAI(Creature* creature) : CasterAI(creature) { }
+            npc_pet_dk_ebon_gargoyleAI(Creature* creature) : CasterAI(creature)
+            {
+                Initialize();
+            }
+
+            void Initialize()
+            {
+                // Not needed to be despawned now
+                _despawnTimer = 0;
+            }
 
             void InitializeAI() override
             {
+                Initialize();
+
                 CasterAI::InitializeAI();
                 ObjectGuid ownerGuid = me->GetOwnerGUID();
                 if (!ownerGuid)
@@ -101,8 +112,25 @@ class npc_pet_dk_ebon_gargoyle : public CreatureScript
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
 
                 // Despawn as soon as possible
-                me->DespawnOrUnsummon(Seconds(4));
+                _despawnTimer = 4 * IN_MILLISECONDS;
             }
+
+            void UpdateAI(uint32 diff) override
+            {
+                if (_despawnTimer > 0)
+                {
+                    if (_despawnTimer > diff)
+                        _despawnTimer -= diff;
+                    else
+                        me->DespawnOrUnsummon();
+                    return;
+                }
+
+                CasterAI::UpdateAI(diff);
+            }
+
+        private:
+           uint32 _despawnTimer;
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -111,34 +139,7 @@ class npc_pet_dk_ebon_gargoyle : public CreatureScript
         }
 };
 
-class npc_pet_dk_guardian : public CreatureScript
-{
-    public:
-        npc_pet_dk_guardian() : CreatureScript("npc_pet_dk_guardian") { }
-
-        struct npc_pet_dk_guardianAI : public AggressorAI
-        {
-            npc_pet_dk_guardianAI(Creature* creature) : AggressorAI(creature) { }
-
-            bool CanAIAttack(Unit const* target) const override
-            {
-                if (!target)
-                    return false;
-                Unit* owner = me->GetOwner();
-                if (owner && !target->IsInCombatWith(owner))
-                    return false;
-                return AggressorAI::CanAIAttack(target);
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new npc_pet_dk_guardianAI(creature);
-        }
-};
-
 void AddSC_deathknight_pet_scripts()
 {
     new npc_pet_dk_ebon_gargoyle();
-    new npc_pet_dk_guardian();
 }

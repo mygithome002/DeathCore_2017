@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -155,6 +155,38 @@ bool DBUpdater<CharacterDatabaseConnection>::IsEnabled(uint32 const updateMask)
     return (updateMask & DatabaseLoader::DATABASE_CHARACTER) ? true : false;
 }
 
+// Hotfix Database
+template<>
+std::string DBUpdater<HotfixDatabaseConnection>::GetConfigEntry()
+{
+    return "Updates.Hotfix";
+}
+
+template<>
+std::string DBUpdater<HotfixDatabaseConnection>::GetTableName()
+{
+    return "Hotfixes";
+}
+
+template<>
+std::string DBUpdater<HotfixDatabaseConnection>::GetBaseFile()
+{
+    return GitRevision::GetHotfixesDatabase();
+}
+
+template<>
+bool DBUpdater<HotfixDatabaseConnection>::IsEnabled(uint32 const updateMask)
+{
+    // This way silences warnings under msvc
+    return (updateMask & DatabaseLoader::DATABASE_HOTFIX) ? true : false;
+}
+
+template<>
+BaseLocation DBUpdater<HotfixDatabaseConnection>::GetBaseLocationType()
+{
+    return LOCATION_DOWNLOAD;
+}
+
 // All
 template<class T>
 BaseLocation DBUpdater<T>::GetBaseLocationType()
@@ -197,7 +229,7 @@ bool DBUpdater<T>::Create(DatabaseWorkerPool<T>& pool)
     }
     catch (UpdateException&)
     {
-        TC_LOG_FATAL("sql.updates", "Failed to create database %s! Does the user (named in *.conf) have `CREATE`, `ALTER`, `DROP`, `INSERT` and `DELETE` privileges on the MySQL server?", pool.GetConnectionInfo()->database.c_str());
+        TC_LOG_FATAL("sql.updates", "Failed to create database %s! Does the user (named in *.conf) have `CREATE` privileges on the MySQL server?", pool.GetConnectionInfo()->database.c_str());
         boost::filesystem::remove(temp);
         return false;
     }
@@ -219,7 +251,7 @@ bool DBUpdater<T>::Update(DatabaseWorkerPool<T>& pool)
 
     if (!is_directory(sourceDirectory))
     {
-        TC_LOG_ERROR("sql.updates", "DBUpdater: The given source directory %s does not exist, change the path to the directory where your sql directory exists (for example c:\\source\\trinitycore). Shutting down.", sourceDirectory.generic_string().c_str());
+        TC_LOG_ERROR("sql.updates", "DBUpdater: Given source directory %s does not exist, skipped!", sourceDirectory.generic_string().c_str());
         return false;
     }
 
@@ -288,7 +320,7 @@ bool DBUpdater<T>::Populate(DatabaseWorkerPool<T>& pool)
             case LOCATION_DOWNLOAD:
             {
                 TC_LOG_ERROR("sql.updates", ">> File \"%s\" is missing, download it from \"https://github.com/TrinityCore/TrinityCore/releases\"" \
-                    " uncompress it and place the file TDB_full_world_(a_variable_name).sql where your worldserver binary is located.", base.filename().generic_string().c_str());
+                    " uncompress it and place the file TDB_full_world_(a_variable_name).sql in your worldserver directory.", base.filename().generic_string().c_str());
                 break;
             }
         }
@@ -396,3 +428,4 @@ void DBUpdater<T>::ApplyFile(DatabaseWorkerPool<T>& pool, std::string const& hos
 template class TC_DATABASE_API DBUpdater<LoginDatabaseConnection>;
 template class TC_DATABASE_API DBUpdater<WorldDatabaseConnection>;
 template class TC_DATABASE_API DBUpdater<CharacterDatabaseConnection>;
+template class TC_DATABASE_API DBUpdater<HotfixDatabaseConnection>;

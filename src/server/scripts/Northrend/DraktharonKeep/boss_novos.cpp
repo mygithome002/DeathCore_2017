@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -159,9 +159,6 @@ public:
                     default:
                         break;
                 }
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
             }
         }
 
@@ -201,6 +198,8 @@ public:
             {
                 if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     me->CastStop();
             }
@@ -208,6 +207,8 @@ public:
             {
                 if (!me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                if (!me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                 DoCast(SPELL_ARCANE_FIELD);
             }
         }
@@ -215,7 +216,10 @@ public:
         void SetSummonerStatus(bool active)
         {
             for (uint8 i = 0; i < 4; i++)
-                if (ObjectGuid guid = instance->GetGuidData(summoners[i].data))
+            {
+                ObjectGuid guid = instance->GetGuidData(summoners[i].data);
+                if (!guid.IsEmpty())
+                {
                     if (Creature* crystalChannelTarget = ObjectAccessor::GetCreature(*me, guid))
                     {
                         if (active)
@@ -223,14 +227,19 @@ public:
                         else
                             crystalChannelTarget->AI()->Reset();
                     }
+                }
+            }
         }
 
         void SetCrystalsStatus(bool active)
         {
             for (uint8 i = 0; i < 4; i++)
-                if (ObjectGuid guid = instance->GetGuidData(DATA_NOVOS_CRYSTAL_1 + i))
+            {
+                ObjectGuid guid = instance->GetGuidData(DATA_NOVOS_CRYSTAL_1 + i);
+                if (!guid.IsEmpty())
                     if (GameObject* crystal = ObjectAccessor::GetGameObject(*me, guid))
                         SetCrystalStatus(crystal, active);
+            }
         }
 
         void SetCrystalStatus(GameObject* crystal, bool active)
@@ -248,14 +257,22 @@ public:
         void CrystalHandlerDied()
         {
             for (uint8 i = 0; i < 4; i++)
-                if (ObjectGuid guid = instance->GetGuidData(DATA_NOVOS_CRYSTAL_1 + i))
+            {
+                ObjectGuid guid = instance->GetGuidData(DATA_NOVOS_CRYSTAL_1 + i);
+                if (!guid.IsEmpty())
+                {
                     if (GameObject* crystal = ObjectAccessor::GetGameObject(*me, guid))
+                    {
                         if (crystal->GetGoState() == GO_STATE_ACTIVE)
                         {
                             SetCrystalStatus(crystal, false);
                             break;
                         }
+                    }
+                }
+            }
 
+            ObjectGuid guid = instance->GetGuidData(DATA_NOVOS_SUMMONER_4);
             if (++_crystalHandlerCount >= 4)
             {
                 Talk(SAY_ARCANE_FIELD);
@@ -265,7 +282,7 @@ public:
                 if (IsHeroic())
                     events.ScheduleEvent(EVENT_SUMMON_MINIONS, 15000);
             }
-            else if (ObjectGuid guid = instance->GetGuidData(DATA_NOVOS_SUMMONER_4))
+            else if (!guid.IsEmpty())
                 if (Creature* crystalChannelTarget = ObjectAccessor::GetCreature(*me, guid))
                     crystalChannelTarget->AI()->SetData(SPELL_SUMMON_CRYSTAL_HANDLER, 15000);
         }
@@ -329,9 +346,12 @@ public:
         void JustSummoned(Creature* summon) override
         {
             if (InstanceScript* instance = me->GetInstanceScript())
-                if (ObjectGuid guid = instance->GetGuidData(DATA_NOVOS))
+            {
+                ObjectGuid guid = instance->GetGuidData(DATA_NOVOS);
+                if (!guid.IsEmpty())
                     if (Creature* novos = ObjectAccessor::GetCreature(*me, guid))
                         novos->AI()->JustSummoned(summon);
+            }
 
             if (summon)
                 summon->GetMotionMaster()->MovePath(summon->GetEntry() * 100, false);

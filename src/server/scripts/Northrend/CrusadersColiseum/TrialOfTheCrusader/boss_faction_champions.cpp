@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -383,7 +384,7 @@ class boss_toc_champion_controller : public CreatureScript
                 vOtherEntries.push_back(playerTeam == ALLIANCE ? NPC_HORDE_WARRIOR : NPC_ALLIANCE_WARRIOR);
 
                 uint8 healersSubtracted = 2;
-                if (_instance->instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_NORMAL || _instance->instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_HEROIC)
+                if (_instance->instance->GetSpawnMode() == DIFFICULTY_25_N || _instance->instance->GetSpawnMode() == DIFFICULTY_25_HC)
                     healersSubtracted = 1;
                 for (uint8 i = 0; i < healersSubtracted; ++i)
                 {
@@ -420,7 +421,7 @@ class boss_toc_champion_controller : public CreatureScript
                     vHealersEntries.erase(vHealersEntries.begin() + pos);
                 }
 
-                if (_instance->instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_NORMAL || _instance->instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_HEROIC)
+                if (_instance->instance->GetSpawnMode() == DIFFICULTY_10_N || _instance->instance->GetSpawnMode() == DIFFICULTY_10_HC)
                     for (uint8 i = 0; i < 4; ++i)
                         vOtherEntries.erase(vOtherEntries.begin() + urand(0, vOtherEntries.size() - 1));
 
@@ -452,22 +453,22 @@ class boss_toc_champion_controller : public CreatureScript
                 for (uint8 i = 0; i < vChampionEntries.size(); ++i)
                 {
                     uint8 pos = urand(0, vChampionJumpTarget.size()-1);
-                    if (Creature* champion = me->SummonCreature(vChampionEntries[i], vChampionJumpOrigin[urand(0, vChampionJumpOrigin.size()-1)], TEMPSUMMON_MANUAL_DESPAWN))
+                    if (Creature* temp = me->SummonCreature(vChampionEntries[i], vChampionJumpOrigin[urand(0, vChampionJumpOrigin.size()-1)], TEMPSUMMON_MANUAL_DESPAWN))
                     {
-                        _summons.Summon(champion);
-                        champion->SetReactState(REACT_PASSIVE);
-                        champion->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
+                        _summons.Summon(temp);
+                        temp->SetReactState(REACT_PASSIVE);
+                        temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
                         if (playerTeam == ALLIANCE)
                         {
-                            champion->SetHomePosition(vChampionJumpTarget[pos].GetPositionX(), vChampionJumpTarget[pos].GetPositionY(), vChampionJumpTarget[pos].GetPositionZ(), 0);
-                            champion->GetMotionMaster()->MoveJump(vChampionJumpTarget[pos], 20.0f, 20.0f);
-                            champion->SetOrientation(0);
+                            temp->SetHomePosition(vChampionJumpTarget[pos].GetPositionX(), vChampionJumpTarget[pos].GetPositionY(), vChampionJumpTarget[pos].GetPositionZ(), 0);
+                            temp->GetMotionMaster()->MoveJump(vChampionJumpTarget[pos], 20.0f, 20.0f);
+                            temp->SetOrientation(0);
                         }
                         else
                         {
-                            champion->SetHomePosition((ToCCommonLoc[1].GetPositionX()*2)-vChampionJumpTarget[pos].GetPositionX(), vChampionJumpTarget[pos].GetPositionY(), vChampionJumpTarget[pos].GetPositionZ(), 3);
-                            champion->GetMotionMaster()->MoveJump((ToCCommonLoc[1].GetPositionX() * 2) - vChampionJumpTarget[pos].GetPositionX(), vChampionJumpTarget[pos].GetPositionY(), vChampionJumpTarget[pos].GetPositionZ(), vChampionJumpTarget[pos].GetOrientation(), 20.0f, 20.0f);
-                            champion->SetOrientation(3);
+                            temp->SetHomePosition((ToCCommonLoc[1].GetPositionX()*2)-vChampionJumpTarget[pos].GetPositionX(), vChampionJumpTarget[pos].GetPositionY(), vChampionJumpTarget[pos].GetPositionZ(), 3);
+                            temp->GetMotionMaster()->MoveJump((ToCCommonLoc[1].GetPositionX() * 2) - vChampionJumpTarget[pos].GetPositionX(), vChampionJumpTarget[pos].GetPositionY(), vChampionJumpTarget[pos].GetPositionZ(), vChampionJumpTarget[pos].GetOrientation(), 20.0f, 20.0f);
+                            temp->SetOrientation(3);
                         }
                     }
                     vChampionJumpTarget.erase(vChampionJumpTarget.begin()+pos);
@@ -484,10 +485,10 @@ class boss_toc_champion_controller : public CreatureScript
                     case 1:
                         for (SummonList::iterator i = _summons.begin(); i != _summons.end(); ++i)
                         {
-                            if (Creature* summon = ObjectAccessor::GetCreature(*me, *i))
+                            if (Creature* temp = ObjectAccessor::GetCreature(*me, *i))
                             {
-                                summon->SetReactState(REACT_AGGRESSIVE);
-                                summon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
+                                temp->SetReactState(REACT_AGGRESSIVE);
+                                temp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
                             }
                         }
                         break;
@@ -639,12 +640,12 @@ struct boss_faction_championsAI : public BossAI
 
             if (TeamInInstance == ALLIANCE)
             {
-                if (Creature* varian = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_VARIAN)))
-                    varian->AI()->Talk(SAY_KILL_PLAYER);
+                if (Creature* temp = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_VARIAN)))
+                    temp->AI()->Talk(SAY_KILL_PLAYER);
             }
             else
-                if (Creature* garrosh = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_GARROSH)))
-                    garrosh->AI()->Talk(SAY_KILL_PLAYER);
+                if (Creature* temp = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_GARROSH)))
+                    temp->AI()->Talk(SAY_KILL_PLAYER);
 
         }
     }

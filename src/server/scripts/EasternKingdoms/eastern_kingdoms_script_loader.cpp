@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,6 +21,17 @@ void AddSC_boss_balinda();
 void AddSC_boss_drekthar();
 void AddSC_boss_galvangar();
 void AddSC_boss_vanndar();
+void AddSC_boss_alizabal();                  //Baradin Hold
+void AddSC_boss_occuthar();
+void AddSC_boss_pit_lord_argaloth();
+void AddSC_instance_baradin_hold();
+void AddSC_boss_romogg_bonecrusher();        //Blackrock Caverns
+void AddSC_boss_corla();
+void AddSC_boss_karsh_steelbender();
+void AddSC_boss_beauty();
+void AddSC_boss_ascendant_lord_obsidius();
+void AddSC_blackrock_caverns();
+void AddSC_instance_blackrock_caverns();
 void AddSC_blackrock_depths();               //Blackrock Depths
 void AddSC_boss_ambassador_flamelash();
 void AddSC_boss_draganthaurissan();
@@ -29,7 +40,6 @@ void AddSC_boss_high_interrogator_gerstahn();
 void AddSC_boss_magmus();
 void AddSC_boss_moira_bronzebeard();
 void AddSC_boss_tomb_of_seven();
-void AddSC_boss_coren_direbrew();
 void AddSC_instance_blackrock_depths();
 void AddSC_boss_drakkisath();                //Blackrock Spire
 void AddSC_boss_halycon();
@@ -154,38 +164,36 @@ void AddSC_boss_halazzi();
 void AddSC_boss_hex_lord_malacrass();
 void AddSC_boss_janalai();
 void AddSC_boss_nalorakk();
-void AddSC_boss_zuljin();
+void AddSC_boss_daakara();
 void AddSC_instance_zulaman();
 void AddSC_zulaman();
-void AddSC_boss_jeklik();                    //Zul'Gurub
-void AddSC_boss_venoxis();
-void AddSC_boss_marli();
-void AddSC_boss_mandokir();
-void AddSC_boss_gahzranka();
-void AddSC_boss_thekal();
-void AddSC_boss_arlokk();
-void AddSC_boss_jindo();
-void AddSC_boss_hakkar();
-void AddSC_boss_grilek();
+void AddSC_boss_grilek();                   // Zul'Gurub
 void AddSC_boss_hazzarah();
+void AddSC_boss_jindo_the_godbreaker();
+void AddSC_boss_kilnara();
+void AddSC_boss_mandokir();
 void AddSC_boss_renataki();
+void AddSC_boss_venoxis();
 void AddSC_boss_wushoolay();
+void AddSC_boss_zanzil();
 void AddSC_instance_zulgurub();
 //void AddSC_alterac_mountains();
 void AddSC_arathi_highlands();
 void AddSC_blasted_lands();
 void AddSC_burning_steppes();
 void AddSC_duskwood();
-//void AddSC_eastern_plaguelands();
+void AddSC_eastern_plaguelands();
 void AddSC_ghostlands();
 void AddSC_hinterlands();
 void AddSC_isle_of_queldanas();
+void AddSC_loch_modan();
 void AddSC_redridge_mountains();
 void AddSC_silverpine_forest();
 void AddSC_stormwind_city();
 void AddSC_stranglethorn_vale();
 void AddSC_swamp_of_sorrows();
 void AddSC_tirisfal_glades();
+void AddSC_tol_barad();
 void AddSC_undercity();
 void AddSC_western_plaguelands();
 void AddSC_wetlands();
@@ -199,6 +207,17 @@ void AddEasternKingdomsScripts()
     AddSC_boss_drekthar();
     AddSC_boss_galvangar();
     AddSC_boss_vanndar();
+    AddSC_boss_alizabal();                  //Baradin Hold
+    AddSC_boss_occuthar();
+    AddSC_boss_pit_lord_argaloth();
+    AddSC_instance_baradin_hold();
+    AddSC_boss_romogg_bonecrusher();        //Blackrock Caverns
+    AddSC_boss_corla();
+    AddSC_boss_karsh_steelbender();
+    AddSC_boss_beauty();
+    AddSC_boss_ascendant_lord_obsidius();
+    AddSC_blackrock_caverns();
+    AddSC_instance_blackrock_caverns();
     AddSC_blackrock_depths();               //Blackrock Depths
     AddSC_boss_ambassador_flamelash();
     AddSC_boss_draganthaurissan();
@@ -207,7 +226,6 @@ void AddEasternKingdomsScripts()
     AddSC_boss_magmus();
     AddSC_boss_moira_bronzebeard();
     AddSC_boss_tomb_of_seven();
-    AddSC_boss_coren_direbrew();
     AddSC_instance_blackrock_depths();
     AddSC_boss_drakkisath();                //Blackrock Spire
     AddSC_boss_halycon();
@@ -332,38 +350,37 @@ void AddEasternKingdomsScripts()
     AddSC_boss_hex_lord_malacrass();
     AddSC_boss_janalai();
     AddSC_boss_nalorakk();
-    AddSC_boss_zuljin();
+    AddSC_boss_daakara();
     AddSC_instance_zulaman();
     AddSC_zulaman();
-    AddSC_boss_jeklik();                    //Zul'Gurub
-    AddSC_boss_venoxis();
-    AddSC_boss_marli();
-    AddSC_boss_mandokir();
-    AddSC_boss_gahzranka();
-    AddSC_boss_thekal();
-    AddSC_boss_arlokk();
-    AddSC_boss_jindo();
-    AddSC_boss_hakkar();
-    AddSC_boss_grilek();
+    AddSC_boss_grilek();                    // Zul'Gurub
     AddSC_boss_hazzarah();
+    AddSC_boss_jindo_the_godbreaker();
+    AddSC_boss_kilnara();
+    AddSC_boss_mandokir();
     AddSC_boss_renataki();
+    AddSC_boss_venoxis();
     AddSC_boss_wushoolay();
+    AddSC_boss_zanzil();
     AddSC_instance_zulgurub();
+
     //AddSC_alterac_mountains();
     AddSC_arathi_highlands();
     AddSC_blasted_lands();
     AddSC_burning_steppes();
     AddSC_duskwood();
-    //AddSC_eastern_plaguelands();
+    AddSC_eastern_plaguelands();
     AddSC_ghostlands();
     AddSC_hinterlands();
     AddSC_isle_of_queldanas();
+    AddSC_loch_modan();
     AddSC_redridge_mountains();
     AddSC_silverpine_forest();
     AddSC_stormwind_city();
     AddSC_stranglethorn_vale();
     AddSC_swamp_of_sorrows();
     AddSC_tirisfal_glades();
+    AddSC_tol_barad();
     AddSC_undercity();
     AddSC_western_plaguelands();
     AddSC_wetlands();

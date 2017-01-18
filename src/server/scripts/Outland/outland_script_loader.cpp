@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -37,7 +37,6 @@ void AddSC_boss_ambassador_hellmaw();
 void AddSC_boss_blackheart_the_inciter();
 void AddSC_boss_grandmaster_vorpil();
 void AddSC_boss_murmur();
-void AddSC_shadow_labyrinth();
 void AddSC_instance_shadow_labyrinth();
 
 // Black Temple
@@ -160,7 +159,6 @@ void AddOutlandScripts()
     AddSC_boss_blackheart_the_inciter();
     AddSC_boss_grandmaster_vorpil();
     AddSC_boss_murmur();
-    AddSC_shadow_labyrinth();
     AddSC_instance_shadow_labyrinth();
 
     // Black Temple

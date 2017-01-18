@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -27,7 +27,7 @@ enum Texts
     SAY_AGGRO                   = 1,    // Ah, the entertainment has arrived.
     SAY_KILL                    = 2,    // Baltharus leaves no survivors! - This world has enough heroes.
     SAY_CLONE                   = 3,    // Twice the pain and half the fun.
-    SAY_DEATH                   = 4    // I... didn't see that coming....
+    SAY_DEATH                   = 4,    // I... didn't see that coming....
 };
 
 enum Spells
@@ -40,28 +40,28 @@ enum Spells
     SPELL_CLONE                 = 74511,
     SPELL_REPELLING_WAVE        = 74509,
     SPELL_CLEAR_DEBUFFS         = 34098,
-    SPELL_SPAWN_EFFECT          = 64195
+    SPELL_SPAWN_EFFECT          = 64195,
 };
 
 enum Events
 {
-    EVENT_BLADE_TEMPEST  = 1,
-    EVENT_CLEAVE,
-    EVENT_ENERVATING_BRAND,
-    EVENT_INTRO_TALK,
-    EVENT_SUMMONS_ATTACK
+    EVENT_BLADE_TEMPEST         = 1,
+    EVENT_CLEAVE                = 2,
+    EVENT_ENERVATING_BRAND      = 3,
+    EVENT_INTRO_TALK            = 4,
+    EVENT_OOC_CHANNEL           = 5,
 };
 
 enum Actions
 {
-    ACTION_CLONE    = 1
+    ACTION_CLONE                = 1,
 };
 
 enum Phases
 {
-    PHASE_ALL   = 0,
-    PHASE_INTRO,
-    PHASE_COMBAT
+    PHASE_ALL       = 0,
+    PHASE_INTRO     = 1,
+    PHASE_COMBAT    = 2
 };
 
 class boss_baltharus_the_warborn : public CreatureScript
@@ -71,7 +71,13 @@ class boss_baltharus_the_warborn : public CreatureScript
 
         struct boss_baltharus_the_warbornAI : public BossAI
         {
-            boss_baltharus_the_warbornAI(Creature* creature) : BossAI(creature, DATA_BALTHARUS_THE_WARBORN), _introDone(false)
+            boss_baltharus_the_warbornAI(Creature* creature) : BossAI(creature, DATA_BALTHARUS_THE_WARBORN)
+            {
+                Initialize();
+                _introDone = false;
+            }
+
+            void Initialize()
             {
                 _cloneCount = RAID_MODE<uint8>(1, 2, 2, 2);
             }
@@ -80,9 +86,9 @@ class boss_baltharus_the_warborn : public CreatureScript
             {
                 _Reset();
                 events.SetPhase(PHASE_INTRO);
+                events.ScheduleEvent(EVENT_OOC_CHANNEL, 0, 0, PHASE_INTRO);
+                Initialize();
                 instance->SetData(DATA_BALTHARUS_SHARED_HEALTH, me->GetMaxHealth());
-                if (Creature* channelTarget = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_CRYSTAL_CHANNEL_TARGET)))
-                    DoCast(channelTarget, SPELL_BARRIER_CHANNEL);
             }
 
             void DoAction(int32 action) override
@@ -94,13 +100,13 @@ class boss_baltharus_the_warborn : public CreatureScript
                             return;
                         _introDone = true;
                         me->setActive(true);
-                        events.ScheduleEvent(EVENT_INTRO_TALK, Seconds(7), 0, PHASE_INTRO);
+                        events.ScheduleEvent(EVENT_INTRO_TALK, 7000, 0, PHASE_INTRO);
                         break;
                     case ACTION_CLONE:
                     {
-                        DoCastSelf(SPELL_CLEAR_DEBUFFS);
-                        DoCastSelf(SPELL_CLONE);
-                        DoCastSelf(SPELL_REPELLING_WAVE);
+                        DoCast(me, SPELL_CLEAR_DEBUFFS);
+                        DoCast(me, SPELL_CLONE);
+                        DoCast(me, SPELL_REPELLING_WAVE);
                         Talk(SAY_CLONE);
                         --_cloneCount;
                         break;
@@ -116,9 +122,9 @@ class boss_baltharus_the_warborn : public CreatureScript
                 _EnterCombat();
                 events.Reset();
                 events.SetPhase(PHASE_COMBAT);
-                events.ScheduleEvent(EVENT_CLEAVE, Seconds(13), 0, PHASE_COMBAT);
-                events.ScheduleEvent(EVENT_ENERVATING_BRAND, Seconds(13), 0, PHASE_COMBAT);
-                events.ScheduleEvent(EVENT_BLADE_TEMPEST, Seconds(18), 0, PHASE_COMBAT);
+                events.ScheduleEvent(EVENT_CLEAVE, 11000, 0, PHASE_COMBAT);
+                events.ScheduleEvent(EVENT_ENERVATING_BRAND, 13000, 0, PHASE_COMBAT);
+                events.ScheduleEvent(EVENT_BLADE_TEMPEST, 15000, 0, PHASE_COMBAT);
                 Talk(SAY_AGGRO);
             }
 
@@ -140,12 +146,12 @@ class boss_baltharus_the_warborn : public CreatureScript
             {
                 summons.Summon(summon);
                 summon->SetHealth(me->GetHealth());
-                events.ScheduleEvent(EVENT_SUMMONS_ATTACK, Seconds(2));
+                summon->CastSpell(summon, SPELL_SPAWN_EFFECT, true);
             }
 
             void DamageTaken(Unit* /*attacker*/, uint32& damage) override
             {
-                if (GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL)
+                if (GetDifficulty() == DIFFICULTY_10_N)
                 {
                     if (me->HealthBelowPctDamaged(50, damage) && _cloneCount == 1)
                         DoAction(ACTION_CLONE);
@@ -162,18 +168,10 @@ class boss_baltharus_the_warborn : public CreatureScript
                     instance->SetData(DATA_BALTHARUS_SHARED_HEALTH, me->GetHealth() - damage);
             }
 
-            void EnterEvadeMode(EvadeReason /*why*/) override
-            {
-                summons.DespawnAll();
-                events.Reset();
-                _DespawnAtEvade();
-            }
-
             void UpdateAI(uint32 diff) override
             {
                 bool introPhase = events.IsInPhase(PHASE_INTRO);
-
-                if (!introPhase && !UpdateVictim())
+                if (!UpdateVictim() && !introPhase)
                     return;
 
                 if (!introPhase)
@@ -181,7 +179,7 @@ class boss_baltharus_the_warborn : public CreatureScript
 
                 events.Update(diff);
 
-                if (!introPhase && me->HasUnitState(UNIT_STATE_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING) && !introPhase)
                     return;
 
                 while (uint32 eventId = events.ExecuteEvent())
@@ -191,29 +189,28 @@ class boss_baltharus_the_warborn : public CreatureScript
                         case EVENT_INTRO_TALK:
                             Talk(SAY_BALTHARUS_INTRO);
                             break;
+                        case EVENT_OOC_CHANNEL:
+                            if (Creature* channelTarget = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_CRYSTAL_CHANNEL_TARGET)))
+                                DoCast(channelTarget, SPELL_BARRIER_CHANNEL);
+                            events.ScheduleEvent(EVENT_OOC_CHANNEL, 7000, 0, PHASE_INTRO);
+                            break;
                         case EVENT_CLEAVE:
                             DoCastVictim(SPELL_CLEAVE);
-                            events.Repeat(Seconds(20), Seconds(24));
+                            events.ScheduleEvent(EVENT_CLEAVE, 24000, 0, PHASE_COMBAT);
                             break;
                         case EVENT_BLADE_TEMPEST:
-                            DoCastSelf(SPELL_BLADE_TEMPEST);
-                            events.Repeat(Seconds(24));
+                            DoCast(me, SPELL_BLADE_TEMPEST);
+                            events.ScheduleEvent(EVENT_BLADE_TEMPEST, 24000, 0, PHASE_COMBAT);
                             break;
                         case EVENT_ENERVATING_BRAND:
                             for (uint8 i = 0; i < RAID_MODE<uint8>(4, 8, 8, 10); i++)
                                 if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true))
                                     DoCast(target, SPELL_ENERVATING_BRAND);
-                            events.Repeat(Seconds(26));
-                            break;
-                        case EVENT_SUMMONS_ATTACK:
-                            summons.DoZoneInCombat(NPC_BALTHARUS_THE_WARBORN_CLONE);
+                            events.ScheduleEvent(EVENT_ENERVATING_BRAND, 26000, 0, PHASE_COMBAT);
                             break;
                         default:
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 DoMeleeAttackIfReady();
@@ -235,38 +232,33 @@ class npc_baltharus_the_warborn_clone : public CreatureScript
     public:
         npc_baltharus_the_warborn_clone() : CreatureScript("npc_baltharus_the_warborn_clone") { }
 
-        struct npc_baltharus_the_warborn_cloneAI : public BossAI
+        struct npc_baltharus_the_warborn_cloneAI : public ScriptedAI
         {
-            npc_baltharus_the_warborn_cloneAI(Creature* creature) : BossAI(creature, DATA_BALTHARUS_CLONE) { }
-
-            void Reset() override
+            npc_baltharus_the_warborn_cloneAI(Creature* creature) : ScriptedAI(creature),
+                _instance(creature->GetInstanceScript())
             {
-                DoCastSelf(SPELL_SPAWN_EFFECT);
-                me->SetReactState(REACT_DEFENSIVE);
             }
 
             void EnterCombat(Unit* /*who*/) override
             {
                 DoZoneInCombat();
-                events.Reset();
-                events.ScheduleEvent(EVENT_CLEAVE, Seconds(11));
-                events.ScheduleEvent(EVENT_BLADE_TEMPEST, Seconds(15));
-                events.ScheduleEvent(EVENT_ENERVATING_BRAND, Seconds(10));
+                _events.Reset();
+                _events.ScheduleEvent(EVENT_CLEAVE, urand(5000, 10000));
+                _events.ScheduleEvent(EVENT_BLADE_TEMPEST, urand(18000, 25000));
+                _events.ScheduleEvent(EVENT_ENERVATING_BRAND, urand(10000, 15000));
             }
-
-            void EnterEvadeMode(EvadeReason /*why*/) override { }
 
             void DamageTaken(Unit* /*attacker*/, uint32& damage) override
             {
                 // Setting DATA_BALTHARUS_SHARED_HEALTH to 0 when killed would bug the boss.
                 if (me->GetHealth() > damage)
-                    instance->SetData(DATA_BALTHARUS_SHARED_HEALTH, me->GetHealth() - damage);
+                    _instance->SetData(DATA_BALTHARUS_SHARED_HEALTH, me->GetHealth() - damage);
             }
 
             void JustDied(Unit* killer) override
             {
                 // This is here because DamageTaken wont trigger if the damage is deadly.
-                if (Creature* baltharus = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_BALTHARUS_THE_WARBORN)))
+                if (Creature* baltharus = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_BALTHARUS_THE_WARBORN)))
                     killer->Kill(baltharus);
             }
 
@@ -275,41 +267,42 @@ class npc_baltharus_the_warborn_clone : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                me->SetHealth(instance->GetData(DATA_BALTHARUS_SHARED_HEALTH));
+                me->SetHealth(_instance->GetData(DATA_BALTHARUS_SHARED_HEALTH));
 
-                events.Update(diff);
+                _events.Update(diff);
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
-                while (uint32 eventId = events.ExecuteEvent())
+                while (uint32 eventId = _events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
                         case EVENT_CLEAVE:
                             DoCastVictim(SPELL_CLEAVE);
-                            events.Repeat(Seconds(20), Seconds(24));
+                            _events.ScheduleEvent(EVENT_CLEAVE, 24000);
                             break;
                         case EVENT_BLADE_TEMPEST:
                             DoCastVictim(SPELL_BLADE_TEMPEST);
-                            events.Repeat(Seconds(24));
-                            break;
+                            _events.ScheduleEvent(EVENT_BLADE_TEMPEST, 24000);
+                           break;
                         case EVENT_ENERVATING_BRAND:
                             for (uint8 i = 0; i < RAID_MODE<uint8>(4, 8, 8, 10); i++)
                                 if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true))
                                     DoCast(target, SPELL_ENERVATING_BRAND);
-                            events.Repeat(Seconds(26));
+                            _events.ScheduleEvent(EVENT_ENERVATING_BRAND, 26000);
                             break;
                         default:
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
-                }
+               }
 
                 DoMeleeAttackIfReady();
             }
+
+        private:
+            EventMap _events;
+            InstanceScript* _instance;
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -318,7 +311,6 @@ class npc_baltharus_the_warborn_clone : public CreatureScript
         }
 };
 
-// 74505 - Enervating Brand
 class spell_baltharus_enervating_brand_trigger : public SpellScriptLoader
 {
     public:
@@ -330,9 +322,11 @@ class spell_baltharus_enervating_brand_trigger : public SpellScriptLoader
 
             void CheckDistance()
             {
-                Unit* caster = GetCaster();
-                Unit* target = GetHitUnit();
-                target->CastSpell(caster, SPELL_SIPHONED_MIGHT, true);
+                if (Unit* caster = GetOriginalCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                        target->CastSpell(caster, SPELL_SIPHONED_MIGHT, true);
+                }
             }
 
             void Register() override

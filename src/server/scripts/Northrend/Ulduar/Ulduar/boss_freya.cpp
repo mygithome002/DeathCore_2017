@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -450,9 +450,6 @@ class boss_freya : public CreatureScript
                             events.ScheduleEvent(EVENT_GROUND_TREMOR, urand(25000, 28000));
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 if (!me->HasAura(SPELL_TOUCH_OF_EONAR))
@@ -599,7 +596,7 @@ class boss_freya : public CreatureScript
                     /* 25N */    {62955, 62956, 62957, 62958}
                 };
 
-                me->CastSpell((Unit*)NULL, summonSpell[me->GetMap()->GetDifficulty()][elderCount], true);
+                me->CastSpell((Unit*)NULL, summonSpell[me->GetMap()->GetDifficultyID() - DIFFICULTY_10_N][elderCount], true);
 
                 Talk(SAY_DEATH);
                 me->SetReactState(REACT_PASSIVE);
@@ -755,9 +752,6 @@ class boss_elder_brightleaf : public CreatureScript
                             events.ScheduleEvent(EVENT_FLUX, 7500);
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 DoMeleeAttackIfReady();
@@ -862,9 +856,6 @@ class boss_elder_stonebark : public CreatureScript
                             events.ScheduleEvent(EVENT_TREMOR, urand(10000, 20000));
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 DoMeleeAttackIfReady();
@@ -956,9 +947,6 @@ class boss_elder_ironbranch : public CreatureScript
                             events.ScheduleEvent(EVENT_THORN_SWARM, urand(8000, 13000));
                             break;
                     }
-
-                    if (me->HasUnitState(UNIT_STATE_CASTING))
-                        return;
                 }
 
                 DoMeleeAttackIfReady();
@@ -1565,7 +1553,7 @@ class spell_freya_iron_roots : public SpellScriptLoader
             void HandleSummon(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                uint32 entry = uint32(GetSpellInfo()->Effects[effIndex].MiscValue);
+                uint32 entry = uint32(GetSpellInfo()->GetEffect(effIndex)->MiscValue);
 
                 Position pos = GetCaster()->GetPosition();
                 // Not good at all, but this prevents having roots in a different position then player

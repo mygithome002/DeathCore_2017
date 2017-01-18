@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -40,23 +40,13 @@ enum Yells
 
 enum Spells
 {
-    /* living trainee spells */
-    SPELL_DEATH_PLAGUE          = 55604,
-
     /* living knight spells */
     SPELL_SHADOW_MARK           = 27825,
-
-    /* living rider spells */
-    SPELL_SHADOW_BOLT_VOLLEY    = 27831,
-
-    /* spectral trainee spells */
-    SPELL_ARCANE_EXPLOSION      = 27989,
 
     /* spectral knight spells */
     SPELL_WHIRLWIND             = 56408,
 
     /* spectral rider spells */
-    SPELL_DRAIN_LIFE            = 27994,
     SPELL_UNHOLY_FRENZY         = 55648,
 
     /* spectral horse spells */
@@ -83,6 +73,10 @@ enum Spells
     SPELL_TELEPORT_DEAD         = 28025,
     SPELL_TELEPORT_LIVE         = 28026
 };
+#define SPELLHELPER_DEATH_PLAGUE RAID_MODE<uint32>(55604, 55645)
+#define SPELLHELPER_SHADOW_BOLT_VOLLEY RAID_MODE<uint32>(27831, 55638)
+#define SPELLHELPER_ARCANE_EXPLOSION RAID_MODE<uint32>(27989, 56407)
+#define SPELLHELPER_DRAIN_LIFE RAID_MODE<uint32>(27994, 55646)
 #define SPELLHELPER_UNHOLY_FRENZY RAID_MODE<uint32>(SPELL_UNHOLY_FRENZY,27995)
 
 enum Creatures
@@ -655,7 +649,7 @@ class npc_gothik_minion_livingtrainee : public CreatureScript
                     _deathPlagueTimer -= diff;
                 else
                 {
-                    DoCastAOE(SPELL_DEATH_PLAGUE);
+                    DoCastAOE(SPELLHELPER_DEATH_PLAGUE);
                     _deathPlagueTimer = urandms(5, 20);
                 }
                 DoMeleeAttackIfReady();
@@ -713,7 +707,7 @@ class npc_gothik_minion_livingrider : public CreatureScript
                     _boltVolleyTimer -= diff;
                 else
                 {
-                    DoCastAOE(SPELL_SHADOW_BOLT_VOLLEY);
+                    DoCastAOE(SPELLHELPER_SHADOW_BOLT_VOLLEY);
                     _boltVolleyTimer = urandms(10, 15);
                 }
                 if (!me->HasUnitState(UNIT_STATE_CASTING))
@@ -743,7 +737,7 @@ class npc_gothik_minion_spectraltrainee : public CreatureScript
                 _explosionTimer -= diff;
             else
             {
-                DoCastAOE(SPELL_ARCANE_EXPLOSION);
+                DoCastAOE(SPELLHELPER_ARCANE_EXPLOSION);
                 _explosionTimer = 2 * IN_MILLISECONDS;
             }
             DoMeleeAttackIfReady();
@@ -835,7 +829,7 @@ class npc_gothik_minion_spectralrider : public CreatureScript
                 _drainTimer -= diff;
             else
             {
-                DoCastVictim(SPELL_DRAIN_LIFE);
+                DoCastVictim(SPELLHELPER_DRAIN_LIFE);
                 _drainTimer = urandms(10,15);
             }
 

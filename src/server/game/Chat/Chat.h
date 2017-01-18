@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,6 +23,7 @@
 #include "StringFormat.h"
 #include "WorldSession.h"
 #include "RBAC.h"
+#include "Packets/ChatPackets.h"
 
 #include <vector>
 
@@ -58,14 +60,6 @@ class TC_GAME_API ChatHandler
         explicit ChatHandler(WorldSession* session) : m_session(session), sentErrorMessage(false) { }
         virtual ~ChatHandler() { }
 
-        // Builds chat packet and returns receiver guid position in the packet to substitute in whisper builders
-        static size_t BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, ObjectGuid senderGUID, ObjectGuid receiverGUID, std::string const& message, uint8 chatTag,
-                                    std::string const& senderName = "", std::string const& receiverName = "",
-                                    uint32 achievementId = 0, bool gmMessage = false, std::string const& channelName = "");
-
-        // Builds chat packet and returns receiver guid position in the packet to substitute in whisper builders
-        static size_t BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, WorldObject const* sender, WorldObject const* receiver, std::string const& message, uint32 achievementId = 0, std::string const& channelName = "", LocaleConstant locale = DEFAULT_LOCALE);
-
         static char* LineFromMessage(char*& pos) { char* start = strtok(pos, "\n"); pos = nullptr; return start; }
 
         // function with different implementation for chat/console
@@ -75,7 +69,7 @@ class TC_GAME_API ChatHandler
         void SendSysMessage(uint32 entry);
 
         template<typename... Args>
-        void PSendSysMessage(char const* fmt, Args&&... args)
+        void PSendSysMessage(const char* fmt, Args&&... args)
         {
             SendSysMessage(Trinity::StringFormat(fmt, std::forward<Args>(args)...).c_str());
         }
@@ -92,15 +86,15 @@ class TC_GAME_API ChatHandler
             return Trinity::StringFormat(GetTrinityString(entry), std::forward<Args>(args)...);
         }
 
-        bool ParseCommands(char const* text);
+        bool ParseCommands(const char* text);
 
         static std::vector<ChatCommand> const& getCommandTable();
         static void invalidateCommandTable();
 
-        bool isValidChatMessage(char const* msg);
+        bool isValidChatMessage(const char* msg);
         void SendGlobalSysMessage(const char *str);
 
-        bool hasStringAbbr(char const* name, char const* part);
+        bool hasStringAbbr(const char* name, const char* part);
 
         // function with different implementation for chat/console
         virtual bool isAvailable(ChatCommand const& cmd) const;
@@ -129,9 +123,9 @@ class TC_GAME_API ChatHandler
         char*     extractQuotedArg(char* args);
 
         uint32    extractSpellIdFromLink(char* text);
-        ObjectGuid::LowType extractLowGuidFromLink(char* text, HighGuid& guidHigh);
+        ObjectGuid extractGuidFromLink(char* text);
         GameTele const* extractGameTeleFromLink(char* text);
-        bool GetPlayerGroupAndGUIDByName(char const* cname, Player*& player, Group*& group, ObjectGuid& guid, bool offline = false);
+        bool GetPlayerGroupAndGUIDByName(const char* cname, Player*& player, Group*& group, ObjectGuid& guid, bool offline = false);
         std::string extractPlayerNameFromLink(char* text);
         // select by arg (name/link) or in-game selection online/offline player or self if a creature is selected
         bool extractPlayerTarget(char* args, Player** player, ObjectGuid* player_guid = nullptr, std::string* player_name = nullptr);
@@ -140,16 +134,15 @@ class TC_GAME_API ChatHandler
         std::string GetNameLink(Player* chr) const;
 
         GameObject* GetNearbyGameObject();
-        GameObject* GetObjectFromPlayerMapByDbGuid(ObjectGuid::LowType lowguid);
-        Creature* GetCreatureFromPlayerMapByDbGuid(ObjectGuid::LowType lowguid);
+        GameObject* GetObjectGlobalyWithGuidOrNearWithDbGuid(ObjectGuid::LowType lowguid, uint32 entry);
         bool HasSentErrorMessage() const { return sentErrorMessage; }
         void SetSentErrorMessage(bool val){ sentErrorMessage = val; }
 
-        bool ShowHelpForCommand(std::vector<ChatCommand> const& table, char const* cmd);
+        bool ShowHelpForCommand(std::vector<ChatCommand> const& table, const char* cmd);
     protected:
         explicit ChatHandler() : m_session(nullptr), sentErrorMessage(false) { }     // for CLI subclass
-        static bool SetDataForCommandInTable(std::vector<ChatCommand>& table, char const* text, uint32 permission, std::string const& help, std::string const& fullcommand);
-        bool ExecuteCommandInTable(std::vector<ChatCommand> const& table, char const* text, std::string const& fullcmd);
+        static bool SetDataForCommandInTable(std::vector<ChatCommand>& table, const char* text, uint32 permission, std::string const& help, std::string const& fullcommand);
+        bool ExecuteCommandInTable(std::vector<ChatCommand> const& table, const char* text, std::string const& fullcmd);
         bool ShowHelpForSubCommands(std::vector<ChatCommand> const& table, char const* cmd, char const* subcmd);
 
     private:

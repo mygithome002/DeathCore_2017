@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,8 +17,6 @@
  */
 
 #include "ScriptMgr.h"
-#include "SpellScript.h"
-#include "SpellAuraEffects.h"
 #include "ScriptedCreature.h"
 #include "blackwing_lair.h"
 #include "ScriptedGossip.h"
@@ -43,9 +42,8 @@ enum Spells
    SPELL_FLAMEBREATH                 = 23461,
    SPELL_FIRENOVA                    = 23462,
    SPELL_TAILSWIPE                   = 15847,
-   SPELL_BURNINGADRENALINE           = 18173,  //Cast this one. It's what 3.3.5 DBM expects.
-   SPELL_BURNINGADRENALINE_EXPLOSION = 23478,
-   SPELL_CLEAVE                      = 19983   //Chain cleave is most likely named something different and contains a dummy effect
+   SPELL_BURNINGADRENALINE           = 23620,
+   SPELL_CLEAVE                      = 20684   //Chain cleave is most likely named something different and contains a dummy effect
 };
 
 enum Events
@@ -153,8 +151,8 @@ public:
                             break;
                         case EVENT_SPEECH_4:
                             me->setFaction(103);
-                            if (PlayerGUID && ObjectAccessor::GetUnit(*me, PlayerGUID))
-                                AttackStart(ObjectAccessor::GetUnit(*me, PlayerGUID));;
+                            if (Player* player = ObjectAccessor::GetPlayer(*me, PlayerGUID))
+                                AttackStart(player);
                             break;
                     }
                 }
@@ -190,25 +188,27 @@ public:
                         break;
                     case EVENT_BURNINGADRENALINE_CASTER:
                         {
-                            //selects a random target that isn't the current victim and is a mana user (selects mana users) but not pets
-                            //it also ignores targets who have the aura. We don't want to place the debuff on the same target twice.
-                            if (Unit *target = SelectTarget(SELECT_TARGET_RANDOM, 1, [&](Unit* u) { return u && !u->IsPet() && u->getPowerType() == POWER_MANA && !u->HasAura(SPELL_BURNINGADRENALINE); }))
+                            Unit* target = NULL;
+
+                            uint8 i = 0;
+                            while (i < 3)   // max 3 tries to get a random target with power_mana
                             {
-                                me->CastSpell(target, SPELL_BURNINGADRENALINE, true);
+                                ++i;
+                                target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true); // not aggro leader
+                                if (target && target->getPowerType() == POWER_MANA)
+                                    i = 3;
                             }
+                            if (target)                                     // cast on self (see below)
+                                target->CastSpell(target, SPELL_BURNINGADRENALINE, true);
                         }
-                        //reschedule the event
                         events.ScheduleEvent(EVENT_BURNINGADRENALINE_CASTER, 15000);
                         break;
                     case EVENT_BURNINGADRENALINE_TANK:
-                        //Vael has to cast it himself; contrary to the previous commit's comment. Nothing happens otherwise.
-                        me->CastSpell(me->GetVictim(), SPELL_BURNINGADRENALINE, true);
+                        // have the victim cast the spell on himself otherwise the third effect aura will be applied to Vael instead of the player
+                        me->EnsureVictim()->CastSpell(me->GetVictim(), SPELL_BURNINGADRENALINE, true);
                         events.ScheduleEvent(EVENT_BURNINGADRENALINE_TANK, 45000);
                         break;
                 }
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
             }
 
             // Yell if hp lower than 15%
@@ -225,7 +225,7 @@ public:
         {
             if (menuId == GOSSIP_ID && gossipListId == 0)
             {
-                CloseGossipMenuFor(player);
+                player->CLOSE_GOSSIP_MENU();
                 BeginSpeech(player);
             }
         }
@@ -241,39 +241,7 @@ public:
     }
 };
 
-//Need to define an aurascript for EVENT_BURNINGADRENALINE's death effect.
-// 18173 - Burning Adrenaline
-class spell_vael_burning_adrenaline : public SpellScriptLoader
-{
-public:
-    spell_vael_burning_adrenaline() : SpellScriptLoader("spell_vael_burning_adrenaline") { }
-
-    class spell_vael_burning_adrenaline_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_vael_burning_adrenaline_AuraScript);
-
-        void OnAuraRemoveHandler(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            //The tooltip says the on death the AoE occurs. According to information: http://qaliaresponse.stage.lithium.com/t5/WoW-Mayhem/Surviving-Burning-Adrenaline-For-tanks/td-p/48609
-            //Burning Adrenaline can be survived therefore Blizzard's implementation was an AoE bomb that went off if you were still alive and dealt
-            //damage to the target. You don't have to die for it to go off. It can go off whether you live or die.
-            GetTarget()->CastSpell(GetTarget(), SPELL_BURNINGADRENALINE_EXPLOSION, true);
-        }
-
-        void Register() override
-        {
-            AfterEffectRemove += AuraEffectRemoveFn(spell_vael_burning_adrenaline_AuraScript::OnAuraRemoveHandler, EFFECT_2, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
-        }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_vael_burning_adrenaline_AuraScript();
-    }
-};
-
 void AddSC_boss_vaelastrasz()
 {
     new boss_vaelastrasz();
-    new spell_vael_burning_adrenaline();
 }

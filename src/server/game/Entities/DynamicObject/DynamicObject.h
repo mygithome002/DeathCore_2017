@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -40,7 +41,7 @@ class TC_GAME_API DynamicObject : public WorldObject, public GridObject<DynamicO
         void AddToWorld() override;
         void RemoveFromWorld() override;
 
-        bool CreateDynamicObject(ObjectGuid::LowType guidlow, Unit* caster, uint32 spellId, Position const& pos, float radius, DynamicObjectType type);
+        bool CreateDynamicObject(ObjectGuid::LowType guidlow, Unit* caster, SpellInfo const* spell, Position const& pos, float radius, DynamicObjectType type, uint32 spellXSpellVisualId);
         void Update(uint32 p_time) override;
         void Remove();
         void SetDuration(int32 newDuration);
@@ -62,6 +63,7 @@ class TC_GAME_API DynamicObject : public WorldObject, public GridObject<DynamicO
         Aura* _removedAura;
         Unit* _caster;
         int32 _duration; // for non-aura dynobjects
+        uint32 _spellXSpellVisualId;
         bool _isViewpoint;
 };
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -151,7 +151,7 @@ public:
             _JustDied();
 
             // start achievement timer (kill Maexna within 20 min)
-            instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMED_START_EVENT);
+            instance->DoStartCriteriaTimer(CRITERIA_TIMED_TYPE_EVENT, ACHIEV_TIMED_START_EVENT);
         }
 
         void EnterCombat(Unit* /*who*/) override
@@ -194,13 +194,12 @@ public:
                     case EVENT_SCARABS:
                         if (!guardCorpses.empty())
                         {
-                            if (ObjectGuid target = Trinity::Containers::SelectRandomContainerElement(guardCorpses))
-                                if (Creature* creatureTarget = ObjectAccessor::GetCreature(*me, target))
-                                {
-                                    creatureTarget->CastSpell(creatureTarget, SPELL_SUMMON_CORPSE_SCARABS_MOB, true, nullptr, nullptr, me->GetGUID());
-                                    creatureTarget->AI()->Talk(EMOTE_SCARAB);
-                                    creatureTarget->DespawnOrUnsummon();
-                                }
+                            if (Creature* creatureTarget = ObjectAccessor::GetCreature(*me, Trinity::Containers::SelectRandomContainerElement(guardCorpses)))
+                            {
+                                creatureTarget->CastSpell(creatureTarget, SPELL_SUMMON_CORPSE_SCARABS_MOB, true, nullptr, nullptr, me->GetGUID());
+                                creatureTarget->AI()->Talk(EMOTE_SCARAB);
+                                creatureTarget->DespawnOrUnsummon();
+                            }
                         }
                         events.Repeat(randtime(Seconds(40), Seconds(60)));
                         break;
@@ -242,7 +241,7 @@ class at_anubrekhan_entrance : public AreaTriggerScript
     public:
         at_anubrekhan_entrance() : AreaTriggerScript("at_anubrekhan_entrance") { }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/) override
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/, bool /*entered*/) override
         {
             InstanceScript* instance = player->GetInstanceScript();
             if (!instance || instance->GetData(DATA_HAD_ANUBREKHAN_GREET) || instance->GetBossState(BOSS_ANUBREKHAN) != NOT_STARTED)

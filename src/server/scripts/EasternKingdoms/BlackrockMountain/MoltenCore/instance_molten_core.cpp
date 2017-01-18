@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -135,7 +135,7 @@ class instance_molten_core : public InstanceMapScript
             void SummonMajordomoExecutus()
             {
                 _executusSchedule = false;
-                if (_majordomoExecutusGUID)
+                if (!_majordomoExecutusGUID.IsEmpty())
                     return;
 
                 if (GetBossState(BOSS_MAJORDOMO_EXECUTUS) != DONE)

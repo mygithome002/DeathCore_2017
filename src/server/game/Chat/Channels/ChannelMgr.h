@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -24,18 +25,18 @@ class Channel;
 class TC_GAME_API ChannelMgr
 {
     typedef std::unordered_map<std::wstring, Channel*> CustomChannelContainer; // custom channels only differ in name
-    typedef std::unordered_map<std::pair<uint32 /*channelId*/, uint32 /*zoneId*/>, Channel*> BuiltinChannelContainer; //identify builtin (DBC) channels by zoneId instead, since name changes by client locale
+    typedef std::unordered_map<std::pair<uint32 /*channelId*/, uint32 /*zoneId*/>, Channel*> BuiltinChannelContainer; // identify builtin (DBC) channels by zoneId instead, since name changes by client locale
 
     protected:
         explicit ChannelMgr(uint32 team) : _team(team) { }
         ~ChannelMgr();
 
     public:
-        static ChannelMgr* forTeam(uint32 team);
+        static ChannelMgr* ForTeam(uint32 team);
         static Channel* GetChannelForPlayerByNamePart(std::string const& namePart, Player* playerSearcher);
 
         Channel* GetJoinChannel(uint32 channelId, std::string const& name, AreaTableEntry const* zoneEntry = nullptr);
-        Channel* GetChannel(uint32 channelId, std::string const& name, Player* player, bool pkt = true, AreaTableEntry const* zoneEntry = nullptr) const;
+        Channel* GetChannel(uint32 channelId, std::string const& name, Player* player, bool notify = true, AreaTableEntry const* zoneEntry = nullptr) const;
         void LeftChannel(std::string const& name);
         void LeftChannel(uint32 channelId, AreaTableEntry const* zoneEntry);
 
@@ -44,7 +45,7 @@ class TC_GAME_API ChannelMgr
         BuiltinChannelContainer _channels;
         uint32 const _team;
 
-        static void MakeNotOnPacket(WorldPacket* data, std::string const& name);
+        static void SendNotOnChannelNotify(Player const* player, std::string const& name);
 };
 
 #endif

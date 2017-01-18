@@ -1,4 +1,4 @@
-# Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+# Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -8,7 +8,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-option(SERVERS          "Build worldserver and authserver"                            1)
+option(SERVERS          "Build worldserver and bnetserver"                            1)
 
 set(SCRIPTS_AVAILABLE_OPTIONS none static dynamic minimal-static minimal-dynamic)
 
@@ -17,8 +17,7 @@ if (SCRIPTS)
   list (FIND SCRIPTS_AVAILABLE_OPTIONS "${SCRIPTS}" SCRIPTS_INDEX)
   if (${SCRIPTS_INDEX} EQUAL -1)
     message(FATAL_ERROR "The value (${SCRIPTS}) of your SCRIPTS variable is invalid! "
-                        "Allowed values are: ${SCRIPTS_AVAILABLE_OPTIONS} if you still "
-                        "have problems search on forum for TCE00019.")
+                        "Allowed values are: ${SCRIPTS_AVAILABLE_OPTIONS}")
   endif()
 endif()
 

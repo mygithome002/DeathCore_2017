@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -69,7 +70,7 @@ private:
 
 TC_COMMON_API void stripLineInvisibleChars(std::string &src);
 
-TC_COMMON_API int32 MoneyStringToMoney(const std::string& moneyString);
+TC_COMMON_API int64 MoneyStringToMoney(const std::string& moneyString);
 
 TC_COMMON_API struct tm* localtime_r(const time_t* time, struct tm *result);
 
@@ -334,6 +335,7 @@ class HookList final
         ContainerType _container;
 
     public:
+        typedef typename ContainerType::const_iterator const_iterator;
         typedef typename ContainerType::iterator iterator;
 
         HookList<T>& operator+=(T t)
@@ -342,7 +344,7 @@ class HookList final
             return *this;
         }
 
-        size_t size()
+        size_t size() const
         {
             return _container.size();
         }
@@ -356,41 +358,53 @@ class HookList final
         {
             return _container.end();
         }
+
+        const_iterator begin() const
+        {
+            return _container.begin();
+        }
+
+        const_iterator end() const
+        {
+            return _container.end();
+        }
 };
 
-class TC_COMMON_API flag96
+class TC_COMMON_API flag128
 {
 private:
-    uint32 part[3];
+    uint32 part[4];
 
 public:
-    flag96(uint32 p1 = 0, uint32 p2 = 0, uint32 p3 = 0)
+    flag128(uint32 p1 = 0, uint32 p2 = 0, uint32 p3 = 0, uint32 p4 = 0)
     {
         part[0] = p1;
         part[1] = p2;
         part[2] = p3;
+        part[3] = p4;
     }
 
-    inline bool IsEqual(uint32 p1 = 0, uint32 p2 = 0, uint32 p3 = 0) const
+    inline bool IsEqual(uint32 p1 = 0, uint32 p2 = 0, uint32 p3 = 0, uint32 p4 = 0) const
     {
-        return (part[0] == p1 && part[1] == p2 && part[2] == p3);
+        return (part[0] == p1 && part[1] == p2 && part[2] == p3 && part[3] == p4);
     }
 
-    inline bool HasFlag(uint32 p1 = 0, uint32 p2 = 0, uint32 p3 = 0) const
+    inline bool HasFlag(uint32 p1 = 0, uint32 p2 = 0, uint32 p3 = 0, uint32 p4 = 0) const
     {
-        return (part[0] & p1 || part[1] & p2 || part[2] & p3);
+        return (part[0] & p1 || part[1] & p2 || part[2] & p3 || part[3] & p4);
     }
 
-    inline void Set(uint32 p1 = 0, uint32 p2 = 0, uint32 p3 = 0)
+    inline void Set(uint32 p1 = 0, uint32 p2 = 0, uint32 p3 = 0, uint32 p4 = 0)
     {
         part[0] = p1;
         part[1] = p2;
         part[2] = p3;
+        part[3] = p4;
     }
 
-    inline bool operator <(const flag96 &right) const
+    inline bool operator <(const flag128 &right) const
     {
-        for (uint8 i = 3; i > 0; --i)
+        for (uint8 i = 4; i > 0; --i)
         {
             if (part[i - 1] < right.part[i - 1])
                 return true;
@@ -400,79 +414,84 @@ public:
         return false;
     }
 
-    inline bool operator ==(const flag96 &right) const
+    inline bool operator ==(const flag128 &right) const
     {
         return
-        (
+            (
             part[0] == right.part[0] &&
             part[1] == right.part[1] &&
-            part[2] == right.part[2]
-        );
+            part[2] == right.part[2] &&
+            part[3] == right.part[3]
+            );
     }
 
-    inline bool operator !=(const flag96 &right) const
+    inline bool operator !=(const flag128 &right) const
     {
         return !this->operator ==(right);
     }
 
-    inline flag96 & operator =(const flag96 &right)
+    inline flag128 & operator =(const flag128 &right)
     {
         part[0] = right.part[0];
         part[1] = right.part[1];
         part[2] = right.part[2];
+        part[3] = right.part[3];
         return *this;
     }
 
-    inline flag96 operator &(const flag96 &right) const
+    inline flag128 operator &(const flag128 &right) const
     {
-        return flag96(part[0] & right.part[0], part[1] & right.part[1],
-            part[2] & right.part[2]);
+        return flag128(part[0] & right.part[0], part[1] & right.part[1],
+            part[2] & right.part[2], part[3] & right.part[3]);
     }
 
-    inline flag96 & operator &=(const flag96 &right)
+    inline flag128 & operator &=(const flag128 &right)
     {
         part[0] &= right.part[0];
         part[1] &= right.part[1];
         part[2] &= right.part[2];
+        part[3] &= right.part[3];
         return *this;
     }
 
-    inline flag96 operator |(const flag96 &right) const
+    inline flag128 operator |(const flag128 &right) const
     {
-        return flag96(part[0] | right.part[0], part[1] | right.part[1],
-            part[2] | right.part[2]);
+        return flag128(part[0] | right.part[0], part[1] | right.part[1],
+            part[2] | right.part[2], part[3] | right.part[3]);
     }
 
-    inline flag96 & operator |=(const flag96 &right)
+    inline flag128 & operator |=(const flag128 &right)
     {
         part[0] |= right.part[0];
         part[1] |= right.part[1];
         part[2] |= right.part[2];
+        part[3] |= right.part[3];
         return *this;
     }
 
-    inline flag96 operator ~() const
+    inline flag128 operator ~() const
     {
-        return flag96(~part[0], ~part[1], ~part[2]);
+        return flag128(~part[0], ~part[1], ~part[2], ~part[3]);
     }
 
-    inline flag96 operator ^(const flag96 &right) const
+    inline flag128 operator ^(const flag128 &right) const
     {
-        return flag96(part[0] ^ right.part[0], part[1] ^ right.part[1],
-            part[2] ^ right.part[2]);
+        return flag128(part[0] ^ right.part[0], part[1] ^ right.part[1],
+            part[2] ^ right.part[2], part[3] ^ right.part[3]);
     }
 
-    inline flag96 & operator ^=(const flag96 &right)
+    inline flag128 & operator ^=(const flag128 &right)
     {
         part[0] ^= right.part[0];
         part[1] ^= right.part[1];
         part[2] ^= right.part[2];
+        part[3] ^= right.part[3];
         return *this;
     }
 
     inline operator bool() const
     {
-        return (part[0] != 0 || part[1] != 0 || part[2] != 0);
+        return (part[0] != 0 || part[1] != 0 || part[2] != 0 || part[3] != 0);
     }
 
     inline bool operator !() const

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -234,7 +234,7 @@ class instance_halls_of_reflection : public InstanceMapScript
                     case GO_FROSTMOURNE:
                         FrostmourneGUID = go->GetGUID();
                         if (GetData(DATA_INTRO_EVENT) == DONE)
-                            go->SetPhaseMask(2, true);
+                            go->SetLootState(GO_JUST_DEACTIVATED);
                         break;
                     case GO_ENTRANCE_DOOR:
                         EntranceDoorGUID = go->GetGUID();
@@ -288,10 +288,10 @@ class instance_halls_of_reflection : public InstanceMapScript
                 }
             }
 
-            void FillInitialWorldStates(WorldPacket& data) override
+            void FillInitialWorldStates(WorldPackets::WorldState::InitWorldStates& packet) override
             {
-                data << uint32(WORLD_STATE_HOR_WAVES_ENABLED) << uint32(_introState == DONE && GetBossState(DATA_MARWYN) != DONE);
-                data << uint32(WORLD_STATE_HOR_WAVE_COUNT) << uint32(_waveCount);
+                packet.Worldstates.emplace_back(uint32(WORLD_STATE_HOR_WAVES_ENABLED), int32(_introState == DONE && GetBossState(DATA_MARWYN) != DONE));
+                packet.Worldstates.emplace_back(uint32(WORLD_STATE_HOR_WAVE_COUNT), int32(_waveCount));
             }
 
             bool SetBossState(uint32 type, EncounterState state) override
@@ -349,7 +349,7 @@ class instance_halls_of_reflection : public InstanceMapScript
                                 }
                                 break;
                             case FAIL:
-                                DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_NOT_RETREATING_EVENT);
+                                DoStopCriteriaTimer(CRITERIA_TIMED_TYPE_EVENT, ACHIEV_NOT_RETREATING_EVENT);
 
                                 if (Creature* jainaOrSylvanas = instance->GetCreature(JainaOrSylvanasEscapeGUID))
                                     jainaOrSylvanas->DespawnOrUnsummon(10000);
@@ -376,7 +376,7 @@ class instance_halls_of_reflection : public InstanceMapScript
             void SpawnGunship()
             {
                 // don't spawn gunship twice
-                if (GunshipGUID)
+                if (!GunshipGUID.IsEmpty())
                     return;
 
                 if (!_teamInInstance)
@@ -387,7 +387,7 @@ class instance_halls_of_reflection : public InstanceMapScript
                             _teamInInstance = player->GetTeam();
                 }
 
-                if (Transport* gunship = sTransportMgr->CreateTransport(_teamInInstance == HORDE ? GO_ORGRIMS_HAMMER : GO_THE_SKYBREAKER, 0, instance))
+                if (Transport* gunship = sTransportMgr->CreateTransport(_teamInInstance == HORDE ? GO_ORGRIMS_HAMMER : GO_THE_SKYBREAKER, UI64LIT(0), instance))
                     gunship->EnableMovement(GetBossState(DATA_THE_LICH_KING_ESCAPE) == DONE);
             }
 
