@@ -1,14 +1,11 @@
-# ![logo](https://community.trinitycore.org/public/style_images/1_trinitycore.png) TrinityCore (master)
+# ![logo](https://camo.githubusercontent.com/831d9a457a380e21ef52d682a578f5385058c8d8/687474703a2f2f692e696d6775722e636f6d2f556573316774432e706e67)
+[![Gitter](https://badges.gitter.im/NoffearrDeathProjecT/DeathCore.svg)](https://gitter.im/NoffearrDeathProjecT/DeathCore?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/NoffearrDeathProjecT/DeathCore.svg)](http://isitmaintained.com/project/NoffearrDeathProjecT/DeathCore "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/NoffearrDeathProjecT/DeathCore.svg)](http://isitmaintained.com/project/NoffearrDeathProjecT/DeathCore "Percentage of issues still open")
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/10635/badge.svg)]("https://scan.coverity.com/projects/noffearrdeathproject-deathcore)
 
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/TrinityCore/TrinityCore.svg)](http://isitmaintained.com/project/TrinityCore/TrinityCore "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/TrinityCore/TrinityCore.svg)](http://isitmaintained.com/project/TrinityCore/TrinityCore "Percentage of issues still open")
-
-## Build Status
-
-master | 3.3.5
-:------------: | :------------:
-[![master Build Status](https://travis-ci.org/TrinityCore/TrinityCore.svg?branch=master)](https://travis-ci.org/TrinityCore/TrinityCore) | [![3.3.5 Build Status](https://travis-ci.org/TrinityCore/TrinityCore.svg?branch=3.3.5)](https://travis-ci.org/TrinityCore/TrinityCore)
-[![master Build status](https://ci.appveyor.com/api/projects/status/54d0u1fxe50ad80o/branch/master?svg=true)](https://ci.appveyor.com/project/DDuarte/trinitycore/branch/master) | [![Build status](https://ci.appveyor.com/api/projects/status/54d0u1fxe50ad80o/branch/3.3.5?svg=true)](https://ci.appveyor.com/project/DDuarte/trinitycore/branch/3.3.5)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/435/badge.svg)](https://scan.coverity.com/projects/435) | [![Coverity Scan Build Status](https://scan.coverity.com/projects/4656/badge.svg)](https://scan.coverity.com/projects/4656)
+3.3.5 | 4.3.4 | 5.4.8 | 7.x.x
+:------------: | :------------: | :------------: | :------------:
+[![3.3.5 Build Status](https://travis-ci.org/NoffearrDeathProjecT/DeathCore.svg?branch=3.3.5)](https://travis-ci.org/NoffearrDeathProjecT/DeathCore/builds) |[![4.3.4 Build Status](https://travis-ci.org/NoffearrDeathProjecT/DeathCore.svg?branch=4.3.4)](https://travis-ci.org/NoffearrDeathProjecT/DeathCore/builds) | [![5.4.8 Build Status](https://travis-ci.org/NoffearrDeathProjecT/DeathCore.svg?branch=5.4.8)](https://travis-ci.org/NoffearrDeathProjecT/DeathCore/builds) | [![7.x.x Build Status](https://travis-ci.org/NoffearrDeathProjecT/DeathCore.svg?branch=7.x.x)](https://travis-ci.org/NoffearrDeathProjecT/DeathCore/builds)
+[![3.3.5 Build status](https://ci.appveyor.com/api/projects/status/qfnroow5ul7x7m86/branch/3.3.5?svg=true)](https://ci.appveyor.com/project/Bodeguero/deathcore/branch/3.3.5) | [![4.3.4 Build status](https://ci.appveyor.com/api/projects/status/qfnroow5ul7x7m86/branch/4.3.4?svg=true)](https://ci.appveyor.com/project/Bodeguero/deathcore/branch/4.3.4) | [![5.4.8 Build status](https://ci.appveyor.com/api/projects/status/qfnroow5ul7x7m86/branch/5.4.8?svg=true)](https://ci.appveyor.com/project/Bodeguero/deathcore/branch/5.4.8) | [![7.x.x Build status](https://ci.appveyor.com/api/projects/status/qfnroow5ul7x7m86/branch/7.x.x?svg=true)](https://ci.appveyor.com/project/Bodeguero/deathcore/branch/7.x.x)
 
 ## Introduction
 
