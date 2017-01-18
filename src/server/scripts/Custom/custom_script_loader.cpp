@@ -44,7 +44,6 @@ void AddSC_NPC_TransmogDisplayVendor();
 void AddSC_VIP_NPC();
 void AddSC_NPC_VisualWeapon();
 void AddSC_weptransmog();
-void AddSC_Dynamic_Resurrections();
 void AddSC_VIP_Item();
 void AddSC_VIP_Item_60d();
 void AddSC_VIP_Item_120d();
@@ -83,8 +82,7 @@ void AddCustomScripts()
     AddSC_NPC_TransmogDisplayVendor();
     AddSC_VIP_NPC();
     AddSC_NPC_VisualWeapon();
-	AddSC_weptransmog();
-	AddSC_Dynamic_Resurrections();
+    AddSC_weptransmog();
     AddSC_VIP_Item();
     AddSC_VIP_Item_60d();
     AddSC_VIP_Item_120d();
