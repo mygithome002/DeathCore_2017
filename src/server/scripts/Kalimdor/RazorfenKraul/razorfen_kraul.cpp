@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  * Copyright (C) 2006-2013 2 <https://2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
