@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -30,7 +30,7 @@ namespace VMAP
         iInvScale = 1.f/iScale;
     }
 
-    bool ModelInstance::intersectRay(const G3D::Ray& pRay, float& pMaxDist, bool pStopAtFirstHit) const
+    bool ModelInstance::intersectRay(const G3D::Ray& pRay, float& pMaxDist, bool pStopAtFirstHit, ModelIgnoreFlags ignoreFlags) const
     {
         if (!iModel)
         {
@@ -54,7 +54,7 @@ namespace VMAP
         Vector3 p = iInvRot * (pRay.origin() - iPos) * iInvScale;
         Ray modRay(p, iInvRot * pRay.direction());
         float distance = pMaxDist * iInvScale;
-        bool hit = iModel->IntersectRay(modRay, distance, pStopAtFirstHit);
+        bool hit = iModel->IntersectRay(modRay, distance, pStopAtFirstHit, ignoreFlags);
         if (hit)
         {
             distance *= iScale;

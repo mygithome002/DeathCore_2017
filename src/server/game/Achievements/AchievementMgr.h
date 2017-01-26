@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -35,6 +35,7 @@ typedef std::vector<AchievementCriteriaEntry const*> AchievementCriteriaEntryLis
 typedef std::vector<AchievementEntry const*>         AchievementEntryList;
 
 typedef std::unordered_map<uint32, AchievementCriteriaEntryList> AchievementCriteriaListByAchievement;
+typedef std::unordered_map<uint32, AchievementCriteriaEntryList> AchievementCriteriaListByMiscValue;
 typedef std::unordered_map<uint32, AchievementEntryList>         AchievementListByReferencedId;
 
 struct CriteriaProgress
@@ -230,7 +231,7 @@ struct TC_GAME_API AchievementCriteriaDataSet
         Storage storage;
 };
 
-typedef std::map<uint32, AchievementCriteriaDataSet> AchievementCriteriaDataMap;
+typedef std::unordered_map<uint32, AchievementCriteriaDataSet> AchievementCriteriaDataMap;
 
 struct AchievementReward
 {
@@ -323,10 +324,7 @@ class TC_GAME_API AchievementGlobalMgr
 
         static AchievementGlobalMgr* instance();
 
-        AchievementCriteriaEntryList const& GetAchievementCriteriaByType(AchievementCriteriaTypes type) const
-        {
-            return m_AchievementCriteriasByType[type];
-        }
+        AchievementCriteriaEntryList const& GetAchievementCriteriaByType(AchievementCriteriaTypes type, uint32 miscValue) const;
 
         AchievementCriteriaEntryList const& GetTimedAchievementCriteriaByType(AchievementCriteriaTimedTypes type) const
         {
@@ -399,6 +397,9 @@ class TC_GAME_API AchievementGlobalMgr
 
         // store achievement criterias by type to speed up lookup
         AchievementCriteriaEntryList m_AchievementCriteriasByType[ACHIEVEMENT_CRITERIA_TYPE_TOTAL];
+
+        // store achievement criterias split by misc values
+        AchievementCriteriaListByMiscValue m_AchievementCriteriasByMiscValue[ACHIEVEMENT_CRITERIA_TYPE_TOTAL];
 
         AchievementCriteriaEntryList m_AchievementCriteriasByTimedType[ACHIEVEMENT_TIMED_TYPE_MAX];
 

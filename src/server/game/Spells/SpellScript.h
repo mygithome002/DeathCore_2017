@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -133,7 +133,7 @@ class TC_GAME_API _SpellScript
         // use for: deallocating memory allocated by script
         virtual void Unload() { }
         // Helpers
-        static bool ValidateSpellInfo(std::vector<uint32> spellIds);
+        static bool ValidateSpellInfo(std::vector<uint32> const& spellIds);
 };
 
 // SpellScript interface - enum used for runtime checks of script function calls

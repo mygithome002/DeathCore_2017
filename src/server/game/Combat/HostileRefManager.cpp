@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -132,6 +132,26 @@ void HostileRefManager::deleteReferencesForFaction(uint32 faction)
     {
         HostileReference* nextRef = ref->next();
         if (ref->GetSource()->GetOwner()->GetFactionTemplateEntry()->faction == faction)
+        {
+            ref->removeReference();
+            delete ref;
+        }
+        ref = nextRef;
+    }
+}
+
+//=================================================
+// delete all references out of specified range
+
+void HostileRefManager::deleteReferencesOutOfRange(float range)
+{
+    HostileReference* ref = getFirst();
+    range = range*range;
+    while (ref)
+    {
+        HostileReference* nextRef = ref->next();
+        Unit* owner = ref->GetSource()->GetOwner();
+        if (!owner->isActiveObject() && owner->GetExactDist2dSq(GetOwner()) > range)
         {
             ref->removeReference();
             delete ref;

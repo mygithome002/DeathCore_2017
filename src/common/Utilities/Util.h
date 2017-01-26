@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -336,13 +336,13 @@ class HookList final
     public:
         typedef typename ContainerType::iterator iterator;
 
-        HookList<T>& operator+=(T t)
+        HookList<T>& operator+=(T&& t)
         {
-            _container.push_back(t);
+            _container.push_back(std::move(t));
             return *this;
         }
 
-        size_t size()
+        size_t size() const
         {
             return _container.size();
         }

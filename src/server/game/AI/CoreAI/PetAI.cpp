@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -46,6 +46,11 @@ bool PetAI::_needToStop()
     // This is needed for charmed creatures, as once their target was reset other effects can trigger threat
     if (me->IsCharmed() && me->GetVictim() == me->GetCharmer())
         return true;
+
+    // dont allow pets to follow targets far away from owner
+    if (Unit* owner = me->GetCharmerOrOwner())
+        if (owner->GetExactDist(me) >= (owner->GetVisibilityRange()-10.0f))
+            return true;
 
     return !me->IsValidAttackTarget(me->GetVictim());
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -2525,6 +2525,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool   m_SeasonalQuestChanged;
         time_t m_lastDailyQuestTime;
 
+        uint32 m_hostileReferenceCheckTimer;
         uint32 m_drunkTimer;
         uint32 m_weaponChangeTimer;
 

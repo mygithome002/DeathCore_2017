@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -45,7 +45,7 @@ public:
         static std::vector<ChatCommand> VipCommandTable =
         {
             { "info", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipInfoCommand, "" },
-            { "buffs", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipBuffCommand, "" },
+            //{ "buffs", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipBuffCommand, "" },
             //{ "teletransportar", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipTeleCommand, "" },
             { "tamanho", RBAC_PERM_COMMAND_CUSTOM_VIP, false, &HandleVipScaleCommand, "" },
             { "sala",          RBAC_PERM_COMMAND_CUSTOM_VIP,    true,   &HandleVipMallCommand,          "" },

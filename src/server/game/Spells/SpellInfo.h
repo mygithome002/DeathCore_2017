@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -524,6 +524,8 @@ class TC_GAME_API SpellInfo
         bool CanSpellProvideImmunityAgainstAura(SpellInfo const* auraSpellInfo) const;
         bool SpellCancelsAuraEffect(SpellInfo const* auraSpellInfo, uint8 auraEffIndex) const;
 
+        uint32 GetAllowedMechanicMask() const;
+
     private:
         // loading helpers
         void _InitializeExplicitTargetMask();
@@ -543,6 +545,8 @@ class TC_GAME_API SpellInfo
 
         SpellDiminishInfo _diminishInfoNonTriggered;
         SpellDiminishInfo _diminishInfoTriggered;
+
+        uint32 _allowedMechanicMask;
 
         ImmunityInfo _immunityInfo[MAX_SPELL_EFFECTS];
 };

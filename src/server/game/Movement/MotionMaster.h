@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -24,7 +24,6 @@
 #include "Object.h"
 #include "MoveSplineInitArgs.h"
 #include "SplineChain.h"
-#include "WaypointManager.h"
 
 class MovementGenerator;
 class Unit;
@@ -163,7 +162,6 @@ class TC_GAME_API MotionMaster
         void MoveTaxiFlight(uint32 path, uint32 pathnode);
         void MoveDistract(uint32 time);
         void MovePath(uint32 path_id, bool repeatable);
-        void MovePath(WaypointPath& path, bool repeatable);
         void MoveRotate(uint32 time, RotateDirection direction);
 
     private:

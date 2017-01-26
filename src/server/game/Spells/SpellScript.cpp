@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -33,14 +33,17 @@ bool _SpellScript::_Validate(SpellInfo const* entry)
     return true;
 }
 
-bool _SpellScript::ValidateSpellInfo(std::vector<uint32> spellIds)
+bool _SpellScript::ValidateSpellInfo(std::vector<uint32> const& spellIds)
 {
     for (uint32 spellId : spellIds)
+    {
         if (!sSpellMgr->GetSpellInfo(spellId))
         {
             TC_LOG_ERROR("scripts.spells", "_SpellScript::ValidateSpellInfo: Spell %u does not exist.", spellId);
             return false;
         }
+    }
+
     return true;
 }
 

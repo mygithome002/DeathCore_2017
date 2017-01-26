@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -51,6 +51,9 @@ class TC_GAME_API HostileRefManager : public RefManager<Unit, ThreatManager>
 
         // Remove specific faction references
         void deleteReferencesForFaction(uint32 faction);
+
+        // for combat bugs
+        void deleteReferencesOutOfRange(float range);
 
         HostileReference* getFirst() { return ((HostileReference*) RefManager<Unit, ThreatManager>::getFirst()); }
 

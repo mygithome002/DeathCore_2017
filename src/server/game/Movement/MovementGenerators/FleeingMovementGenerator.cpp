@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 DeathCore <http://www.noffearrdeathproject.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -54,7 +54,8 @@ void FleeingMovementGenerator<T>::_setTargetLocation(T* owner)
                                                                                 mypos.m_positionX,
                                                                                 mypos.m_positionY,
                                                                                 mypos.m_positionZ + 2.0f,
-                                                                                x, y, z + 2.0f);
+                                                                                x, y, z + 2.0f,
+                                                                                VMAP::ModelIgnoreFlags::Nothing);
     if (!isInLOS)
     {
         i_nextCheckTime.Reset(200);

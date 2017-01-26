@@ -437,7 +437,7 @@ DROP TABLE IF EXISTS `realmlist`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `realmlist` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(32) NOT NULL DEFAULT '',
+  `name` varchar(32) NOT NULL DEFAULT 'DeathCore',
   `address` varchar(255) NOT NULL DEFAULT '127.0.0.1',
   `localAddress` varchar(255) NOT NULL DEFAULT '127.0.0.1',
   `localSubnetMask` varchar(255) NOT NULL DEFAULT '255.255.255.0',
@@ -459,7 +459,7 @@ CREATE TABLE `realmlist` (
 
 LOCK TABLES `realmlist` WRITE;
 /*!40000 ALTER TABLE `realmlist` DISABLE KEYS */;
-INSERT INTO `realmlist` VALUES (1,'Trinity','127.0.0.1','127.0.0.1','255.255.255.0',8085,0,0,1,0,0,12340);
+INSERT INTO `realmlist` VALUES (1,'DeathCore','127.0.0.1','127.0.0.1','255.255.255.0',8085,0,0,1,0,0,12340);
 /*!40000 ALTER TABLE `realmlist` ENABLE KEYS */;
 UNLOCK TABLES;
 
