@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,7 +21,7 @@
 #include "Define.h"
 #include <vector>
 
-class QueryCallbackNew;
+class QueryCallback;
 
 class TC_DATABASE_API QueryCallbackProcessor
 {
@@ -29,14 +29,14 @@ public:
     QueryCallbackProcessor();
     ~QueryCallbackProcessor();
 
-    void AddQuery(QueryCallbackNew&& query);
+    void AddQuery(QueryCallback&& query);
     void ProcessReadyQueries();
 
 private:
     QueryCallbackProcessor(QueryCallbackProcessor const&) = delete;
     QueryCallbackProcessor& operator=(QueryCallbackProcessor const&) = delete;
 
-    std::vector<QueryCallbackNew> _callbacks;
+    std::vector<QueryCallback> _callbacks;
 };
 
 #endif // QueryCallbackProcessor_h__

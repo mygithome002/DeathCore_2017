@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2016-2017 DeathCore <http://www.noffearrdeathproject.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -27,15 +27,22 @@ QueryCallbackProcessor::~QueryCallbackProcessor()
 {
 }
 
-void QueryCallbackProcessor::AddQuery(QueryCallbackNew&& query)
+void QueryCallbackProcessor::AddQuery(QueryCallback&& query)
 {
     _callbacks.emplace_back(std::move(query));
 }
 
 void QueryCallbackProcessor::ProcessReadyQueries()
 {
-    _callbacks.erase(std::remove_if(_callbacks.begin(), _callbacks.end(), [](QueryCallbackNew& callback)
+    if (_callbacks.empty())
+        return;
+
+    std::vector<QueryCallback> updateCallbacks{ std::move(_callbacks) };
+
+    updateCallbacks.erase(std::remove_if(updateCallbacks.begin(), updateCallbacks.end(), [](QueryCallback& callback)
     {
-        return callback.InvokeIfReady() == QueryCallbackNew::Completed;
-    }), _callbacks.end());
+        return callback.InvokeIfReady() == QueryCallback::Completed;
+    }), updateCallbacks.end());
+
+    _callbacks.insert(_callbacks.end(), std::make_move_iterator(updateCallbacks.begin()), std::make_move_iterator(updateCallbacks.end()));
 }
