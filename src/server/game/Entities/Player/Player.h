@@ -1144,7 +1144,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         uint32 GetBarberShopCost(uint8 newhairstyle, uint8 newhaircolor, uint8 newfacialhair, BarberShopStyleEntry const* newSkin = nullptr) const;
 
-        PlayerSocial *GetSocial() const { return m_social; }
+        PlayerSocial* GetSocial() { return m_social; }
+        void RemoveSocial();
 
         PlayerTaxi m_taxi;
         void InitTaxiNodesForLevel() { m_taxi.InitTaxiNodesForLevel(getCFSRace(), getClass(), getLevel()); }
@@ -2557,7 +2558,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint32 m_questRewardTalentCount;
 
         // Social
-        PlayerSocial *m_social;
+        PlayerSocial* m_social;
 
         // Groups
         GroupReference m_group;

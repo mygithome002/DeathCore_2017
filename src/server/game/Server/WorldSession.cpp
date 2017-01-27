@@ -125,7 +125,6 @@ WorldSession::WorldSession(uint32 id, std::string&& name, std::shared_ptr<WorldS
     _RBACData(NULL),
     expireTime(60000), // 1 min after socket loss, session is deleted
     forceExit(false),
-    m_currentVendorEntry(0),
     m_currentBankerGUID()
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
@@ -542,8 +541,8 @@ void WorldSession::LogoutPlayer(bool save)
         }
 
         //! Broadcast a logout message to the player's friends
-        sSocialMgr->SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUID().GetCounter(), true);
-        sSocialMgr->RemovePlayerSocial(_player->GetGUID().GetCounter());
+        sSocialMgr->SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUID(), true);
+        _player->RemoveSocial();
 
         //! Call script hook before deletion
         sScriptMgr->OnPlayerLogout(_player);
@@ -1124,7 +1123,7 @@ void WorldSession::ProcessQueryCallbacks()
     {
         std::string param = _addFriendCallback.GetParam();
         _addFriendCallback.GetResult(result);
-        HandleAddFriendOpcodeCallBack(result, param);
+        HandleAddFriendOpcodeCallback(result, param);
         _addFriendCallback.FreeResult();
     }
 
@@ -1142,7 +1141,7 @@ void WorldSession::ProcessQueryCallbacks()
     if (_addIgnoreCallback.valid() && _addIgnoreCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
         result = _addIgnoreCallback.get();
-        HandleAddIgnoreOpcodeCallBack(result);
+        HandleAddIgnoreOpcodeCallback(result);
     }
 
     //- SendStabledPet

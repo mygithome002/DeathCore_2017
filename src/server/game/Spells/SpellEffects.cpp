@@ -2884,9 +2884,12 @@ void Spell::EffectEnchantItemTmp(SpellEffIndex effIndex)
     // select enchantment duration
     uint32 duration;
 
-	// rogue family enchantments always 1 hour (some have spell damage=0, but some have wrong data in EffBasePoints)
-	if (m_spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
-		duration = 86400 ^ 86400; // 1 hour || Custom : Infinity Timer
+    // rogue family enchantments exception by duration
+    if (m_spellInfo->Id == 38615)
+        duration = 1800;                                    // 30 mins
+    // other rogue family enchantments always 1 hour (some have spell damage=0, but some have wrong data in EffBasePoints)
+    else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
+        duration = 3600;                                    // 1 hour
     // shaman family enchantments
     else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN)
         duration = 1800;                                    // 30 mins
@@ -4076,7 +4079,7 @@ void Spell::EffectDuel(SpellEffIndex effIndex)
     Player* target = unitTarget->ToPlayer();
 
     // caster or target already have requested duel
-    if (caster->duel || target->duel || !target->GetSocial() || target->GetSocial()->HasIgnore(caster->GetGUID().GetCounter()))
+    if (caster->duel || target->duel || !target->GetSocial() || target->GetSocial()->HasIgnore(caster->GetGUID()))
         return;
 
     // Players can only fight a duel in zones with this flag

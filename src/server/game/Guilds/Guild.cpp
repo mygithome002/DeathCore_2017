@@ -28,6 +28,7 @@
 #include "SocialMgr.h"
 #include "Opcodes.h"
 
+
 size_t const MAX_GUILD_BANK_TAB_TEXT_LEN = 500;
 
 uint32 const EMBLEM_PRICE = 10 * GOLD;
@@ -1498,7 +1499,7 @@ void Guild::HandleBuyBankTab(WorldSession* session, uint8 tabId)
 
     if (tabId >= GUILD_BANK_MAX_TABS)
         return;
- 
+
     uint32 tabCost = GetGuildBankTabPrice(tabId) * GOLD;
     if (!player->HasEnoughMoney(tabCost))                   // Should not happen, this is checked by client
         return;
@@ -1521,7 +1522,7 @@ void Guild::HandleInviteMember(WorldSession* session, std::string const& name)
 
     Player* player = session->GetPlayer();
     // Do not show invitations from ignored players
-    if (pInvitee->GetSocial()->HasIgnore(player->GetGUID().GetCounter()))
+    if (pInvitee->GetSocial()->HasIgnore(player->GetGUID()))
         return;
 
     if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && pInvitee->GetTeam() != player->GetTeam())
@@ -2157,7 +2158,7 @@ void Guild::BroadcastToGuild(WorldSession* session, bool officerOnly, std::strin
         for (auto itr = m_members.begin(); itr != m_members.end(); ++itr)
             if (Player* player = itr->second->FindConnectedPlayer())
                 if (player->GetSession() && _HasRankRight(player, officerOnly ? GR_RIGHT_OFFCHATLISTEN : GR_RIGHT_GCHATLISTEN) &&
-                    !player->GetSocial()->HasIgnore(session->GetPlayer()->GetGUID().GetCounter()))
+                    !player->GetSocial()->HasIgnore(session->GetPlayer()->GetGUID()))
                     player->GetSession()->SendPacket(&data);
     }
 }
