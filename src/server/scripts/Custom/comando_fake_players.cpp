@@ -111,7 +111,7 @@ public:
        }
 
        std::string online = toggle;
-	   ObjectGuid guid = sObjectMgr->GetPlayerGUIDByName(playerName);
+	   ObjectGuid guid = sWorld->GetCharacterGuidByName(playerName);
        uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(guid);
 
        if (handler->HasLowerSecurityAccount(NULL, accountId, true))
