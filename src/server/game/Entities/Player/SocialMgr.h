@@ -23,6 +23,7 @@
 #include "ObjectGuid.h"
 
 class Player;
+class WorldPacket;
 
 enum FriendStatus
 {
