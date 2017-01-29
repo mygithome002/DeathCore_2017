@@ -68,6 +68,7 @@
 #include "WeatherMgr.h"
 #include "WorldSession.h"
 #include "M2Stores.h"
+#include "WhoListStorage.h"
 
 TC_GAME_API std::atomic<bool> World::m_stopEvent(false);
 TC_GAME_API uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -1899,6 +1900,8 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_PINGDB].SetInterval(getIntConfig(CONFIG_DB_PING_INTERVAL)*MINUTE*IN_MILLISECONDS);    // Mysql ping time in minutes
 
     m_timers[WUPDATE_CHECK_FILECHANGES].SetInterval(500);
+ 
+    m_timers[WUPDATE_WHO_LIST].SetInterval(5 * IN_MILLISECONDS); // update who list cache every 5 seconds
 
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
@@ -2131,6 +2134,13 @@ void World::Update(uint32 diff)
             m_timers[i].Update(diff);
         else
             m_timers[i].SetCurrent(0);
+    }
+ 
+    ///- Update Who List Storage
+    if (m_timers[WUPDATE_WHO_LIST].Passed())
+    {
+        m_timers[WUPDATE_WHO_LIST].Reset();
+        sWhoListStorageMgr->Update();
     }
 
     ///- Update the game time and check for shutdown time

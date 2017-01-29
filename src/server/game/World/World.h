@@ -82,7 +82,8 @@ enum WorldTimers
     WUPDATE_AHBOT,
     WUPDATE_PINGDB,
     WUPDATE_CHECK_FILECHANGES,
-    WUPDATE_COUNT
+    WUPDATE_WHO_LIST,
+     WUPDATE_COUNT
 };
 
 /// Configuration elements
