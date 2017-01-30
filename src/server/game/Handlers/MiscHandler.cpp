@@ -369,7 +369,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
         data << uint32(class_);                           // player class
         data << uint32(race);                             // player race
         data << uint8(gender);                            // player gender
-        data << uint32(pzoneid);                          // player zone id
+        data << uint32(playerZoneId);                     // player zone id
 
         ++displaycount;
     }
@@ -383,13 +383,13 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
             {
                 Field* fields = result->Fetch();
 
-                std::string pname = fields[1].GetString();    // player name
-                std::string gname;                            // guild name
-                uint32 lvl = fields[4].GetUInt32();           // player level
-                uint32 class_ = fields[3].GetUInt32();        // player class
-                uint32 race = fields[2].GetUInt32();          // player race
-                uint32 pzoneid = fields[5].GetUInt32();       // player zone id
-                uint8 gender = fields[6].GetUInt8();          // player gender
+                std::string pname = fields[1].GetString();         // player name
+                std::string gname;                                 // guild name
+                uint32 lvl = fields[4].GetUInt32();                // player level
+                uint32 class_ = fields[3].GetUInt32();        	   // player class
+                uint32 race = fields[2].GetUInt32();               // player race
+                uint32 playerZoneId = fields[5].GetUInt32();       // player zone id
+                uint8 gender = fields[6].GetUInt8();               // player gender
 
                 if (Player::TeamForRace(uint8(race)) != team && !HasPermission(rbac::RBAC_PERM_TWO_SIDE_WHO_LIST))
                     continue;
@@ -397,13 +397,13 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
                 if (displaycount < 49)
                 {
                     ++displaycount;
-                    data << pname;            // player name
-                    data << gname;            // guild name
-                    data << uint32(lvl);      // player level
-                    data << uint32(class_);   // player class
-                    data << uint32(race);     // player race
-                    data << uint8(gender);    // player gender
-                    data << uint32(pzoneid);  // player zone id
+                    data << pname;                 // player name
+                    data << gname;                 // guild name
+                    data << uint32(lvl);           // player level
+                    data << uint32(class_);   	   // player class
+                    data << uint32(race);     	   // player race
+                    data << uint8(gender);         // player gender
+                    data << uint32(playerZoneId);  // player zone id
                 }
                 ++matchcount;
             } while (result->NextRow());
