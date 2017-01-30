@@ -371,7 +371,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
         data << uint8(gender);                            // player gender
         data << uint32(playerZoneId);                     // player zone id
 
-        ++displaycount;
+        ++displayCount;
     }
  
     if (sWorld->getBoolConfig(CONFIG_FAKE_PLAYERS_ENABLE) && matchcount < 49)
@@ -394,9 +394,9 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
                 if (Player::TeamForRace(uint8(race)) != team && !HasPermission(rbac::RBAC_PERM_TWO_SIDE_WHO_LIST))
                     continue;
 
-                if (displaycount < 49)
+                if (displayCount < 49)
                 {
-                    ++displaycount;
+                    ++displayCount;
                     data << pname;                 // player name
                     data << gname;                 // guild name
                     data << uint32(lvl);           // player level
