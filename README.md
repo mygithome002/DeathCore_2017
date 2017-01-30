@@ -65,10 +65,10 @@ Leia o Arquivo [COPYING](COPYING)
 
 Este projeto é trazido para você graças a:
 
-- Toda Equipe [DeathCore developers and contributors](https://github.com/NoffearrDeathProjecT/DeathCore/graphs/contributors)
-- Toda Equipe [TrinityCore developers and contributors](https://github.com/TrinityCore/TrinityCore/blob/3.3.5/THANKS)
-- Toda Equipe [MaNGOS, ScriptDev2 and UDB developers and contributors](https://github.com/cmangos/mangos-wotlk/blob/master/AUTHORS.md)
-- Toda Equipe [SkyFire developers and contributors](https://github.com/ProjectSkyfire/SkyFire.548/blob/master/THANKS.md)
+- Toda Equipe [DeathCore desenvolvedores, programadores e contribuintes](https://github.com/NoffearrDeathProjecT/DeathCore/graphs/contributors)
+- Toda Equipe [TrinityCore desenvolvedores, programadores e contribuintes](https://github.com/TrinityCore/TrinityCore/blob/3.3.5/THANKS)
+- Toda Equipe [MaNGOS, ScriptDev2 and UDB desenvolvedores, programadores e contribuintes](https://github.com/cmangos/mangos-wotlk/blob/master/AUTHORS.md)
+- Toda Equipe [SkyFire desenvolvedores, programadores e contribuintes](https://github.com/ProjectSkyfire/SkyFire.548/blob/master/THANKS.md)
 
 
 ## Links
