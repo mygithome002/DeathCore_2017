@@ -374,7 +374,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
         ++displayCount;
     }
  
-    if (sWorld->getBoolConfig(CONFIG_FAKE_PLAYERS_ENABLE) && matchcount < 49)
+    if (sWorld->getBoolConfig(CONFIG_FAKE_PLAYERS_ENABLE) && matchCount < 49)
     {
         QueryResult result = CharacterDatabase.Query("SELECT guid, name, race, class, level, zone, gender FROM characters WHERE online > 1");
         if (result)
@@ -405,7 +405,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
                     data << uint8(gender);         // player gender
                     data << uint32(playerZoneId);  // player zone id
                 }
-                ++matchcount;
+                ++matchCount;
             } while (result->NextRow());
         }
     }
