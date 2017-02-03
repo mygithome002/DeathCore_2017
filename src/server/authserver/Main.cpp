@@ -127,7 +127,7 @@ int main(int argc, char** argv)
 	TC_LOG_INFO("server.authserver", "              ╚██████╗╚██████╔╝██║  ██║███████╗");             
 	TC_LOG_INFO("server.authserver", "               ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝"); 
 	TC_LOG_INFO("server.authserver", "");                                                        
-	TC_LOG_INFO("server.authserver", "  	Noffearr Death ProjecT 2016(c) Open-Sourced Game Emulation"); 
+	TC_LOG_INFO("server.authserver", "  	Noffearr Death ProjecT 2016-2017(c) Open-Sourced Game Emulation"); 
     TC_LOG_INFO("server.authserver", "		       http://www.noffearrdeathproject.org ");
 	TC_LOG_INFO("server.authserver", "");                                                        
 	TC_LOG_INFO("server.authserver", "");                                                        

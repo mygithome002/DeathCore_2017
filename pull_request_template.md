@@ -1,31 +1,32 @@
-[//]: # (***************************)
-[//]: # (** FILL IN THIS TEMPLATE **)
-[//]: # (***************************)
+[//]: # (***************************************************************)
+[//]: # (** NÃO ELIMINE ESTE MODELO SEU NEGÓCIO SERÁ FECHADO ***********)
+[//]: # (***************************************************************)
 
-**Changes proposed:**
+**Alterações propostas:**
 
 -  
 -  
 -  
 
-**Target branch(es):** 5.4.8 / 4.3.4 / 3.3.5
+**Selecione branch(es):** 3.3.5 / 4.3.4 / 5.4.8 / 7.x.x
 
-- [ ] 5.4.8
-- [ ] 4.3.4
 - [ ] 3.3.5
+- [ ] 4.3.4
+- [ ] 5.4.8
+- [ ] 7.x.x
 
-**Issues addressed:** Closes #  (insert issue tracker number)
+**Questões abordadas:** Fechados #  (Insira o número do rastreador de problemas)
 
 
-**Tests performed:** (Does it build, tested in-game, etc.)
+**Testes realizados:** (Testado no jogo, etc.)
 
 
-**Known issues and TODO list:** (add/remove lines as needed)
+**Problemas conhecidos e lista TODO:** (Adicionar/remover linhas conforme necessário)
 
 - [ ] 
 - [ ] 
 
-**NOTE** Enable the setting "Allow edits from maintainers." when creating your pull request.  
-**NOTE** If this PR __only__ contains SQL files, create an issue instead.  
-**NOTE** Squashing commits is not required.  
-**SUGGESTION** When adding new SQL files, name them 9999_99_99_99_db_name.sql to reduce the chance of possible merge conflicts.
+**NOTA** Ative a configuração "Permitir edições de mantenedores". Ao criar seu pedido de solicitação.  
+**NOTA** Se este PR __only__ contiver arquivos SQL, crie um problema em vez disso.  
+**NOTA** Squashing não é obrigatório.  
+**SUGESTÃO** Ao adicionar novos arquivos SQL, nomeie-os 9999_99_99_99_db_name.sql para reduzir a chance de possíveis conflitos de mesclagem.

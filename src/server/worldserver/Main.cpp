@@ -146,7 +146,7 @@ extern int main(int argc, char** argv)
     TC_LOG_INFO("server.worldserver", "              ╚██████╗╚██████╔╝██║  ██║███████╗");             
     TC_LOG_INFO("server.worldserver", "               ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝"); 
     TC_LOG_INFO("server.worldserver", "");                                                        
-    TC_LOG_INFO("server.worldserver", "  	Noffearr Death ProjecT 2016(c) Open-Sourced Game Emulation"); 
+    TC_LOG_INFO("server.worldserver", "  	Noffearr Death ProjecT 2016-2017(c) Open-Sourced Game Emulation"); 
     TC_LOG_INFO("server.worldserver", "		       http://www.noffearrdeathproject.org ");
     TC_LOG_INFO("server.worldserver", "");
     TC_LOG_INFO("server.worldserver", "");

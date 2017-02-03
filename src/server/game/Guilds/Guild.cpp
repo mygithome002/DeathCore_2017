@@ -28,6 +28,7 @@
 #include "SocialMgr.h"
 #include "Opcodes.h"
 
+
 size_t const MAX_GUILD_BANK_TAB_TEXT_LEN = 500;
 
 uint32 const EMBLEM_PRICE = 10 * GOLD;
@@ -1498,7 +1499,7 @@ void Guild::HandleBuyBankTab(WorldSession* session, uint8 tabId)
 
     if (tabId >= GUILD_BANK_MAX_TABS)
         return;
- 
+
     uint32 tabCost = GetGuildBankTabPrice(tabId) * GOLD;
     if (!player->HasEnoughMoney(tabCost))                   // Should not happen, this is checked by client
         return;
@@ -1521,7 +1522,7 @@ void Guild::HandleInviteMember(WorldSession* session, std::string const& name)
 
     Player* player = session->GetPlayer();
     // Do not show invitations from ignored players
-    if (pInvitee->GetSocial()->HasIgnore(player->GetGUID().GetCounter()))
+    if (pInvitee->GetSocial()->HasIgnore(player->GetGUID()))
         return;
 
     if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && pInvitee->GetTeam() != player->GetTeam())
@@ -1976,7 +1977,8 @@ void Guild::LoadRankFromDB(Field* fields)
 bool Guild::LoadMemberFromDB(Field* fields)
 {
     ObjectGuid::LowType lowguid = fields[1].GetUInt32();
-    Member* member = new Member(m_id, ObjectGuid(HighGuid::Player, lowguid), fields[2].GetUInt8());
+    ObjectGuid playerGuid(HighGuid::Player, lowguid);
+    Member* member = new Member(m_id, playerGuid, fields[2].GetUInt8());
     if (!member->LoadFromDB(fields))
     {
         SQLTransaction trans(nullptr);
@@ -1984,6 +1986,8 @@ bool Guild::LoadMemberFromDB(Field* fields)
         delete member;
         return false;
     }
+
+    sWorld->UpdateCharacterGuildId(playerGuid, GetId());
     m_members[lowguid] = member;
     return true;
 }
@@ -2157,7 +2161,7 @@ void Guild::BroadcastToGuild(WorldSession* session, bool officerOnly, std::strin
         for (auto itr = m_members.begin(); itr != m_members.end(); ++itr)
             if (Player* player = itr->second->FindConnectedPlayer())
                 if (player->GetSession() && _HasRankRight(player, officerOnly ? GR_RIGHT_OFFCHATLISTEN : GR_RIGHT_GCHATLISTEN) &&
-                    !player->GetSocial()->HasIgnore(session->GetPlayer()->GetGUID().GetCounter()))
+                    !player->GetSocial()->HasIgnore(session->GetPlayer()->GetGUID()))
                     player->GetSession()->SendPacket(&data);
     }
 }
@@ -2195,7 +2199,7 @@ void Guild::MassInviteToEvent(WorldSession* session, uint32 minLevel, uint32 max
         }
 
         Member* member = itr->second;
-        uint32 level = Player::GetLevelFromDB(member->GetGUID());
+        uint32 level = Player::GetLevelFromCharacterInfo(member->GetGUID());
 
         if (member->GetGUID() != session->GetPlayer()->GetGUID() && level >= minLevel && level <= maxLevel && member->IsRankNotLower(minRank))
         {
@@ -2220,7 +2224,7 @@ bool Guild::AddMember(SQLTransaction& trans, ObjectGuid guid, uint8 rankId)
         if (player->GetGuildId() != 0)
             return false;
     }
-    else if (Player::GetGuildIdFromDB(guid) != 0)
+    else if (Player::GetGuildIdFromCharacterInfo(guid) != 0)
         return false;
 
     // Remove all player signs from another petitions
@@ -2272,6 +2276,7 @@ bool Guild::AddMember(SQLTransaction& trans, ObjectGuid guid, uint8 rankId)
             return false;
         }
         m_members[lowguid] = member;
+        sWorld->UpdateCharacterGuildId(guid, GetId());
     }
 
     member->SaveToDB(trans);
@@ -2339,6 +2344,8 @@ void Guild::DeleteMember(SQLTransaction& trans, ObjectGuid guid, bool isDisbandi
         player->SetInGuild(0);
         player->SetRank(0);
     }
+    else
+        sWorld->UpdateCharacterGuildId(guid, 0);
 
     _DeleteMemberFromDB(trans, lowguid);
     if (!isDisbanding)

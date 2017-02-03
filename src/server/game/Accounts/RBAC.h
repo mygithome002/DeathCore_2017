@@ -756,6 +756,7 @@ enum RBACPermissions
 	RBAC_PERM_COMMAND_BUFF									 = 1002,
 	RBAC_PERM_COMMAND_FAKE									 = 1003,
 	RBAC_PERM_COMMAND_CUSTOM_STAFF							 = 1004,
+
     RBAC_PERM_MAX
 };
 
@@ -922,7 +923,7 @@ class TC_GAME_API RBACData
 
         /// Loads all permissions assigned to current account
         void LoadFromDB();
-        PreparedQueryResultFuture LoadFromDBAsync();
+        QueryCallback LoadFromDBAsync();
         void LoadFromDBCallback(PreparedQueryResult result);
 
         /// Sets security level
