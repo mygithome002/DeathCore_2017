@@ -127,7 +127,7 @@ class boss_skeram : public CreatureScript
                 if (!me->IsSummon())
                     Talk(SAY_DEATH);
                 else
-                    me->RemoveCorpse();
+                    me->DespawnOrUnsummon();
             }
 
             void EnterCombat(Unit* /*who*/) override
