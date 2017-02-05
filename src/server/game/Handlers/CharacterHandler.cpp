@@ -20,6 +20,7 @@
 #include "ArenaTeamMgr.h"
 #include "Battleground.h"
 #include "CalendarMgr.h"
+#include "CharacterCache.h"
 #include "Chat.h"
 #include "Common.h"
 #include "DatabaseEnv.h"
@@ -232,8 +233,8 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
                 if (!(*result)[23].GetUInt32())
                     _legitCharacters.insert(guid);
 
-                if (!sWorld->HasCharacterInfo(guid)) // This can happen if characters are inserted into the database manually. Core hasn't loaded name data yet.
-                    sWorld->AddCharacterInfo(guid, GetAccountId(), (*result)[1].GetString(), (*result)[4].GetUInt8(), (*result)[2].GetUInt8(), (*result)[3].GetUInt8(), (*result)[10].GetUInt8());
+                if (!sCharacterCache->HasCharacterCacheEntry(guid)) // This can happen if characters are inserted into the database manually. Core hasn't loaded name data yet.
+                    sCharacterCache->AddCharacterCacheEntry(guid, GetAccountId(), (*result)[1].GetString(), (*result)[4].GetUInt8(), (*result)[2].GetUInt8(), (*result)[3].GetUInt8(), (*result)[10].GetUInt8());
                 ++num;
             }
         }
@@ -587,7 +588,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket& recvData)
 
             TC_LOG_INFO("entities.player.character", "Account: %d (IP: %s) Create Character:[%s] (GUID: %u)", GetAccountId(), GetRemoteAddress().c_str(), createInfo->Name.c_str(), newChar.GetGUID().GetCounter());
             sScriptMgr->OnPlayerCreate(&newChar);
-            sWorld->AddCharacterInfo(newChar.GetGUID(), GetAccountId(), newChar.GetName(), newChar.GetByteValue(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_GENDER), newChar.getRace(), newChar.getClass(), newChar.getLevel());
+            sCharacterCache->AddCharacterCacheEntry(newChar.GetGUID(), GetAccountId(), newChar.GetName(), newChar.GetByteValue(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_GENDER), newChar.getRace(), newChar.getClass(), newChar.getLevel());
 
             newChar.CleanupsBeforeDelete();
         };
@@ -639,7 +640,7 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket& recvData)
         return;
     }
 
-    CharacterInfo const* characterInfo = sWorld->GetCharacterInfo(guid);
+    CharacterCacheEntry const* characterInfo = sCharacterCache->GetCharacterCacheByGuid(guid);
     if (!characterInfo)
     {
         sScriptMgr->OnPlayerFailedDelete(guid, initAccountId);
@@ -1118,8 +1119,7 @@ void WorldSession::HandleCharRenameCallback(std::shared_ptr<CharacterRenameInfo>
 
     SendCharRename(RESPONSE_SUCCESS, renameInfo.get());
 
-    sWorld->UpdateCharacterInfo(renameInfo->Guid, renameInfo->Name);
-    sWorld->UpdateCharacterGuidByName(renameInfo->Guid, oldName, renameInfo->Name);
+    sCharacterCache->UpdateCharacterData(renameInfo->Guid, renameInfo->Name);
 }
 
 void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
@@ -1130,7 +1130,7 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 
     // not accept declined names for unsupported languages
     std::string name;
-    if (!sObjectMgr->GetPlayerNameByGUID(guid, name))
+    if (!sCharacterCache->GetCharacterNameByGuid(guid, name))
     {
         SendSetPlayerDeclinedNamesResult(DECLINED_NAMES_RESULT_ERROR, guid);
         return;
@@ -1377,7 +1377,7 @@ void WorldSession::HandleCharCustomizeCallback(std::shared_ptr<CharacterCustomiz
     }
 
     // character with this name already exist
-    if (ObjectGuid newGuid = sWorld->GetCharacterGuidByName(customizeInfo->Name))
+    if (ObjectGuid newGuid = sCharacterCache->GetCharacterGuidByName(customizeInfo->Name))
     {
         if (newGuid != customizeInfo->Guid)
         {
@@ -1411,8 +1411,7 @@ void WorldSession::HandleCharCustomizeCallback(std::shared_ptr<CharacterCustomiz
 
     CharacterDatabase.CommitTransaction(trans);
 
-    sWorld->UpdateCharacterInfo(customizeInfo->Guid, customizeInfo->Name, customizeInfo->Gender);
-    sWorld->UpdateCharacterGuidByName(customizeInfo->Guid, oldName, customizeInfo->Name);
+    sCharacterCache->UpdateCharacterData(customizeInfo->Guid, customizeInfo->Name, customizeInfo->Gender);
 
     SendCharCustomize(RESPONSE_SUCCESS, customizeInfo.get());
 
@@ -1586,7 +1585,7 @@ void WorldSession::HandleCharFactionOrRaceChangeCallback(std::shared_ptr<Charact
     }
 
     // get the players old (at this moment current) race
-    CharacterInfo const* characterInfo = sWorld->GetCharacterInfo(factionChangeInfo->Guid);
+    CharacterCacheEntry const* characterInfo = sCharacterCache->GetCharacterCacheByGuid(factionChangeInfo->Guid);
     if (!characterInfo)
     {
         SendCharFactionChange(CHAR_CREATE_ERROR, factionChangeInfo.get());
@@ -1661,7 +1660,7 @@ void WorldSession::HandleCharFactionOrRaceChangeCallback(std::shared_ptr<Charact
     }
 
     // character with this name already exist
-    ObjectGuid newGuid = sWorld->GetCharacterGuidByName(factionChangeInfo->Name);
+    ObjectGuid newGuid = sCharacterCache->GetCharacterGuidByName(factionChangeInfo->Name);
     if (!newGuid.IsEmpty())
     {
         if (newGuid != factionChangeInfo->Guid)
@@ -1712,8 +1711,7 @@ void WorldSession::HandleCharFactionOrRaceChangeCallback(std::shared_ptr<Charact
         trans->Append(stmt);
     }
 
-    sWorld->UpdateCharacterInfo(factionChangeInfo->Guid, factionChangeInfo->Name, factionChangeInfo->Gender, factionChangeInfo->Race);
-    sWorld->UpdateCharacterGuidByName(factionChangeInfo->Guid, oldName, factionChangeInfo->Name);
+    sCharacterCache->UpdateCharacterData(factionChangeInfo->Guid, factionChangeInfo->Name, factionChangeInfo->Gender, factionChangeInfo->Race);
 
     if (oldRace != factionChangeInfo->Race)
     {
