@@ -1695,14 +1695,30 @@ void SpellMgr::LoadSpellProcs()
         procEntry.SpellPhaseMask  = PROC_SPELL_PHASE_HIT;
         procEntry.HitMask         = PROC_HIT_NONE; // uses default proc @see SpellMgr::CanSpellTriggerProcOnEvent
 
-        // Reflect auras should only proc off reflects
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (spellInfo->Effects[i].IsAura(SPELL_AURA_REFLECT_SPELLS) || spellInfo->Effects[i].IsAura(SPELL_AURA_REFLECT_SPELLS_SCHOOL))
+            if (!spellInfo->Effects[i].IsAura())
+                continue;
+
+            switch (spellInfo->Effects[i].ApplyAuraName)
             {
-                procEntry.HitMask = PROC_HIT_REFLECT;
-                break;
+                // Reflect auras should only proc off reflects
+                case SPELL_AURA_REFLECT_SPELLS:
+                case SPELL_AURA_REFLECT_SPELLS_SCHOOL:
+                    procEntry.HitMask = PROC_HIT_REFLECT;
+                    break;
+                // Only drop charge on crit
+                case SPELL_AURA_MOD_WEAPON_CRIT_PERCENT:
+                    procEntry.HitMask = PROC_HIT_CRITICAL;
+                    break;
+                // Only drop charge on block
+                case SPELL_AURA_MOD_BLOCK_PERCENT:
+                    procEntry.HitMask = PROC_HIT_BLOCK;
+                    break;
+                default:
+                    continue;
             }
+            break;
         }
 
         procEntry.AttributesMask  = 0;
@@ -2726,6 +2742,24 @@ void SpellMgr::LoadSpellInfoCorrections()
         spellInfo = mSpellInfoMap[i];
         if (!spellInfo)
             continue;
+
+        // Fix range for trajectory triggered spell
+        for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+        {
+            if (spellInfo->Effects[j].IsEffect() && (spellInfo->Effects[j].TargetA.GetTarget() == TARGET_DEST_TRAJ || spellInfo->Effects[j].TargetB.GetTarget() == TARGET_DEST_TRAJ))
+            {
+                // Get triggered spell if any
+                if (SpellInfo* spellInfoTrigger = const_cast<SpellInfo*>(GetSpellInfo(spellInfo->Effects[j].TriggerSpell)))
+                {
+                    float maxRangeMain = spellInfo->RangeEntry ? spellInfo->RangeEntry->maxRangeHostile : 0.0f;
+                    float maxRangeTrigger = spellInfoTrigger->RangeEntry ? spellInfoTrigger->RangeEntry->maxRangeHostile : 0.0f;
+
+                    // check if triggered spell has enough max range to cover trajectory
+                    if (maxRangeTrigger < maxRangeMain)
+                        spellInfoTrigger->RangeEntry = spellInfo->RangeEntry;
+                }
+            }
+        }
 
         for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
