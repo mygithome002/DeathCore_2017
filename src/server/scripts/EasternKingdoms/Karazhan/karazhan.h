@@ -18,6 +18,7 @@
 #ifndef DEF_KARAZHAN_H
 #define DEF_KARAZHAN_H
 
+#define KZScriptName "instance_karazhan"
 #define DataHeader "KZ"
 
 uint32 const EncounterCount = 12;
@@ -108,5 +109,11 @@ enum Misc
 {
     OPTIONAL_BOSS_REQUIRED_DEATH_COUNT = 50
 };
+
+template<class AI, class T>
+inline AI* GetKarazhanAI(T* obj)
+{
+    return GetInstanceAI<AI>(obj, KZScriptName);
+}
 
 #endif
