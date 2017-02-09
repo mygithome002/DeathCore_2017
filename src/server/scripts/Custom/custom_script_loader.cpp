@@ -19,7 +19,6 @@
 void AddSC_VipSystemCommands();
 void AddSC_System_Censure();
 void AddSC_NoFarming();
-void AddSC_fake_commandscript();
 void AddSC_buffcommand();
 void AddSC_XpWeekend();
 void AddSC_Reset();
@@ -57,7 +56,6 @@ void AddCustomScripts()
     AddSC_VipSystemCommands();
     AddSC_System_Censure();
     AddSC_NoFarming();
-    AddSC_fake_commandscript();
 	AddSC_buffcommand();
 	AddSC_XpWeekend();
     AddSC_Reset();
