@@ -24,6 +24,7 @@
 #include "ArenaTeamMgr.h"
 #include "WorldSession.h"
 #include "Opcodes.h"
+#include "CharacterCache.h"
 
 ArenaTeam::ArenaTeam()
     : TeamId(0), Type(0), TeamName(), CaptainGuid(), BackgroundColor(0), EmblemStyle(0), EmblemColor(0),
@@ -94,7 +95,7 @@ bool ArenaTeam::AddMember(ObjectGuid playerGuid)
     if (GetMembersSize() >= GetType() * 2)
         return false;
 
-    // Get player name and class either from db or ObjectMgr
+    // Get player name and class either from db or character cache
     Player* player = ObjectAccessor::FindPlayer(playerGuid);
     if (player)
     {
@@ -103,7 +104,7 @@ bool ArenaTeam::AddMember(ObjectGuid playerGuid)
     }
     else
     {
-        CharacterInfo const* cInfo = sWorld->GetCharacterInfo(playerGuid);
+        CharacterCacheEntry const* cInfo = sCharacterCache->GetCharacterCacheByGuid(playerGuid);
         if (!cInfo)
             return false;
 
@@ -112,7 +113,7 @@ bool ArenaTeam::AddMember(ObjectGuid playerGuid)
     }
 
     // Check if player is already in a similar arena team
-    if ((player && player->GetArenaTeamId(GetSlot())) || Player::GetArenaTeamIdFromCharacterInfo(playerGuid, GetType()) != 0)
+    if ((player && player->GetArenaTeamId(GetSlot())) || sCharacterCache->GetCharacterArenaTeamIdByGuid(playerGuid, GetType()) != 0)
     {
         TC_LOG_DEBUG("bg.arena", "Arena: %s %s already has an arena team of type %u", playerGuid.ToString().c_str(), playerName.c_str(), GetType());
         return false;
@@ -155,7 +156,7 @@ bool ArenaTeam::AddMember(ObjectGuid playerGuid)
     newMember.MatchMakerRating = matchMakerRating;
 
     Members.push_back(newMember);
-    sWorld->UpdateCharacterArenaTeamId(playerGuid, GetSlot(), GetId());
+    sCharacterCache->UpdateCharacterArenaTeamId(playerGuid, GetSlot(), GetId());
 
     // Save player's arena team membership to db
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ARENA_TEAM_MEMBER);
@@ -251,7 +252,7 @@ bool ArenaTeam::LoadMembersFromDB(QueryResult result)
 
         // Put the player in the team
         Members.push_back(newMember);
-        sWorld->UpdateCharacterArenaTeamId(newMember.Guid, GetSlot(), GetId());
+        sCharacterCache->UpdateCharacterArenaTeamId(newMember.Guid, GetSlot(), GetId());
     }
     while (result->NextRow());
 
@@ -315,7 +316,7 @@ void ArenaTeam::DelMember(ObjectGuid guid, bool cleanDb)
         if (itr->Guid == guid)
         {
             Members.erase(itr);
-            sWorld->UpdateCharacterArenaTeamId(guid, GetSlot(), 0);
+            sCharacterCache->UpdateCharacterArenaTeamId(guid, GetSlot(), 0);
             break;
         }
     }
@@ -368,7 +369,7 @@ void ArenaTeam::Disband(WorldSession* session)
 
     CharacterDatabase.CommitTransaction(trans);
 
-    // Remove arena team from ObjectMgr
+    // Remove arena team from ArenaTeamMgr
     sArenaTeamMgr->RemoveArenaTeam(TeamId);
 }
 
@@ -391,7 +392,7 @@ void ArenaTeam::Disband()
 
     CharacterDatabase.CommitTransaction(trans);
 
-    // Remove arena team from ObjectMgr
+    // Remove arena team from ArenaTeamMgr
     sArenaTeamMgr->RemoveArenaTeam(TeamId);
 }
 

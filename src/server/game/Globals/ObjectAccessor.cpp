@@ -235,11 +235,6 @@ Player* ObjectAccessor::FindPlayer(ObjectGuid const& guid)
     return player && player->IsInWorld() ? player : nullptr;
 }
 
-Player* ObjectAccessor::FindConnectedPlayer(ObjectGuid const& guid)
-{
-    return HashMapHolder<Player>::Find(guid);
-}
-
 Player* ObjectAccessor::FindPlayerByName(std::string const& name)
 {
     Player* player = PlayerNameMapHolder::Find(name);
@@ -247,6 +242,17 @@ Player* ObjectAccessor::FindPlayerByName(std::string const& name)
         return nullptr;
 
     return player;
+}
+
+Player* ObjectAccessor::FindPlayerByLowGUID(ObjectGuid::LowType lowguid)
+{
+    ObjectGuid guid(HighGuid::Player, lowguid);
+    return ObjectAccessor::FindPlayer(guid);
+}
+
+Player* ObjectAccessor::FindConnectedPlayer(ObjectGuid const& guid)
+{
+    return HashMapHolder<Player>::Find(guid);
 }
 
 Player* ObjectAccessor::FindConnectedPlayerByName(std::string const& name)
