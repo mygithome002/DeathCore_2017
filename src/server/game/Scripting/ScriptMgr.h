@@ -753,6 +753,9 @@ class TC_GAME_API PlayerScript : public UnitScript
 
         // Called after a player's quest status has been changed
         virtual void OnQuestStatusChange(Player* /*player*/, uint32 /*questId*/) { }
+
+        // Called when a player presses release when he died
+        virtual void OnPlayerRepop(Player* /*player*/) { }
 };
 
 class TC_GAME_API AccountScript : public ScriptObject
@@ -1087,7 +1090,8 @@ class TC_GAME_API ScriptMgr
         void OnGossipSelect(Player* player, uint32 menu_id, uint32 sender, uint32 action);
         void OnGossipSelectCode(Player* player, uint32 menu_id, uint32 sender, uint32 action, const char* code);
         void OnQuestStatusChange(Player* player, uint32 questId);
-
+        void OnPlayerRepop(Player* player);
+ 
     public: /* AccountScript */
 
         void OnAccountLogin(uint32 accountId);
