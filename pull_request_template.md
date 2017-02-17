@@ -1,32 +1,32 @@
-[//]: # (***************************************************************)
-[//]: # (** NÃO ELIMINE ESTE MODELO SEU NEGÓCIO SERÁ FECHADO ***********)
-[//]: # (***************************************************************)
+[//]: # (***************************)
+[//]: # (** FILL IN THIS TEMPLATE **)
+[//]: # (***************************)
 
-**Alterações propostas:**
+**Changes proposed:**
 
 -  
 -  
--  
+-   
 
-**Selecione branch(es):** 3.3.5 / 4.3.4 / 5.4.8 / 7.x.x
+**Target branch(es):** 3.3.5 / 4.3.4 / 5.4.8 / 7.x.x
 
 - [ ] 3.3.5
 - [ ] 4.3.4
 - [ ] 5.4.8
 - [ ] 7.x.x
 
-**Questões abordadas:** Fechados #  (Insira o número do rastreador de problemas)
+**Issues addressed:** Closes #  (insert issue tracker number)
 
 
-**Testes realizados:** (Testado no jogo, etc.)
+**Tests performed:** (Does it build, tested in-game, etc.)
 
 
-**Problemas conhecidos e lista TODO:** (Adicionar/remover linhas conforme necessário)
+**Known issues and TODO list:** (add/remove lines as needed)
 
 - [ ] 
 - [ ] 
 
-**NOTA** Ative a configuração "Permitir edições de mantenedores". Ao criar seu pedido de solicitação.  
-**NOTA** Se este PR __only__ contiver arquivos SQL, crie um problema em vez disso.  
-**NOTA** Squashing não é obrigatório.  
-**SUGESTÃO** Ao adicionar novos arquivos SQL, nomeie-os 9999_99_99_99_db_name.sql para reduzir a chance de possíveis conflitos de mesclagem.
+[//]: # (**DEPRECATION NOTICE** Instead of creating new PRs to the (old) 6.x branch, make sure the target branch is **master** instead of 6.x.)
+[//]: # (**NOTE** Enable the setting "[√] Allow edits from maintainers." when creating your pull request (if not enabled already).)
+[//]: # (**NOTE** If this PR __only__ contains SQL files, open a new issue instead and post or link the SQL there.)
+[//]: # (**SUGGESTION** When adding new SQL files, name them 9999_99_99_99_db_name.sql to reduce the chance of possible merge conflicts.)
