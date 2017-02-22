@@ -17,5 +17,8 @@
 
 #ifndef AllPackets_h__
 #define AllPackets_h__
+ 
+#include "QueryPackets.h"
+#include "QuestPackets.h"
 
 #endif // AllPackets_h__
