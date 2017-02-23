@@ -2839,7 +2839,7 @@ class spell_gen_proc_charge_drop_only : public SpellScriptLoader
         {
             PrepareAuraScript(spell_gen_proc_charge_drop_only_AuraScript);
 
-            void HandleChargeDrop(ProcEventInfo& eventInfo)
+            void HandleChargeDrop(ProcEventInfo& /*eventInfo*/)
             {
                 PreventDefaultAction();
             }
