@@ -1,28 +1,28 @@
 [//]: # (***************************************************************)
-[//]: # (** NÃO ELIMINE ESTE MODELO SEU NEGÓCIO SERÁ FECHADO ***********)
+[//]: # (** DON'T DELETE THIS TEMPLATE ELSE YOUR ISSUE WILL BE CLOSED **)
 [//]: # (***************************************************************)
 
-**Descrição:**
+**Description:**
 
-**Comportamento atual:** (Conte-nos o que acontece.)
+**Current behaviour:** (Tell us what happens.)
 
-**Comportamento esperado:** (Diga-nos o que deve acontecer em vez disso.)
+**Expected behaviour:** (Tell us what should happen instead.)
 
-**Etapas para reproduzir o problema:**
+**Steps to reproduce the problem:**
 
 1. 
 2. 
-3. 
+3.  
 
 **Branch(es):** 3.3.5 / 4.3.4 / 5.4.8 / 7.x.x
 
 **DeathCore rev. hash/commit:**  
 
-**DCDB versão:**  
+**DCDB version:**  
 
-**Sistema Operacional:**  
+**Operating system:**  
 
 
-[//]: # (Este modelo é para relatórios de problemas. Para outros tipos de relatório, edite-o de acordo.)
-[//]: # (Se este for um relatório de falha, inclua o https://gist.github.com/)
-[//]: # (Para correções que contêm C ++, crie uma solicitação de solicitação.)
+[//]: # (This template is for problem reports. For other types of report, edit it accordingly.)
+[//]: # (If this is a crash report, include the crashlog with https://gist.github.com/)
+[//]: # (For fixes containing C++, create a Pull Request.)
